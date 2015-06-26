@@ -26,7 +26,19 @@
 #include "TrackStudy.h"
 #include <TH2.h>
 #include <TStyle.h>
-
+#include <iostream>
+#include "LinParFit.h"
+#include "PatHit.h"
+#include "Track.h"
+#include "MCHit.h"
+#include <iostream>
+#include <cmath>
+#include <cerrno>
+#include <cfenv>
+#include <cstring>
+#include <vector>
+#include <string>
+#include <iostream>
 
 void TrackStudy::Begin(TTree * /*tree*/)
 {
@@ -43,15 +55,29 @@ void TrackStudy::SlaveBegin(TTree * /*tree*/)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
-  
+
   TString option = GetOption();
-  
+
 }
 
 Bool_t TrackStudy::Process(Long64_t entry)
 {
   fChain->GetTree()->GetEntry(entry);
-  
+  //std::cout<<"Ciao"<<std::endl;
+  std::vector<PatHit> track(100);
+  std::vector<MCHit> track_MC(100);
+  for (Int_t i = 0 ;  i< CheatedSeeding_NHits; i++){
+    PatHit *hit = PatHit();
+    hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i]);
+
+    /* code */
+  }
+  for (Int_t i = 0;  i< N_MCHit_Assoc; i++) {
+  MCHit mcHit = MCHit();
+  MCHit.setMCHit(MCHit_Assoc_X[i], MCHit_Assoc_Y[i],MCHit_Assoc_Z[i],MCHit_tx[i],MCHit_ty[i],MCHit_p[i],MCHit_pathlength[i],P,MC_px,MC_py,MC_pz);
+  }
+
+
   // loaded MCParticle
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
