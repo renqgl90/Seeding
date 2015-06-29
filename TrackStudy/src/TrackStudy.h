@@ -378,4 +378,6 @@ Bool_t TrackStudy::Notify()
    return kTRUE;
 }
 
+//Bool_t TrackStudy::WhichPlane(MCHit &hit)
+
 #endif // #ifdef TrackStudy_cxx
