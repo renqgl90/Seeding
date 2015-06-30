@@ -22,7 +22,7 @@ public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
    // Declaration of leaf types
-   Double_t        event;
+ Double_t        event;
    Double_t        run;
    Double_t        nPV;
    Int_t           FiredLayers;
@@ -84,7 +84,15 @@ public :
    Float_t         MC_Hit_X[100];   //[MC]
    Float_t         MC_Hit_Y[100];   //[MC]
    Float_t         MC_Hit_Z[100];   //[MC]
+   Float_t         MC_Hit_P[100];   //[MC]
+   Float_t         MC_Hit_PathLenght[100];   //[MC]
+   Float_t         MC_Hit_Energy[100];   //[MC]
+   Float_t         MC_Hit_Particle_P[100];   //[MC]
+   Float_t         MC_Hit_dxdz[100];   //[MC]
+   Float_t         MC_Hit_dydz[100];   //[MC]
+   Float_t         MC_time[100];   //[MC]
    ULong64_t       Number_MCHit_size;
+   Bool_t          MC_Hit_hasDuplicate;
    Bool_t          fullInfo;
    Bool_t          isSeed;
    Bool_t          isLong;
@@ -187,7 +195,15 @@ public :
    TBranch        *b_MC_Hit_X;   //!
    TBranch        *b_MC_Hit_Y;   //!
    TBranch        *b_MC_Hit_Z;   //!
+   TBranch        *b_MC_Hit_P;   //!
+   TBranch        *b_MC_Hit_PathLenght;   //!
+   TBranch        *b_MC_Hit_Energy;   //!
+   TBranch        *b_MC_Hit_Particle_P;   //!
+   TBranch        *b_MC_Hit_dxdz;   //!
+   TBranch        *b_MC_Hit_dydz;   //!
+   TBranch        *b_MC_time;   //!
    TBranch        *b_Number_MCHit_size;   //!
+   TBranch        *b_MC_Hit_hasDuplicate;   //!
    TBranch        *b_fullInfo;   //!
    TBranch        *b_isSeed;   //!
    TBranch        *b_isLong;   //!
@@ -326,7 +342,15 @@ void TrackStudy::Init(TTree *tree)
    fChain->SetBranchAddress("MC_Hit_X", MC_Hit_X, &b_MC_Hit_X);
    fChain->SetBranchAddress("MC_Hit_Y", MC_Hit_Y, &b_MC_Hit_Y);
    fChain->SetBranchAddress("MC_Hit_Z", MC_Hit_Z, &b_MC_Hit_Z);
+   fChain->SetBranchAddress("MC_Hit_P", MC_Hit_P, &b_MC_Hit_P);
+   fChain->SetBranchAddress("MC_Hit_PathLenght", MC_Hit_PathLenght, &b_MC_Hit_PathLenght);
+   fChain->SetBranchAddress("MC_Hit_Energy", MC_Hit_Energy, &b_MC_Hit_Energy);
+   fChain->SetBranchAddress("MC_Hit_Particle_P", MC_Hit_Particle_P, &b_MC_Hit_Particle_P);
+   fChain->SetBranchAddress("MC_Hit_dxdz", MC_Hit_dxdz, &b_MC_Hit_dxdz);
+   fChain->SetBranchAddress("MC_Hit_dydz", MC_Hit_dydz, &b_MC_Hit_dydz);
+   fChain->SetBranchAddress("MC_time", MC_time, &b_MC_time);
    fChain->SetBranchAddress("Number_MCHit_size", &Number_MCHit_size, &b_Number_MCHit_size);
+   fChain->SetBranchAddress("MC_Hit_hasDuplicate", &MC_Hit_hasDuplicate, &b_MC_Hit_hasDuplicate);
    fChain->SetBranchAddress("fullInfo", &fullInfo, &b_fullInfo);
    fChain->SetBranchAddress("isSeed", &isSeed, &b_isSeed);
    fChain->SetBranchAddress("isLong", &isLong, &b_isLong);

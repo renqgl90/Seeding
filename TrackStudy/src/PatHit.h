@@ -15,7 +15,7 @@ public:
   m_yMax(0),
   m_zone(-1),
   m_planeCode(-1),
-  m_id(-1),
+  m_id(-1.),
   m_dxDy(-999.),
   m_dzDy(-999.),
   m_isX(false)
