@@ -1,7 +1,7 @@
 #ifndef PatHit_H
 #define PatHit_H 1
 #include <TROOT.h>
-
+#include "./FTCluster.h"
 class PatHit{
 
 public:
@@ -45,9 +45,10 @@ public:
   void setCoord(Float_t coord){
     m_coord = coord;
     }
-
+  void SetCluster(FTCluster cluster) {m_Cluster=cluster;}
   Float_t x(Float_t y) const{return m_xatyEq0+y*m_dxDy;}
   Float_t z(Float_t y) const{return m_zatyEq0+m_dzDy*y;}
+
 private:
   //Float_t m_xatyEq0;
   //Float_t m_zatyEq0;
@@ -66,6 +67,8 @@ private:
   Float_t m_id;
   Int_t m_planeCode;
   Bool_t m_isX;
+  FTCluster m_Cluster;
+
 
 
 };
