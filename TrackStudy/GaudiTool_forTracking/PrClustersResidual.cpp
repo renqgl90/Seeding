@@ -381,7 +381,7 @@ void PrClustersResidual::TrackStudy(){
 	    PrHit_yMin.push_back(hit->yMin());
 	    PrHit_yMax.push_back(hit->yMax());
 	    PrHit_w2.push_back(hit->w());
-	    PrHit_dzDy.push_back(hit->z(1000.)-hit->z(0.)/(1000.));
+	    PrHit_dzDy.push_back((hit->z(1000.)-hit->z(0.))/(1000.));
 	  }
       }
       if(assoc_MCHit.size()==0){
@@ -429,11 +429,11 @@ void PrClustersResidual::TrackStudy(){
 
       tuple->farray("ChID_Fraction",ChID_Fraction,"ChID",100);
       tuple->farray("ChID_SipmCell",ChID_SipmCell,"ChID",100); 
-      tuple->farray("ChID_Fraction",ChID_Module,"ChID",100); 
-      tuple->farray("ChID_Fraction",ChID_Layer,"ChID",100); 
-      tuple->farray("ChID_Fraction",ChID_Quarter,"ChID",100); 
-      tuple->farray("ChID_Fraction",ChID_Mat,"ChID",100); 
-      tuple->farray("ChID_Fraction",ChID_SipmID,"ChID",100); 
+      tuple->farray("ChID_Module",ChID_Module,"ChID",100); 
+      tuple->farray("ChID_Layer",ChID_Layer,"ChID",100); 
+      tuple->farray("ChID_Quarter",ChID_Quarter,"ChID",100); 
+      tuple->farray("ChID_Mat",ChID_Mat,"ChID",100); 
+      tuple->farray("ChID_SipmID",ChID_SipmID,"ChID",100); 
       tuple->farray("ChID_ID",ChID_ID,"ChID",100);
 
       tuple->column("N_PrHit_Assoc",track.size());
