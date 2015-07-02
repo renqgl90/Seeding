@@ -57,6 +57,13 @@ public:
   Float_t y(Float_t z) const{
     return m_ay+(z-m_zRef)*m_by;
   }
+  void PrintHits()
+  {
+    std.setPr
+    std::cout<<"Hits On Track"
+    <<"\n X"
+  }
+  Float_t
 private:
   float  m_zRef;
   std::vector<PatHit> m_hits;

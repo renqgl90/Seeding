@@ -22,7 +22,7 @@ public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
    // Declaration of leaf types
- Double_t        event;
+   Double_t        event;
    Double_t        run;
    Double_t        nPV;
    Int_t           FiredLayers;
@@ -36,6 +36,8 @@ public :
    Float_t         MCHit_Assoc_X[100];   //[MC_ass]
    Float_t         MCHit_Assoc_Y[100];   //[MC_ass]
    Float_t         MCHit_Assoc_Z[100];   //[MC_ass]
+   Float_t         MCHit_Assoc_time[100];   //[MC_ass]
+   Float_t         MCHit_Assoc_Particle_Key[100];   //[MC_ass]
    ULong64_t       N_MCHit_Assoc;
    Int_t           PrHit;
    Float_t         PrHit_LHCbID[100];   //[PrHit]
@@ -91,6 +93,7 @@ public :
    Float_t         MC_Hit_dxdz[100];   //[MC]
    Float_t         MC_Hit_dydz[100];   //[MC]
    Float_t         MC_time[100];   //[MC]
+   Float_t         MC_Hit_Particle_Key[100];   //[MC]
    ULong64_t       Number_MCHit_size;
    Bool_t          MC_Hit_hasDuplicate;
    Bool_t          fullInfo;
@@ -147,6 +150,8 @@ public :
    TBranch        *b_MCHit_Assoc_X;   //!
    TBranch        *b_MCHit_Assoc_Y;   //!
    TBranch        *b_MCHit_Assoc_Z;   //!
+   TBranch        *b_MCHit_Assoc_time;   //!
+   TBranch        *b_MCHit_Assoc_Particle_Key;   //!
    TBranch        *b_N_MCHit_Assoc;   //!
    TBranch        *b_PrHit;   //!
    TBranch        *b_PrHit_LHCbID;   //!
@@ -202,6 +207,7 @@ public :
    TBranch        *b_MC_Hit_dxdz;   //!
    TBranch        *b_MC_Hit_dydz;   //!
    TBranch        *b_MC_time;   //!
+   TBranch        *b_MC_Hit_Particle_Key;   //!
    TBranch        *b_Number_MCHit_size;   //!
    TBranch        *b_MC_Hit_hasDuplicate;   //!
    TBranch        *b_fullInfo;   //!
@@ -259,6 +265,17 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
 
+ private:
+
+  Float_t zReference;
+  Int_t m_long_NGeantHit;
+  Int_t    m_long_NPrHit;
+    Int_t  m_long_NMCHitIntoCluster;
+
+
+  Int_t    m_long_NLayer_Geant;
+    Int_t  m_long_NLayer_PrHit;
+    Int_t  m_long_NLayer_MCHitInCluster;
    //ClassDef(TrackStudy,0);
 };
 
@@ -279,7 +296,6 @@ void TrackStudy::Init(TTree *tree)
    if (!tree) return;
    fChain = tree;
    fChain->SetMakeClass(1);
-
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("run", &run, &b_run);
    fChain->SetBranchAddress("nPV", &nPV, &b_nPV);
@@ -294,6 +310,8 @@ void TrackStudy::Init(TTree *tree)
    fChain->SetBranchAddress("MCHit_Assoc_X", MCHit_Assoc_X, &b_MCHit_Assoc_X);
    fChain->SetBranchAddress("MCHit_Assoc_Y", MCHit_Assoc_Y, &b_MCHit_Assoc_Y);
    fChain->SetBranchAddress("MCHit_Assoc_Z", MCHit_Assoc_Z, &b_MCHit_Assoc_Z);
+   fChain->SetBranchAddress("MCHit_Assoc_time", MCHit_Assoc_time, &b_MCHit_Assoc_time);
+   fChain->SetBranchAddress("MCHit_Assoc_Particle_Key", MCHit_Assoc_Particle_Key, &b_MCHit_Assoc_Particle_Key);
    fChain->SetBranchAddress("N_MCHit_Assoc", &N_MCHit_Assoc, &b_N_MCHit_Assoc);
    fChain->SetBranchAddress("PrHit", &PrHit, &b_PrHit);
    fChain->SetBranchAddress("PrHit_LHCbID", PrHit_LHCbID, &b_PrHit_LHCbID);
@@ -349,6 +367,7 @@ void TrackStudy::Init(TTree *tree)
    fChain->SetBranchAddress("MC_Hit_dxdz", MC_Hit_dxdz, &b_MC_Hit_dxdz);
    fChain->SetBranchAddress("MC_Hit_dydz", MC_Hit_dydz, &b_MC_Hit_dydz);
    fChain->SetBranchAddress("MC_time", MC_time, &b_MC_time);
+   fChain->SetBranchAddress("MC_Hit_Particle_Key", MC_Hit_Particle_Key, &b_MC_Hit_Particle_Key);
    fChain->SetBranchAddress("Number_MCHit_size", &Number_MCHit_size, &b_Number_MCHit_size);
    fChain->SetBranchAddress("MC_Hit_hasDuplicate", &MC_Hit_hasDuplicate, &b_MC_Hit_hasDuplicate);
    fChain->SetBranchAddress("fullInfo", &fullInfo, &b_fullInfo);
@@ -389,6 +408,7 @@ void TrackStudy::Init(TTree *tree)
    fChain->SetBranchAddress("strange_fromDB_UT_T", &strange_fromDB_UT_T, &b_strange_fromDB_UT_T);
    fChain->SetBranchAddress("strange_fromDB_UT_T_noVelo", &strange_fromDB_UT_T_noVelo, &b_strange_fromDB_UT_T_noVelo);
    fChain->SetBranchAddress("strange_fromDB_UT_T_noVelo_more5", &strange_fromDB_UT_T_noVelo_more5, &b_strange_fromDB_UT_T_noVelo_more5);
+
 }
 
 Bool_t TrackStudy::Notify()

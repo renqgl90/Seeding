@@ -9,14 +9,14 @@ CC      = g++
 CCFLAGS = -c  -Wno-deprecated -g
 
 LD      = g++
-LDFLAGS = 
+LDFLAGS =
 
 ROOTINCS = $(shell root-config --cflags) # will be used as it is
 ROOTLIBS = $(shell root-config --glibs)  # will be used as it is
 LIBS     = $(LIB)                        # will get an -L for each entry
 
-EXEC0        = RunSelectorXLayers
-COMPONENTS0  = RunSelectorXLayers FakedSeeding #FakedSeeding #OccupancyStudy
+EXEC0        = RunTracking
+COMPONENTS0  = RunTracking TrackStudy #FakedSeeding #OccupancyStudy
 BIN_EXEC0    = $(addprefix $(BIN)/,$(EXEC0) )
 
 default: all
@@ -49,4 +49,4 @@ installdirs: $(LIB) $(BIN)
 
 selector: installdirs $(BIN_EXEC0)
 
-all: installdirs $(BIN_EXEC0) 
+all: installdirs $(BIN_EXEC0)

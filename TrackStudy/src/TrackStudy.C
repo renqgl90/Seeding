@@ -40,46 +40,51 @@
 #include <string>
 #include <iostream>
 #include <TROOT.h>
+
+
+//-------------------Declaration of the Ntuple and TFile to be filled with the Chi2 Fits on MCHits
 char NameFile[100]="Analysed_Track.root";
 TFile*file = new TFile(NameFile,"RECREATE");
 TTree * t1 = new TTree("treee","Track_Fit");
+//Parabolic XZ
 Double_t Chi2_ParabolaXZ;
-Double_t Chi2_CubicXZ;
-Double_t Chi2_LineY;
-Double_t Chi2_ParabolaY;
-
 Double_t ax_par;
 Double_t bx_par;
 Double_t cx_par;
-
+//Cubic XZ
+Double_t Chi2_CubicXZ;
 Double_t ax_cub;
 Double_t bx_cub;
 Double_t cx_cub;
 Double_t dx_cub;
-
+//Line Y
+Double_t Chi2_LineY;
 Double_t ay_line;
 Double_t by_line;
 Double_t ay_par;
 Double_t by_par;
 Double_t cy_par;
+//Parabolic Y
+Double_t Chi2_ParabolaY;
+
+//Track Flags
 Double_t Momentum;
+//-------------------------------------------------------------
+
+//NHIts study
 void TrackStudy::Begin(TTree * /*tree*/)
 {
-  // The Begin() function is called at the start of the query.
-  // When running with PROOF Begin() is only called on the client.
-  // The tree argument is deprecated (on PROOF 0 is passed).
+
+  //TH1D * Hist_MCHitContribDuplicate = new TH1D("
   t1->Branch("Chi2_ParabolaXZ",&Chi2_ParabolaXZ,"Chi2_ParabolaXZ/D");
   t1->Branch("ax_parXZ",&ax_par,"ax_parXZ/D");
   t1->Branch("bx_parXZ",&bx_par,"bx_parXZ/D");
   t1->Branch("cx_parXZ",&cx_par,"cx_parXZ/D");
-
-
   t1->Branch("Chi2_CubicXZ",&Chi2_CubicXZ,"Chi2_CubicXZ/D");
   t1->Branch("ax_cubXZ",&ax_cub,"ax_cubXZ/D");
   t1->Branch("bx_cubXZ",&bx_cub,"bx_cubXZ/D");
   t1->Branch("cx_cubXZ",&cx_cub,"cx_cubXZ/D");
   t1->Branch("dx_cubXZ",&dx_cub,"dx_cubXZ/D");
-
   t1->Branch("Chi2_LineY",&Chi2_LineY,"Chi2_LineY/D");
   t1->Branch("ay_line",&ay_line,"ay_line/D");
   t1->Branch("by_line",&bx_cub,"by_line/D");
@@ -90,6 +95,18 @@ void TrackStudy::Begin(TTree * /*tree*/)
   t1->Branch("Track_P",&Momentum,"Track_P/D");
   TString option = GetOption();
 
+  //Counters For Efficiencies on Long tracks
+  m_long_NGeantHit=0;
+  m_long_NPrHit=0;
+  m_long_NMCHitIntoCluster=0;
+  m_long_NLayer_Geant=0;
+  m_long_NLayer_PrHit=0;
+  m_long_NLayer_MCHitInCluster=0;
+
+
+
+  //zReference Position to be used in the Fits
+  zReference = 8520.;
 }
 
 void TrackStudy::SlaveBegin(TTree * /*tree*/)
@@ -106,72 +123,93 @@ Bool_t TrackStudy::Process(Long64_t entry)
 {
   fChain->GetTree()->GetEntry(entry);
   //std::cout<<"Ciao"<<std::endl;
-  // HERE DEBUG AND PRINT AT VIDEO
-  if(isElectron) return kTRUE;
-  if(!isLong) return kTRUE;
+  // HERE DEBUG AND PRINT AT VIDEO OF HIT CONTENT
+  Double_t PCut =3000;
+  if(isLong && P>PCut && !isElectron){
+    m_long_NGeantHit+=MC;
+    m_long_NPrHit+=PrHit;
+    m_long_NMCHitIntoCluster+=MC_ass;
+    //Count different Hit Per Layer;
+    //Count different MCHit Geant PerLayer;
+    for(Int_t i =0;i<MC; i++){
+      if(std::fabs(MC_Hit_Z[i]-MC_Hit_Z[i-1]) <40 && i>0) continue;
+      m_long_NLayer_Geant+=1;
+    }
+    for(Int_t i =0;i<PrHit; i++){
+      if(std::fabs(PrHit_Zat0[i]-PrHit_Zat0[i-1]) <40 && i>0) continue;
+      m_long_NLayer_PrHit+=1;
+    }
+    for(Int_t i=0;i<MC_ass; i++){
+      if(std::fabs(MCHit_Assoc_Z[i]-MCHit_Assoc_Z[i-1]) <40 && i>0) continue;
+      m_long_NLayer_MCHitInCluster+=1;
+    }
+    //Count different MCHitIntoCluster Per Layer;
+  }
+
+  if(isElectron) return kTRUE; //No Electrons
+  if(!Eta_in25) return kTRUE; //Eta Cut
+  if(P>5000) return kTRUE;
+  
+
+
   if(!isSeed) return kTRUE;
-  if(P<500) return kTRUE;
+  if(P<2000) return kTRUE; //Study done for P>2000 !electron & LongTracks
   if(MC_Ovtx_z>4000) return kTRUE;
   std::vector<PatHit> track(100);
   std::vector<MCHit> track_MC(100);
-  for (Int_t i = 0 ;  i< CheatedSeeding_NHits; i++)
-  {
+  for (Int_t i = 0 ;  i< CheatedSeeding_NHits; i++){
     PatHit hit = PatHit();
     hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
   }
 
 
-
+  std::cout.precision(4);
+  std::vector<MCHit> track_MC;
   for (Int_t i = 0;  i< MC_ass; i++) {
     MCHit mcHit =  MCHit();
-    mcHit.setMCHit(MCHit_Assoc_X[i], MCHit_Assoc_Y[i],MCHit_Assoc_Z[i],MCHit_tx[i],MCHit_ty[i],MCHit_p[i],MCHit_pathlength[i],P,MC_px,MC_py,MC_pz);
-  }
-
-  //MCHit mcHit_Geant = MCHIt();
-  if(MC>15){
-    //  std::cout<<"MCHit from Geant with size "<<MC<<"\n"
-    //<<"i \t \t X \t \t Y \t \t Z \t \t P \t \t PathLenght \t ParticleP \t time  "<<std::endl;}
-
-    std::cout.precision(4);
-    std::vector<MCHit> CloneHits_OnTrack;
-    for(Int_t i=0; i<MC; i++){
-      if(MC>15){
-        //  std::cout<<i<<"\t \t"<<MC_Hit_X[i]<<"\t \t"<<MC_Hit_Y[i]<<"\t \t"<<MC_Hit_Z[i]<<"\t \t"<<MC_Hit_P[i]<<"\t \t"<<MC_Hit_PathLenght[i]<<"\t \t"<<MC_Hit_Particle_P[i]<<"\t \t"<<MC_Hit_Energy[i]<<std::endl;
+    if(i>0 && std::fabs(MCHit_Assoc_Z[i]-MCHit_Assoc_Z[i-1])<40) {
+      std::cout<<"MCHit i = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i]<<"\t Z\t"<<MCHit_Assoc_X[i]<<"\t pathlenght \t"<<MCHit_pathlength[i]<<"\t"<<std::endl;
+      std::cout<<"MCHit i -1 = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i-1]<<"\t Z \t"<<MCHit_Assoc_X[i-1]<<"\t pathlenght \t"<<MCHit_pathlength[i-1]<<"\t"<<std::endl;
+      continue; //Merge them or keep the best one?
       }
+      mcHit.setMCHit(MCHit_Assoc_X[i], MCHit_Assoc_Y[i],MCHit_Assoc_Z[i],MCHit_tx[i],MCHit_ty[i],MCHit_p[i],MCHit_pathlength[i],P,MC_px,MC_py,MC_pz);
     }
   }
+  //MCHit mcHit_Geant = MCHIt();
+  //  std::cout<<"MCHit from Geant with size "<<MC<<"\n"
+  //<<"i \t \t X \t \t Y \t \t Z \t \t P \t \t PathLenght \t ParticleP \t time  "<<std::endl;}
 
-  //CheckMCHITS(MCHits); //should remove duplicates of MCHits in the list
+  std::vector<MCHit> CloneHits_OnTrack;
+  for(Int_t i=0; i<MC; i++){
+    if(MC>15){
+    //  std::cout<<i<<"\t \t"<<MC_Hit_X[i]<<"\t \t"<<MC_Hit_Y[i]<<"\t \t"<<MC_Hit_Z[i]<<"\t \t"<<MC_Hit_P[i]<<"\t \t"<<MC_Hit_PathLenght[i]<<"\t \t"<<MC_Hit_Particle_P[i]<<"\t \t"<<MC_Hit_Energy[i]<<std::endl;
+    }
+  }
+}
 
-  Float_t zReference = 8520.;
+  //CheckMCHITS(MCHits); //should remove duplicates of MCHits in the list?
+
   Float_t Error = 0.100; //Fixed error for the MCHits
   //How good is our track model for the full Fit, i.e., y(z) = a + b *z; x(z)
-
-  //Fit a Parabola on X and straight line on y on top of the MCHits
+  //Fit a Parabola on X and straight line on y on top of the MCHits : should be preselect removing the glancing?
   double solution_xz_par[3];
   std::fill(solution_xz_par,solution_xz_par+3,0.);
   std::vector<double> dsolution_xz_par;
-
   //Fit a Cubic on X
   double solution_xz_cubic[4];
   std::fill(solution_xz_cubic,solution_xz_cubic+4,0.);
   std::vector<double> dsolution_xz_cubic;
-
   //Fit a Line on Y
   double solution_yz_line[2];
   std::fill(solution_yz_line,solution_yz_line+2,0.);
   std::vector<double> dsolution_yz_line;
-
   //Fit a Parabola in Y
   double solution_yz_par[3];
   std::fill(solution_yz_par,solution_yz_par+3,0.);
   std::vector<double> dsolution_yz_par;
-
-
   double dz=0.;
   double resXZ_par=0.;
   double resYZ_lin=0.;
-
   double resXZ_cub=0.;
   double resYZ_par=0.;
   //if(MC_ass<14){
@@ -184,6 +222,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
       LinParFit<double> fit_LineY(2);
       for (int i = 0; i<MC_ass; i++){
         dz=(double)((double)MCHit_Assoc_Z[i]-zReference);
+
         resXZ_par=(double)((double)MCHit_Assoc_X[i]- (solution_xz_par[0]+ solution_xz_par[1]*dz+ solution_xz_par[2]*dz*dz ));
         resXZ_cub=(double)((double)MCHit_Assoc_X[i]- (solution_xz_cubic[0]+ solution_xz_cubic[1]*dz+ solution_xz_cubic[2]*dz*dz + solution_xz_cubic[3]*dz*dz*dz));
         resYZ_lin=(double)((double)MCHit_Assoc_Y[i]- (solution_yz_line[0]+solution_yz_line[1]*dz));
@@ -253,6 +292,13 @@ Bool_t TrackStudy::Process(Long64_t entry)
   Momentum  = P;
   t1->Fill();
 
+  //Study the ySlope business
+  //For each track let's plot the distribution of the beta
+  //I need to fit the X projection Before...load the PrHits X position
+
+
+  //FitXProjection(track);
+
 
   //Here the study for the Fitting on PrHit
 
@@ -260,6 +306,83 @@ Bool_t TrackStudy::Process(Long64_t entry)
 
   return kTRUE;
 }
+
+// //void TrackStudy::fitXProjection(){
+
+//   double mat[6];
+//   float rhs[3];
+//   //std::fill(rhs,rhs+3,0);
+//   std::vector<Hit> Hits = track->hits();
+
+//   for(int loop = 0;3>loop;++loop)
+//   {
+//     std::fill(mat,mat+6,0.);
+//     std::fill(rhs,rhs+3,0.);
+//     for( int i=0; i < Hits.size() ;i++ )
+//     {
+//       const float w =  Hits[i].w2();//squared
+//       //std::cout<<"W\t"<<w<<std::endl;
+//       const float dz = Hits[i].GetZ() - m_zReference;
+//       float deta = 0;
+//       deta = dz*dz*(1-m_dRatio*dz);
+//       Hit *hit = new Hit(Hits[i].GetX(),Hits[i].GetY(),Hits[i].GetZ());
+//       float dist = track->distance(hit);
+//       //always()<<"Loop \t"<<loop<<"\n Distance From Hit \t"<<dist<<endmsg;
+//       // if(loop>0)
+//       // dist = track.distance( *itH ); //try the effect
+//       mat[0]+= w     ;
+//       mat[1]+= w * dz;
+//       mat[2]+= w * dz * dz;
+//       mat[3]+= w * deta;
+//       mat[4]+= w * dz * deta;
+//       mat[5]+= w * deta * deta;
+//       //right hand side
+//       rhs[0]+= w * dist;
+//       rhs[1]+= w * dist * dz;
+//       rhs[2]+= w * dist * deta;
+//     }
+//   }
+//}
+Bool_t TrackStudy::fitXProjection(PrSeedTrack * track){
+  float mat[6];
+  float rhs[3];
+  std::vector<Hits> Hits = track->hits();
+  float dRatio=0;
+  for(int loop = 0;3>loop;++loop){
+    std::fill(mat,mat+6,0.);
+    std::fill(rhs,rhs+3,0.);
+    for( int i=0;i<Hits.size();i++){
+      const float w = Hits[i].w2();
+      const float dz = Hits[i].zat0()-m_zReference;
+      float deta = 0;
+      if(m_usedRatio){
+        deta = dz*dz*(1-dRatio*dz);
+      }
+      float dist = track->distance(Hits[i]);
+      mat[0]+=w;
+      mat[1]
+      mat[0]+= w     ;
+      mat[1]+= w * dz;
+      mat[2]+= w * dz * dz;
+      mat[3]+= w * deta;
+      mat[4]+= w * dz * deta;
+      mat[5]+= w * deta * deta;
+      //right hand side
+      rhs[0]+= w * dist;
+      rhs[1]+= w * dist * dz;
+      rhs[2]+= w * dist * deta;
+    }
+
+    ROOT::Math::CholeskyDecomp<float,3> decomp(mat);
+    if(!decomp){
+      //std::cout<<"Failed to decompose matrix"<<std::endl;
+      return false;
+    }
+    decomp.Solve(rhs);
+    track->updateParameters(rhs[0],rhs[1],rhs[2],0.,0.);
+  }
+}
+
 void TrackStudy::SlaveTerminate()
 {
   // The SlaveTerminate() function is called after all entries or objects
@@ -271,6 +394,16 @@ void TrackStudy::SlaveTerminate()
 void TrackStudy::Terminate()
 {
   file->Write();
+  std::cout<<"Long Tracks"<<std::endl;
+  std::cout<<"Number of Geant MCHit \t"<<m_long_NGeantHit<<std::endl;
+  std::cout<<"Number of different Layers with Geant MCHit \t"<<m_long_NLayer_Geant<<std::endl;
+
+  std::cout<<"Number of MCHit into Cluster \t"<<m_long_NMCHitIntoCluster<<std::endl;
+  std::cout<<"Number of different Layers with MCHit into Cluster\t"<<m_long_NLayer_MCHitInCluster<<std::endl;
+
+  std::cout<<"Number of Clusters \t" <<m_long_NPrHit<<std::endl;
+  std::cout<<"Number of diffrent Layers Clusters \t" <<m_long_NLayer_PrHit<<std::endl;
+
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
