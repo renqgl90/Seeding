@@ -5,8 +5,8 @@
  * @author Manuel Schiller <Manuel.Schiller@cern.ch>
  * @date 2015-03-11
  */
-#ifndef _LINPARFIT_H 
-#define _LINPARFIT_H 
+#ifndef _LINPARFIT_H
+#define _LINPARFIT_H
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
@@ -43,7 +43,7 @@
  * p_k^j@f$).
  *
  * For simple fits which model measurements as a polynomial in one or more
- * variables, there is a simplified, less general interface available. 
+ * variables, there is a simplified, less general interface available.
  *
  * To simply fit a polynomial @f$p(x)@f$ to some measurements @f$y_k@f$ with
  * uncertainties @f$\sigma_k@f$ taken at positions @f$x_k@f$, the following
@@ -75,12 +75,12 @@ template <typename FLT = double>
   std::vector<std::string> m_names; ///< fit parameter names
   size_t m_npts;		///< number of data points accumulated
   size_t m_nptsSolved;	///< are m_cov/m_sol dirty? (last solve() call)
-  
+
   // various little scratch areas, so we won't have to reallocate for
   // each accumulate call
   std::vector<FLT> m_wgrad;
   std::vector<size_t> m_multiidx;
-  
+
   public:
   /** @brief constructor
    *
@@ -93,10 +93,10 @@ template <typename FLT = double>
   typedef struct {
     FLT m_x, m_sigma;
     size_t m_sz;
-    
+
     size_t size() const noexcept
     { return m_sz; }
-    
+
     FLT operator[](unsigned k) const noexcept
     { return std::pow(m_x, k++) / m_sigma; }
   } wgrad_helper;
@@ -118,7 +118,7 @@ template <typename FLT = double>
       tmpbuf.str("");
     }
   }
-  
+
   /** @brief constructor
    *
    * @param parnames	vector of names for parameters
@@ -137,13 +137,13 @@ template <typename FLT = double>
     if (0 == parnames.size())
       throw std::invalid_argument("number of parameters must be positive");
   }
-  
+
   /// return the number of data points accumulated so far
   size_t npoints() const noexcept { return m_npts; }
-  
+
   /// return the number of degrees of freedom (npoints() - number of parameters)
   ssize_t ndf() const noexcept	{ return m_npts - m_rhs.size(); }
-  
+
   /** @brief accumulate a new data point
    *
    * @param wy	"weighted" measured value (@f$y_k/\sigma_k@f$)
@@ -168,7 +168,7 @@ template <typename FLT = double>
     }
     ++m_npts;
   }
-  
+
   /** @brief accumulate new data point (simplified interface)
    *
    * @param y		measurement
@@ -183,15 +183,15 @@ template <typename FLT = double>
     /* typedef struct { */
     /*   FLT m_x, m_sigma; */
     /*   size_t m_sz; */
-      
+
     /*   size_t size() const noexcept { return m_sz; } */
-      
+
     /*   FLT operator[](unsigned k) const noexcept */
     /*   { return std::pow(m_x, k++) / m_sigma; } */
     /* } wgrad_helper; */
     accumulate(y / sigma, wgrad_helper{x, sigma, m_rhs.size()});
   }
-  
+
   /** @brief accumulate new data point (simplified interface)
    *
    * @param y		measurement
@@ -309,7 +309,7 @@ template <typename FLT = double>
     // point
     accumulate(y / sigma, m_wgrad);
   }
-  
+
   /** @brief Solve the fit
    *
    * @returns true if successful, false if resulting matrix is not
@@ -339,7 +339,7 @@ template <typename FLT = double>
     if (m_nptsSolved == m_npts) return !std::isnan(m_cov[0]);
     else return solve();
   }
-  
+
   /// return the vector of fitted parameters
   const std::vector<FLT>& solution()
   {
@@ -347,7 +347,7 @@ template <typename FLT = double>
       throw std::domain_error("matrix not positive definite");
     return m_sol;
   }
-  
+
   /** @brief return the (packed) covariance matrix
    *
    * @returns	flat vector containing the lower half of the
@@ -369,11 +369,11 @@ template <typename FLT = double>
 	      throw std::domain_error("matrix not positive definite");
 	    return m_cov;
   }
-  
+
   /// return a vector of parameter names
   const std::vector<std::string>& names() const noexcept
   { return m_names; }
-  
+
   /// access the i-th fit parameter
   FLT operator[](unsigned idx)
   {
@@ -381,7 +381,7 @@ template <typename FLT = double>
       throw std::domain_error("matrix not positive definite");
     return m_sol.at(idx);
   }
-  
+
 	/// access the (i, j) element of the covariance matrix
   FLT operator()(unsigned i, unsigned j)
   {
@@ -390,7 +390,7 @@ template <typename FLT = double>
     if (i < j) std::swap(i, j);
     return m_cov.at((i * (i + 1)) / 2 + j);
   }
-  
+
   /// access the correlation coefficient @f$\rho_{ij}@f$
   FLT correl(unsigned i, unsigned j)
   {
@@ -401,7 +401,7 @@ template <typename FLT = double>
 	    std::sqrt(m_cov.at((i * (i + 1)) / 2 + i) *
 		      m_cov.at((j * (j + 1)) / 2 + j));
   }
-  
+
   /// represent the result of a fit as string
   operator std::string()
   {
@@ -423,7 +423,7 @@ template <typename FLT = double>
     std::right << "VALUE" << " +/- " <<
     std::setw(fltw) << std::setprecision(fltp) << std::scientific <<
     std::right << "ERROR" << std::endl;
-    
+
     for (unsigned i = 0; i != m_sol.size(); ++i) {
 		tmpbuf << std::setw(4) << std::right << i << " " <<
 		  std::setw(namew) << std::left << m_names[i] << " " <<
@@ -448,7 +448,7 @@ template <typename FLT = double>
       }
       tmpbuf << std::endl;
     }
-    
+
     return tmpbuf.str();
   }
   };

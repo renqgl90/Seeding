@@ -12,7 +12,7 @@
 
 class PrSeedTrack {
 private:
-    
+
   float  m_zRef;
   std::vector<Hit> m_hits;
   bool  m_valid;
@@ -27,7 +27,7 @@ private:
   float m_meanDy;
   float m_dRatio;
 public:
-  PrSeedTrack(const double zRef ) 
+  PrSeedTrack(const double zRef )
   {
     m_zRef = zRef;
     m_valid = true;
@@ -42,7 +42,7 @@ public:
     m_dXCoord = 0.;
     m_meanDy  = 0.;
     m_dRatio = 0;
-  }; 
+  };
   /// Constructor with list of hits
   PrSeedTrack( float zRef, std::vector<Hit>& hits )
   {
@@ -59,10 +59,10 @@ public:
     m_nDoF = -1;
     m_dXCoord = 0.;
     m_meanDy  = 0.;
-  }; 
+  };
 
   virtual ~PrSeedTrack( ) {}; ///< Destructor
-  
+
   /// Handling of hits: acceess, insertion
   const std::vector<Hit> hits()       const { return m_hits; }
   //void addHit( Hit* hit )        { m_hits.push_back( hit );}
@@ -83,8 +83,9 @@ public:
   {m_zRef = zRef;}
   void printHits()
     {
+      std::cout.precision(5);
       std::cout<<"Hits On Track"
-               <<"\n X \t Y \t Z \t Size"<<std::endl;
+               <<"\n X[mm] \t Z[mm] \t Size \t Charge \t Error[mm]"<<std::endl;
       for(int i =0 ; i<m_hits.size();i++)
       {
         std::cout<<m_hits[i].GetX()<<"\t"<<m_hits[i].GetY()<<"\t"<<m_hits[i].GetZ()<<"\t"<<m_hits[i].GetSize()<<std::endl;
@@ -112,10 +113,10 @@ public:
   }
 
   float x( float z )         const { float dz = z-m_zRef; return m_ax + dz * ( m_bx + dz*(m_cx*(1-m_dRatio*dz))); }
-  float xSlope( float z )    const { float dz = z-m_zRef; return m_bx + 2. * dz * m_cx; }
+  float xSlope( float z )    const { float dz = z-m_zRef; return m_bx + 2. * dz * m_cx + 3*dz*dz*m_dx;}
   float y( float z )         const { return m_ay + (z-m_zRef) *  m_by; }
-  float ySlope( )            const { return m_by; }  
-  float distance( Hit* hit ) const { 
+  float ySlope( )            const { return m_by; }
+  float distance( Hit* hit ) const {
     return hit->GetX() - x(hit->GetZ());
   }
   float chi2( Hit* hit )     const { float d = distance( hit ); return d * d * hit->w2(); }
@@ -128,7 +129,7 @@ public:
   bool valid()                  const { return m_valid; }
   void setValid( bool v )             { m_valid = v; }
 
-  void setChi2( float chi2, int nDoF ) { m_chi2 = chi2; m_nDoF = nDoF; }
+  void  setChi2( float chi2, int nDoF ) { m_chi2 = chi2; m_nDoF = nDoF; }
   float chi2()                  const { return m_chi2; }
   float chi2PerDoF()            const { return m_chi2 / m_nDoF; }
   int   nDoF()                  const { return m_nDoF; }
@@ -136,8 +137,8 @@ public:
   void setDXCoord( float dxCoord )    { m_dXCoord = dxCoord; }
   float dXCoord()               const { return m_dXCoord; }
 
-  void setMeanDy( float meanDy )      { m_meanDy = meanDy; }
-  float meanDy()                const { return m_meanDy; }
+  void setMeanDy( float meanDy )      {m_meanDy = meanDy;}
+  float meanDy()  const {return m_meanDy;}
   float a() const {return m_ax;}
   float b() const {return m_bx;}
   float c() const {return m_cx;}

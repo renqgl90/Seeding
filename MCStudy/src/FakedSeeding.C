@@ -150,8 +150,7 @@ void FakedSeeding::Begin(TTree * /*tree*/)
   t1->Branch("OVTX_X",&OrVTX_X,"OVTX_X/D");
   //t1->Branch("xBackward",&xBack,"xBack/D");
 }
-void FakedSeeding::SlaveBegin(TTree * /*tree*/)
-{
+void FakedSeeding::SlaveBegin(TTree * /*tree*/){
   float coao;
   TString option = GetOption();
 }
@@ -169,7 +168,6 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   double Z1  = 7855.6;
   double Z2  = 8040.4;
   double Z3  = 8537.6;
-  
   const float dxDy = (5./360.00000)*2.*TMath::Pi();
   double Z4  = 8722.4;
   double Z5  = 9222.6;
@@ -210,8 +208,8 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   Hit hit11 =Hit(XV3,Vy3rd,ZV3);
   hit11.SetDxDy(dxDy);
   Hit hit12 =Hit(X6,Y6th,Z6);
-  
-  
+
+
   std::vector<Hit> AllHits;
   std::random_device rd_1;
   std::mt19937 gen_1(rd_1());
@@ -259,7 +257,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   // if(OVTX_Z>4000) return kTRUE;
   // if( std::abs(PID)==11 || (std::abs(PID)!=211 && std::abs(PID)!=2212 && std::abs(PID)!=321 && std::abs(PID)!=13))
   //   return kTRUE;
-  // if ((Y1st>=0 && Y6th<=0)||(Y1st>=0 && Y6th<=0)) 
+  // if ((Y1st>=0 && Y6th<=0)||(Y1st>=0 && Y6th<=0))
   //   return kTRUE;
   // if(P<500)
   //   return kTRUE;
@@ -310,9 +308,9 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   //       3-->3 XYType = 15
   XYType = regionT1*4+regionT3;
   XZType = 2*regionT2%2+regionT3%2;
-  
+
   if(doFit){
-    for(int j=0;j<3;j++){//loop 
+    for(int j=0;j<3;j++){//loop
       //std::fill(dsolutions,dsolutions+4,0.);
       LinParFit<double> fit(4);
       LinParFit<double> fit_y(3);
@@ -336,7 +334,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     }
     //Fit for y(z) = [0]+[1]*(z-zRef)
     //So y(zRef) = [0]
-    
+
     double ay = solutions_y[0];// - m_zReference*solutions_y[1];
     double by = solutions_y[1];
     double cy = solutions_y[2];
@@ -404,7 +402,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
       C_Constant_Vs_c->Fill(Constant_C,c);
     }
   }
-  
+
   //----------------
   // Only X Layers
   //----------------
@@ -415,14 +413,14 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   Z.push_back((float)Z4);
   Z.push_back((float)Z5);
   Z.push_back((float)Z6);
-  
+
   //--------------
   //Remove Electrons , Keep Muon(13), Pions(211), Protons(2212),Kaons(321)
   if(P<500) return kTRUE;
   if(OVTX_Z>9000) return kTRUE;
   if( std::abs(PID)==11 || (std::abs(PID)!=211 && std::abs(PID)!=2212 && std::abs(PID)!=321 && std::abs(PID)!=13))
     return kTRUE;
-  if ((Y1st>=0 && Y6th<=0)||(Y1st>=0 && Y6th<=0)) 
+  if ((Y1st>=0 && Y6th<=0)||(Y1st>=0 && Y6th<=0))
     return kTRUE;
   //Fit result plotted for this selection
 
@@ -497,7 +495,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     Hit_res->Fill(X_smear[i]-X_true[i]);
   }
   std::vector<Hit> Hits;
-  
+
   double t_inf = Xfirst/Zfirst;
   double X_last_Projected = Xfirst/Zfirst*Zlast;
   double Distance_LastToInfProjected = Xlast-X_last_Projected;
@@ -505,9 +503,9 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   //LastInfDistance = Xlast-X_last_Projected
   double Correction = m_alphaCorrection*(t_inf);
   double Distance_LastToInfProjected_Corrected = Distance_LastToInfProjected - Correction; // Xlast -(m_alphaCoorection*t_inf+Xfirst/Zfirst*Zlast)
-  
-  
-  
+
+
+
   L0_Corrected_1d->Fill(Distance_LastToInfProjected_Corrected);
   L0_1d->Fill(Distance_LastToInfProjected);
   //----------
@@ -518,9 +516,9 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   L0_1->Fill(t_inf,Distance_LastToInfProjected);
   L0_Corrected->Fill(t_inf,Distance_LastToInfProjected_Corrected);
   //To D0 : check for cases different from this and if one can gain from selecting only hits in central region applying another rotation (diagonal one)
-  
 
-  
+
+
   //-----------------L1 step Do the selection
   if( std::abs(Distance_LastToInfProjected_Corrected) > L0_Up) return kTRUE;
   m_L0Selected++;
@@ -529,7 +527,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   double Deltatx = tx_picked - t_inf;
   double Delta = X_T2_1 - X_projected_3rd;
   double x0 = -1*(tx_picked)*Zfirst + Xfirst;
-  
+
   double CorrX0 = m_x0Corr*x0;
   double DeltaCorr = Delta - CorrX0  ;
   x0vsTxInf->Fill(x0,t_inf);
@@ -542,7 +540,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     L1_0_x0pos->Fill(tx_picked,Delta);
     L1_1_x0pos->Fill(Deltatx,Delta);
     L1_2_x0pos->Fill(x0,Delta);
-    
+
     L1_0_x0posCorr->Fill(tx_picked,DeltaCorr);
     L1_1_x0posCorr->Fill(Deltatx,DeltaCorr);
     L1_2_x0posCorr->Fill(x0,DeltaCorr);
@@ -555,10 +553,10 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     L1_0_x0negCorr->Fill(tx_picked,DeltaCorr);
     L1_1_x0negCorr->Fill(Deltatx,DeltaCorr);
     L1_2_x0negCorr->Fill(x0,DeltaCorr);
-		
+
   }
-	
-	
+
+
   //Do L1 Selection:
   //x0<0 : res_Corr < m_m1(x+m_x0Offset) +m_yOff1 //Upper
   //       res_Corr > m_m2(x+m_x0Offset) +m_yOff2 //Lower
@@ -568,7 +566,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   {
     double upperBound = m_m1*(x0+m_x0Offset)+m_yOff1;
     double lowerBound = m_m2*(x0+m_x0Offset)+m_yOff2;
-    if(DeltaCorr> upperBound || DeltaCorr<lowerBound) return kTRUE;			
+    if(DeltaCorr> upperBound || DeltaCorr<lowerBound) return kTRUE;
   }
   if(x0>0.)
   {
@@ -577,9 +575,9 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     if(DeltaCorr> upperBound || DeltaCorr<lowerBound) return kTRUE;
   }
   m_L1Selected++;
-  
+
   //Be carefull in real Life these parameters has to be optimised and look to occupancy (1Hit /8mm expected)
-	
+
   //================================
   //Selection L2 In this step we will have a 3 Hit Combination (case0_1) 1st,3rd,6th station
   //===============================
@@ -601,23 +599,23 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   double a_par2=0;
   double b_par2=0;
   double c_par2=0;
-  
+
 
   SolveParabola(Hit1,Hit2,Hit3,a_par1,b_par1,c_par1);
-  
+
   //std::cout<<"a \t "<<a_par1<<"\t b \t "<<b_par1<<"\t c \t "<<c_par1<<std::endl;
   SolveParabola2(Hit1,Hit2,Hit3,a_par2,b_par2,c_par2);
   //std::cout<<"a \t "<<a<<"\t b \t "<<b<<"\t c \t "<<c<<std::endl;
   //std::cout<<"Next Track"<<std::endl;
-	
+
   Hit *HitT1 = new Hit(X_T1_2,0.,Z_T1_2 );
   Hit *HitT2 = new Hit(X_T2_2,0.,Z_T2_2 );
   Hit *HitT3 = new Hit(X_T3_1,0.,Z_T3_1 );
-   
-  
+
+
   //Compute distance from Parabola 1:
   //Extrapolate Hit
-  double ExtrapolX_T1_par1 = Extrapol(HitT1->GetZ(),a_par1,b_par1,c_par1); 
+  double ExtrapolX_T1_par1 = Extrapol(HitT1->GetZ(),a_par1,b_par1,c_par1);
   double ExtrapolX_T2_par1 = Extrapol(HitT2->GetZ(),a_par1,b_par1,c_par1);
   double ExtrapolX_T3_par1 = Extrapol(HitT3->GetZ(),a_par1,b_par1,c_par1);
   double DeltaX_T1_par1 =  HitT1->GetX()-ExtrapolX_T1_par1;
@@ -630,8 +628,8 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   double DeltaX_T1_par2 =  HitT1->GetX()-ExtrapolX_T1_par2;
   double DeltaX_T2_par2 =  HitT2->GetX()-ExtrapolX_T2_par2;
   double DeltaX_T3_par2 =  HitT3->GetX()-ExtrapolX_T3_par2;
-        
-    
+
+
   L2_0_T1_par1->Fill(DeltaX_T1_par1);
   L2_0_T2_par1->Fill(DeltaX_T2_par1);
   L2_0_T3_par1->Fill(DeltaX_T3_par1);
@@ -640,20 +638,20 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   L2_0_T3_par2->Fill(DeltaX_T3_par2);
   // std::cout<<DeltaX_T1_par1<<"\t"<<DeltaX_T2_par1<<"\t"<<DeltaX_T3_par1<<std::endl;
   // std::cout<<DeltaX_T1_par2<<"\t"<<DeltaX_T2_par2<<"\t"<<DeltaX_T3_par2<<std::endl;
-    
+
   if( std::abs(DeltaX_T1_par1) <  maxDelta_par1 && std::abs(DeltaX_T2_par1) <  maxDelta_par1 && std::abs(DeltaX_T3_par1) <  maxDelta_par1) m_L2_Par1_Selected ++;
   if( std::abs(DeltaX_T1_par2) <  maxDelta_par2 && std::abs(DeltaX_T2_par2) <  maxDelta_par2 && std::abs(DeltaX_T3_par2) <  maxDelta_par2) m_L2_Par2_Selected ++;
-  
+
   //---------------------
-  //L2//Parabola 1 Selection 
+  //L2//Parabola 1 Selection
   //---------------------
-  
+
   if( std::abs(DeltaX_T1_par1) >  maxDelta_par1 && std::abs(DeltaX_T2_par1) <  maxDelta_par1 && std::abs(DeltaX_T3_par1) >  maxDelta_par1) return kTRUE;
-  
+
   //LinParFit<double> fit_quartic(5);
   LinParFit<double> fit_parabola(3);
   std::vector<double> x,errx,z;
-    
+
   //Create the vector of Hits
   // double Xlast  = X6th; //  X in last  Layer
   // double Xfirst = X1st; // X in first Layer
@@ -688,15 +686,15 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   //    Hits.push_back(Hit);
   //  }
   // Track->addHits(Hits);
-  
+
   // Track->printTrack();
-  
-  
+
+
   double ClSize = 0;
   for (int i=0;i<6;i++)
   {
     Hit Hit(X_smear[i],0.,Z[i]);
-   
+
     ClSize = (double)d(gen);
     ClSize_1->Fill(ClSize+1);
     //GeneratedSize->Fill(ClSize+1.);
@@ -710,7 +708,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     fit_parabola.accumulate(*ity, *its, *itx);
   }
   std::vector<double> solution;
-  solution = fit_parabola.solution(); 
+  solution = fit_parabola.solution();
   double Chi2 = 0;
   for (auto ity = std::begin(x), its = std::begin(errx), itx = std::begin(z);
        std::end(x) != ity; ++ity, ++its, ++itx)
@@ -719,7 +717,7 @@ Bool_t FakedSeeding::Process(Long64_t entry)
   }
   Chi2_par1->Fill(Chi2);
 
-  
+
   bool Ok = fitXProjection(Track);
   if(Ok)
   {
@@ -734,16 +732,16 @@ Bool_t FakedSeeding::Process(Long64_t entry)
     m_L2_Selection_ParCubic++;
   //std::cout<<"C\t"<<C<<std::endl;
   //Track->printTrack();
-   
+
   }
   //Track->printTrack();
   //  std::cout<<"Chi2 = \t "<<Chi2<<std::endl;
-    
+
   //std::cout<<fit_parabola<<std::endl;
-    
-  
+
+
   return kTRUE;
-  
+
 }
 
 void FakedSeeding::SlaveTerminate()
@@ -798,7 +796,7 @@ void FakedSeeding::Terminate()
     C_Constant_Sel->Write();
     C_Constant_Vs_P_Sel->Write();
     XBackProj->Write();
-    
+
   }
   TCanvas *c0 = new TCanvas();
   Hit_res->Draw();
@@ -814,10 +812,10 @@ void FakedSeeding::Terminate()
   L0_Histos.push_back(L0_1);
   L0_Histos.push_back(L0_Corrected);
   TCanvas *c1 = new TCanvas();
-  int size = L0_Histos.size(); 
+  int size = L0_Histos.size();
   c1->Divide(2,2);
   for(Int_t i=0; i < L0_Histos.size(); i++)
-  { 
+  {
     c1->cd(1+i);
     L0_Histos[i]->Draw("colz");
     L0_Histos[i]->Write();
@@ -837,7 +835,7 @@ void FakedSeeding::Terminate()
   L0_Corrected_1d->Draw();
   L0_Corrected->Write();
   //L0_Corrected_1d->Write();
-  
+
   std::string outputLocation("./Plots/");
   std::string extension (".pdf");
   std::string FileNameL0 ("L0Plots");
@@ -871,31 +869,31 @@ void FakedSeeding::Terminate()
   TCanvas *c2 = new TCanvas();
   c2->Divide(3,2);
   for(Int_t i=0; i < L1_x0pos_Histos.size(); i++)
-  { 
+  {
     c2->cd(1+i);
     //L1_x0pos_Histos[i]->SetMarkerColor(kBlue);
     L1_x0pos_Histos[i]->Draw("colz");
     L1_x0pos_Histos[i]->Write();
   }
   for(Int_t i=0; i < L1_x0neg_Histos.size(); i++)
-  { 
+  {
     c2->cd(4+i);
     //L1_x0pos_Histos[i]->SetMarkerColor(kBlue);
     L1_x0neg_Histos[i]->Draw("colz");
     L1_x0neg_Histos[i]->Write();
   }
- 
+
   TCanvas *c3 = new TCanvas();
   c3->Divide(3,2);
   for(Int_t i=0; i < L1_x0pos_Corr_Histos.size(); i++)
-  { 
+  {
     c3->cd(1+i);
     //L1_x0pos_Histos[i]->SetMarkerColor(kBlue);
     L1_x0pos_Corr_Histos[i]->Draw("colz");
     L1_x0pos_Corr_Histos[i]->Write();
   }
   for(Int_t i=0; i < L1_x0neg_Corr_Histos.size(); i++)
-  { 
+  {
     c3->cd(4+i);
     //L1_x0pos_Histos[i]->SetMarkerColor(kBlue);
     L1_x0neg_Corr_Histos[i]->Draw("colz");
@@ -937,7 +935,7 @@ void FakedSeeding::Terminate()
   const char *cstrL1_Corr = outL1_Corr.c_str();
   c2->Print(cstrL1);
   c3->Print(cstrL1_Corr);
- 
+
   //=======================
   //L2
   //======================
@@ -964,7 +962,7 @@ void FakedSeeding::Terminate()
     L2_0_Histos[j]->SetName("With Par1");
     L2_0_Histos[j]->Draw("same");
     L2_0_Histos[j]->Write();
- 
+
     //gPad->BuildLegend();
     j+=2;
   }
@@ -984,7 +982,7 @@ void FakedSeeding::Terminate()
 
 
 
- 
+
 void FakedSeeding::SolveParabola(Hit * hit1,Hit * hit2,Hit * hit3,double &a, double &b,double &c)
 {
   const float z1 = hit1->GetZ() - m_zReference;
@@ -996,7 +994,7 @@ void FakedSeeding::SolveParabola(Hit * hit1,Hit * hit2,Hit * hit3,double &a, dou
   const float det = (z1*z1)*z2 + z1*(z3*z3) + (z2*z2)*z3 - z2*(z3*z3) - z1*(z2*z2) - z3*(z1*z1);
   if( std::abs(det) < 1e-8 )
   {
-    a = 0.0; 
+    a = 0.0;
     b = 0.0;
     c = 0.0;
     return;
@@ -1007,8 +1005,8 @@ void FakedSeeding::SolveParabola(Hit * hit1,Hit * hit2,Hit * hit3,double &a, dou
   a = det1/det;
   b = det2/det;
   c = det3/det;
- 
-  
+
+
 }
 
 void FakedSeeding::SolveParabola2(Hit * hit1,Hit * hit2,Hit * hit3,double &a, double &b,double &c)
@@ -1026,7 +1024,7 @@ void FakedSeeding::SolveParabola2(Hit * hit1,Hit * hit2,Hit * hit3,double &a, do
   const float det = (z1*z1)*corrZ1*z2 + z1*(z3*z3)*corrZ3 + (z2*z2)*corrZ2*z3 - z2*(z3*z3)*corrZ3 - z1*(z2*z2)*corrZ2 - z3*(z1*z1)*corrZ1;
   if( std::abs(det) < 1e-8 )
   {
-    a = 0.0; 
+    a = 0.0;
     b = 0.0;
     c = 0.0;
     return;
@@ -1037,11 +1035,11 @@ void FakedSeeding::SolveParabola2(Hit * hit1,Hit * hit2,Hit * hit3,double &a, do
   a = det1/det;
   b = det2/det;
   c = det3/det;
-  
+
 }
 
 double FakedSeeding::Extrapol(double Z,double a,double b,double c)
-{   
+{
   double zmod = Z-m_zReference;
   //x(z) = a(dz*dz)+b*(dz)+c
   double x_proj = a*(zmod*zmod)+b*zmod+c;
@@ -1049,7 +1047,7 @@ double FakedSeeding::Extrapol(double Z,double a,double b,double c)
 }
 double FakedSeeding::Extrapol2(double Z1,double a1,double b1,double c1)
 {
-    
+
   double zmod = Z1-m_zReference;
   const float e = m_dRatio;
   double x_proj = a1*(zmod*zmod)*(1-e*zmod)+b1*zmod+c1;
@@ -1059,14 +1057,14 @@ double FakedSeeding::Extrapol2(double Z1,double a1,double b1,double c1)
 
 bool FakedSeeding::fitXProjection(PrSeedTrack * track)
 {
-  float mat[6]; 
+  float mat[6];
   float rhs[3];
   //std::fill(rhs,rhs+3,0);
   std::vector<Hit> Hits = track->hits();
-      
+
   for(int loop = 0;3>loop;++loop)
   {
-    std::fill(mat,mat+6,0.); 
+    std::fill(mat,mat+6,0.);
     std::fill(rhs,rhs+3,0.);
     for( int i=0; i < Hits.size() ;i++ )
     {
@@ -1091,7 +1089,7 @@ bool FakedSeeding::fitXProjection(PrSeedTrack * track)
       rhs[1]+= w * dist * dz;
       rhs[2]+= w * dist * deta;
     }
-    
+
     ROOT::Math::CholeskyDecomp<float,3> decomp(mat);
     if(!decomp)
     {
@@ -1110,14 +1108,14 @@ bool FakedSeeding::fitXProjection(PrSeedTrack * track)
   {
     Hit *hit = new Hit(Hits[i].GetX(),Hits[i].GetY(),Hits[i].GetZ());
     hit->SetW2(Hits[i].w2());
-    
+
     float distance = track->distance(hit);
     float chi2_onHit = track->chi2( hit ); //\frac{dist^{2}}{\sigma^{2}}
     if (chi2_onHit>maxChi2)
     {
       maxChi2 = chi2_onHit;
     }
-    track_distance->Fill(distance);    
+    track_distance->Fill(distance);
     track_pullHits->Fill(chi2_onHit);
     chi2_track += track->chi2( hit );
     track_pullHitsVsP->Fill(chi2_onHit,(float)P);
@@ -1134,14 +1132,14 @@ bool FakedSeeding::fitXProjection(PrSeedTrack * track)
   track_chi2PerDoF->Fill(track->chi2()/(3.));
   //std::cout<<"Delta Chi2 (should be 0) \t"<<chi2_track-track->chi2()<<std::endl;
   //if(std::abs(maxDistance) < 2 && std::sqrt(maxChi2) < 4) return true;
-  return true;  
+  return true;
 }
 // void FakedSeeding::FITTA(PrSeedTrack * track)
 // {
 //   std::vector<Hit> Hits = track->hits();
 //   std::vector<double> solution;
 //   std::vector<double> dsolution;
-  
+
 //   float res = 0.;
 //   float dz = 0;
 //   for(int j=0;j<3;j++)
@@ -1161,7 +1159,7 @@ bool FakedSeeding::fitXProjection(PrSeedTrack * track)
 //       solution[k]=solution[k]+dsolution[k];
 //     }
 //   }
-  
+
 //   std::cout<<"Par \t Value "<<std::endl;
 //   double a = solution[0];
 //   double b = solution[1];
@@ -1179,4 +1177,3 @@ bool FakedSeeding::fitXProjection(PrSeedTrack * track)
 //   //   std::cout<<i<<"\t"<<solution[i]<<std::endl;
 //   // }
 // }
-

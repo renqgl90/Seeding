@@ -2,3 +2,13 @@
 */*.root
 */*/*.root
 */*/*/*.root
+MCStudy/*
+MCStudy/*/*
+MCStudy/*/*/*
+TrackStudy/data/*
+TrackStudy/data
+*.pdf
+Data/*
+Data
+Documentation
+Internal_Note

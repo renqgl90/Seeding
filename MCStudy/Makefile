@@ -9,7 +9,7 @@ CC      = g++
 CCFLAGS = -c  -Wno-deprecated -g
 
 LD      = g++
-LDFLAGS = 
+LDFLAGS =
 
 ROOTINCS = $(shell root-config --cflags) # will be used as it is
 ROOTLIBS = $(shell root-config --glibs)  # will be used as it is
@@ -49,4 +49,4 @@ installdirs: $(LIB) $(BIN)
 
 selector: installdirs $(BIN_EXEC0)
 
-all: installdirs $(BIN_EXEC0) 
+all: installdirs $(BIN_EXEC0)
