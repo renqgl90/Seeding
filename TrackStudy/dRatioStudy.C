@@ -76,8 +76,8 @@ void dRatioStudy(){
  std::cout<<"Selected  "<<j<<std::endl;
 
  TCanvas *c1 = new TCanvas("c1","c1", 400, 400);
- //c1->Divide(1,2);
- //c1->cd(1);
+ c1->Divide(1,2);
+ c1->cd(1);
  histogramOld->Divide(histogramOld,histogramCount,1,1);
  histogramOld->Draw("colz");
  //dumpMap(histogramOld);
@@ -103,6 +103,7 @@ void dRatioStudy(){
   std::cout<<" Integral "<<Integral<<endl;
  std::cout << "Bin with minimum density: " << kdBins->GetBinMinDensity() << std::endl;
  std::cout << "Bin with maximum density: " << kdBins->GetBinMaxDensity() << std::endl;
+ c1->cd(2);
  h2pol->Draw("COLZ L");
  //AdaptiveBinning
  /*TKDTreeBinning(UInt_t dataSize, UInt_t dataDim, Double_t* data, UInt_t nBins = 100, bool adjustBinEdges = false)

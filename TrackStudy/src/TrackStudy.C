@@ -29,6 +29,7 @@
 #include "LinParFit.h"
 #include "Track.h"
 #include "PatHit.h"
+#include "FTCluster.h"
 
 #include "MCHit.h"
 #include <iostream>
@@ -93,6 +94,11 @@ void TrackStudy::Begin(TTree * /*tree*/)
   t1->Branch("by_par",&by_par,"by_par/D");
   t1->Branch("cy_par",&cy_par,"cy_par/D");
   t1->Branch("Track_P",&Momentum,"Track_P/D");
+  t1->Branch("Track_Px",&Px,"Track_Px/D");
+  t1->Branch("Track_Py",&Px,"Track_Py/D");
+  t1->Branch("Track_eta",&Track_eta,"Track_Px/D");
+
+
   TString option = GetOption();
 
   //Counters For Efficiencies on Long tracks
@@ -149,7 +155,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
   if(isElectron) return kTRUE; //No Electrons
   if(!Eta_in25) return kTRUE; //Eta Cut
   if(P>5000) return kTRUE;
-  
+
 
 
   if(!isSeed) return kTRUE;
@@ -288,7 +294,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
     Chi2_LineY+=std::pow( ((double)MCHit_Assoc_Y[i]-(solution_yz_line[0]+solution_yz_line[1]*dz))/1.14,2);
     Chi2_ParabolaY+=std::pow( ((double)MCHit_Assoc_Y[i]-(solution_yz_par[0]+solution_yz_par[1]*dz+solution_yz_par[2]*dz*dz))/1.14,2);
   }
-  //}
+
   Momentum  = P;
   t1->Fill();
 
@@ -298,7 +304,18 @@ Bool_t TrackStudy::Process(Long64_t entry)
 
 
   //FitXProjection(track);
+  //Direct Track Study for Fit
+  Int_t zone = 0;
+  if(nXUp>=4)  zone = 1;
+  if(nXDown>=4) zone = 0;
+  PrSeedTrack  * track = PrSeedTrack(zone,zReference);
+  for(Int_t i=0;i<PrHit;i++){
+    PatHit hit = PatHit();
+    hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+    //Select only Hits with charge ?
+    if(i>1 && PrHit_Zat0[i]>)
 
+  }
 
   //Here the study for the Fitting on PrHit
 
