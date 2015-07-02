@@ -44,6 +44,17 @@ public:
 protected:
   
 private:
+  /** @brief Create Ntuple to study clusters and PrHit generated.
+   */
+  void ClusterResidual();
+  
+  /**@brief Create Ntuple containing PrHits for track study plus all the MCHits.
+   */
+  void TrackStudy();
+  
+  /**@brief Create Ntuple containing all the PrHits in the event.
+   */
+  void DumpAllHits();
   
   typedef std::vector< PrHit* > Hits;
   typedef FastClusterContainer<LHCb::FTLiteCluster,int> FTLiteClusters;
@@ -57,11 +68,17 @@ private:
   std::string m_mcHitLocation;
   
   unsigned int m_zone;
-  
+  double m_NClusters ;
+  double m_NMCHit ;
+  double m_NMCHit_inClusters;
+  bool m_onlyHasT;
   PrHitManager* m_ftHitManager;
-  
+  bool m_decodeData;
+  bool m_removeClones;
+  bool m_dumpAllHits;
   std::string m_hitManagerName;
-  
+  bool m_doClusterResidual;
+  bool m_doTrackStudy;
   //from PrCounter
   // typedef LinkerTool<LHCb::Track, LHCb::MCParticle> MyAsct;  
   // typedef MyAsct::DirectType            Table;  
