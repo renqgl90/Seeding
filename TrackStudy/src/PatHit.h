@@ -18,7 +18,8 @@ public:
   m_id(-1.),
   m_dxDy(-999.),
   m_dzDy(-999.),
-  m_isX(false)
+  m_isX(false),
+  m_Cluster(FTCluster())
   {};
   virtual ~PatHit(){};
 
@@ -45,15 +46,21 @@ public:
   void setCoord(Float_t coord){
     m_coord = coord;
     }
+  void PrintHit(){
+  //  std::cout<<i<<"\t"<<m_xat <<"\t"<<m_hits[i].z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
+  }
   void SetCluster(FTCluster cluster) {m_Cluster=cluster;}
   Float_t x(Float_t y) const{return m_xatyEq0+y*m_dxDy;}
   Float_t z(Float_t y) const{return m_zatyEq0+m_dzDy*y;}
-
+  Int_t planeCode() const{return m_planeCode;}
+  Int_t zone() const{return m_zone;}
+  Float_t dxDy() const{return m_dxDy;}
+  Float_t dzDy() const{return m_dzDy;}
+  FTCluster cluster() const{return m_Cluster;}
+  Float_t w2() const{ return m_w2;}
+  Float_t w() const{ return m_w;}
 private:
-  //Float_t m_xatyEq0;
-  //Float_t m_zatyEq0;
-  //Float_t m_z;
-  //Int_t   m_size;
+
   Float_t m_w;
   Float_t m_w2;
   Float_t m_dxDy;

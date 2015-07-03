@@ -12,6 +12,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TSelector.h>
+#include "./Track.h"
 
 // Header file for the classes stored in the TTree if any.
 
@@ -264,10 +265,10 @@ public :
    virtual TList  *GetOutputList() const { return fOutput; }
    virtual void    SlaveTerminate();
    virtual void    Terminate();
-
+   Bool_t          fitXProjection(PrSeedTrack * track);
  private:
 
-  Float_t zReference;
+  Float_t m_zReference;
   Int_t m_long_NGeantHit;
   Int_t    m_long_NPrHit;
     Int_t  m_long_NMCHitIntoCluster;
@@ -421,7 +422,7 @@ Bool_t TrackStudy::Notify()
 
    return kTRUE;
 }
+//Bool_t TrackStudy::WhichPlane(MCHit &hit);
 
-//Bool_t TrackStudy::WhichPlane(MCHit &hit)
 
 #endif // #ifdef TrackStudy_cxx

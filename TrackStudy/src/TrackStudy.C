@@ -41,6 +41,7 @@
 #include <string>
 #include <iostream>
 #include <TROOT.h>
+#include <TMath.h>
 
 
 //-------------------Declaration of the Ntuple and TFile to be filled with the Chi2 Fits on MCHits
@@ -70,9 +71,21 @@ Double_t Chi2_ParabolaY;
 
 //Track Flags
 Double_t Momentum;
+Double_t Px;
+Double_t Py;
+Double_t Track_eta;
+Double_t Pt;
+Double_t Track_Phi;
+Double_t Track_Pt;
 //-------------------------------------------------------------
 
 //NHIts study
+//Glancing of Z position
+TH1D *zMCHitClones = new TH1D("zMCHitClones","zMCHitClones;z[mm];Counts",1000,7600,9500);
+TH2D *zMCHitClonevsP = new TH2D("zMCHitClones_Vs_P","zMCHit Clones vs P;z[mm];P[MeV]",200,7600,9500,200,1000,12000);
+TH2D *xvsyClones = new TH2D("xVsy_Clones","x vs y Clones;x[mm];y[mm]",300,-3000,3000,300,-2500,2500);
+//TH3D *MCHitCloneXYZ = new TH3D("X Y Z MCHitClone","")
+
 void TrackStudy::Begin(TTree * /*tree*/)
 {
 
@@ -88,16 +101,17 @@ void TrackStudy::Begin(TTree * /*tree*/)
   t1->Branch("dx_cubXZ",&dx_cub,"dx_cubXZ/D");
   t1->Branch("Chi2_LineY",&Chi2_LineY,"Chi2_LineY/D");
   t1->Branch("ay_line",&ay_line,"ay_line/D");
-  t1->Branch("by_line",&bx_cub,"by_line/D");
+  t1->Branch("by_line",&by_line,"by_line/D");
   t1->Branch("Chi2_ParabolaY",&Chi2_ParabolaY,"Chi2_ParabolaY/D");
   t1->Branch("ay_par",&ay_par,"ay_par/D");
   t1->Branch("by_par",&by_par,"by_par/D");
   t1->Branch("cy_par",&cy_par,"cy_par/D");
   t1->Branch("Track_P",&Momentum,"Track_P/D");
   t1->Branch("Track_Px",&Px,"Track_Px/D");
-  t1->Branch("Track_Py",&Px,"Track_Py/D");
+  t1->Branch("Track_Py",&Py,"Track_Py/D");
   t1->Branch("Track_eta",&Track_eta,"Track_Px/D");
-
+  t1->Branch("Track_Pt",&Track_Pt,"Track_Pt/D");
+  t1->Branch("Track_Phi",&Track_Phi,"Track_Phi/D");
 
   TString option = GetOption();
 
@@ -112,9 +126,8 @@ void TrackStudy::Begin(TTree * /*tree*/)
 
 
   //zReference Position to be used in the Fits
-  zReference = 8520.;
+  m_zReference = 8520.;
 }
-
 void TrackStudy::SlaveBegin(TTree * /*tree*/)
 {
   // The SlaveBegin() function is called after the Begin() function.
@@ -131,6 +144,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
   //std::cout<<"Ciao"<<std::endl;
   // HERE DEBUG AND PRINT AT VIDEO OF HIT CONTENT
   Double_t PCut =3000;
+  //Counters of Hits
   if(isLong && P>PCut && !isElectron){
     m_long_NGeantHit+=MC;
     m_long_NPrHit+=PrHit;
@@ -151,51 +165,57 @@ Bool_t TrackStudy::Process(Long64_t entry)
     }
     //Count different MCHitIntoCluster Per Layer;
   }
-
-  if(isElectron) return kTRUE; //No Electrons
-  if(!Eta_in25) return kTRUE; //Eta Cut
-  if(P>5000) return kTRUE;
-
-
-
-  if(!isSeed) return kTRUE;
-  if(P<2000) return kTRUE; //Study done for P>2000 !electron & LongTracks
-  if(MC_Ovtx_z>4000) return kTRUE;
-  std::vector<PatHit> track(100);
-  std::vector<MCHit> track_MC(100);
-  for (Int_t i = 0 ;  i< CheatedSeeding_NHits; i++){
-    PatHit hit = PatHit();
-    hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
-  }
-
+  // if(isElectron) return kTRUE; //No Electrons
+  // if(!Eta_in25) return kTRUE; //Eta Cut
+  // //if(P>5000) return kTRUE;
+  // if(!isSeed) return kTRUE;
+  // if(P<2000) return kTRUE; //Study done for P>2000 !electron & LongTracks
+  if(MC_Ovtx_z>4000) return kTRUE; //Study done for Tracks not generated in interactions (naively)
+  std::vector<PatHit> track(100); //Create the Vector of Hit to be analysed in terms of hit content (remove some of them? (like duplicates in layers?))
+  std::vector<MCHit> track_MC(100); //Vector of MCHit going into cluster
+  std::vector<MCHit> Particle_GeantHit(100);
+  //Create a vector of hits to be placed in the PrSeedTrack to be analysed: check if it's the case to remove clones
+  Bool_t printHit = false;
+  if(printHit){
+    std::cout<<"i \t Xat0 \t Zat0 \t planeCode \t zone \t dxDy \t dzDy"<<"\t Fraction"<<"\t Size"<<"\t Charge"<<std::endl;}
+    for (Int_t i = 0 ;  i< CheatedSeeding_NHits; i++){
+      PatHit hit = PatHit();
+      hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+      //hit.setCluser(); Need the corresponding branches in the ntuple
+      if(printHit){
+        std::cout<<i<<"\t"<<hit.x(0.)<<"\t"<<hit.z(0.)<<"\t"<<hit.planeCode()<<"\t"<<hit.cluster().charge()<<"\t"<<hit.cluster().fraction()<<"\t"<<hit.cluster().size()<<"\t"<<hit.cluster().charge()<<std::endl;
+      }
+    }
 
   std::cout.precision(4);
-  std::vector<MCHit> track_MC;
   for (Int_t i = 0;  i< MC_ass; i++) {
     MCHit mcHit =  MCHit();
     if(i>0 && std::fabs(MCHit_Assoc_Z[i]-MCHit_Assoc_Z[i-1])<40) {
-      std::cout<<"MCHit i = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i]<<"\t Z\t"<<MCHit_Assoc_X[i]<<"\t pathlenght \t"<<MCHit_pathlength[i]<<"\t"<<std::endl;
-      std::cout<<"MCHit i -1 = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i-1]<<"\t Z \t"<<MCHit_Assoc_X[i-1]<<"\t pathlenght \t"<<MCHit_pathlength[i-1]<<"\t"<<std::endl;
+      zMCHitClones->Fill(MCHit_Assoc_Z[i]);
+      zMCHitClonevsP->Fill(MCHit_Assoc_Z[i],P);
+      xvsyClones->Fill(MCHit_Assoc_X[i],MCHit_Assoc_Y[i]);
+      //std::cout<<"MCHit i = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i]<<"\t X\t"<<MCHit_Assoc_X[i]<<"\t Y \t"<<MCHit_Assoc_Y[i]<<"\tpathlenght \t"<<MCHit_pathlength[i]<<"\t"<<std::endl;
+      //std::cout<<"MCHit i -1 = "<<i<<"\t Z \t"<< MCHit_Assoc_Z[i-1]<<"\t X\t"<<MCHit_Assoc_X[i]<<"\t Y \t"<<MCHit_Assoc_Y[i-1]<<"\t pathlenght \t"<<MCHit_pathlength[i-1]<<"\t"<<std::endl;
       continue; //Merge them or keep the best one?
-      }
-      mcHit.setMCHit(MCHit_Assoc_X[i], MCHit_Assoc_Y[i],MCHit_Assoc_Z[i],MCHit_tx[i],MCHit_ty[i],MCHit_p[i],MCHit_pathlength[i],P,MC_px,MC_py,MC_pz);
     }
+    mcHit.setMCHit(MCHit_Assoc_X[i], MCHit_Assoc_Y[i],MCHit_Assoc_Z[i],MCHit_tx[i],MCHit_ty[i],MCHit_p[i],MCHit_pathlength[i],P,MC_px,MC_py,MC_pz);
+    track_MC.push_back(mcHit);
   }
+  //Track_Phi=Phi
   //MCHit mcHit_Geant = MCHIt();
   //  std::cout<<"MCHit from Geant with size "<<MC<<"\n"
   //<<"i \t \t X \t \t Y \t \t Z \t \t P \t \t PathLenght \t ParticleP \t time  "<<std::endl;}
 
-  std::vector<MCHit> CloneHits_OnTrack;
-  for(Int_t i=0; i<MC; i++){
-    if(MC>15){
-    //  std::cout<<i<<"\t \t"<<MC_Hit_X[i]<<"\t \t"<<MC_Hit_Y[i]<<"\t \t"<<MC_Hit_Z[i]<<"\t \t"<<MC_Hit_P[i]<<"\t \t"<<MC_Hit_PathLenght[i]<<"\t \t"<<MC_Hit_Particle_P[i]<<"\t \t"<<MC_Hit_Energy[i]<<std::endl;
-    }
-  }
-}
+  //std::vector<MCHit> CloneHits_OnTrack;
+  //for(Int_t i=0; i<MC; i++){
+  //  if(MC>15){
+  //  std::cout<<i<<"\t \t"<<MC_Hit_X[i]<<"\t \t"<<MC_Hit_Y[i]<<"\t \t"<<MC_Hit_Z[i]<<"\t \t"<<MC_Hit_P[i]<<"\t \t"<<MC_Hit_PathLenght[i]<<"\t \t"<<MC_Hit_Particle_P[i]<<"\t \t"<<MC_Hit_Energy[i]<<std::endl;
+  //}
+  //}
 
   //CheckMCHITS(MCHits); //should remove duplicates of MCHits in the list?
 
-  Float_t Error = 0.100; //Fixed error for the MCHits
+  Float_t ErrorX = 0.100; //Fixed error for the MCHits
   //How good is our track model for the full Fit, i.e., y(z) = a + b *z; x(z)
   //Fit a Parabola on X and straight line on y on top of the MCHits : should be preselect removing the glancing?
   double solution_xz_par[3];
@@ -227,14 +247,14 @@ Bool_t TrackStudy::Process(Long64_t entry)
       LinParFit<double> fit_parabolaY(3);
       LinParFit<double> fit_LineY(2);
       for (int i = 0; i<MC_ass; i++){
-        dz=(double)((double)MCHit_Assoc_Z[i]-zReference);
+        dz=(double)((double)MCHit_Assoc_Z[i]-m_zReference);
 
         resXZ_par=(double)((double)MCHit_Assoc_X[i]- (solution_xz_par[0]+ solution_xz_par[1]*dz+ solution_xz_par[2]*dz*dz ));
         resXZ_cub=(double)((double)MCHit_Assoc_X[i]- (solution_xz_cubic[0]+ solution_xz_cubic[1]*dz+ solution_xz_cubic[2]*dz*dz + solution_xz_cubic[3]*dz*dz*dz));
         resYZ_lin=(double)((double)MCHit_Assoc_Y[i]- (solution_yz_line[0]+solution_yz_line[1]*dz));
         resYZ_par=(double)((double)MCHit_Assoc_Y[i]- (solution_yz_par[0]+solution_yz_par[1]*dz+solution_yz_par[2]*dz*dz));
-        fit_parabolaXZ.accumulate(resXZ_par,0.100,dz);
-        fit_LineY.accumulate(resYZ_lin,1.14,dz);
+        fit_parabolaXZ.accumulate(resXZ_par,ErrorX,dz);
+        fit_LineY.accumulate(resYZ_lin,ErrorX/(TMath::Sin(5./TMath::Pi()*180)),dz);
         fit_parabolaY.accumulate(resYZ_par,1.14,dz);
         fit_CubicXZ.accumulate(resXZ_cub,0.100,dz);
       }
@@ -288,7 +308,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
   Chi2_LineY=0.;
   Chi2_ParabolaY=0.;
   for(int i= 0; i<MC_ass;i++){
-    dz=(double)((double)MCHit_Assoc_Z[i]-zReference);
+    dz=(double)((double)MCHit_Assoc_Z[i]-m_zReference);
     Chi2_ParabolaXZ+= std::pow( ((double)MCHit_Assoc_X[i]- (solution_xz_par[0]+ solution_xz_par[1]*dz+ solution_xz_par[2]*dz*dz))/0.100,2);
     Chi2_CubicXZ+= std::pow( ((double)MCHit_Assoc_X[i]- (solution_xz_cubic[0]+ solution_xz_cubic[1]*dz+ solution_xz_cubic[2]*dz*dz +solution_xz_cubic[3]*dz*dz*dz))/0.100,2);
     Chi2_LineY+=std::pow( ((double)MCHit_Assoc_Y[i]-(solution_yz_line[0]+solution_yz_line[1]*dz))/1.14,2);
@@ -305,17 +325,17 @@ Bool_t TrackStudy::Process(Long64_t entry)
 
   //FitXProjection(track);
   //Direct Track Study for Fit
-  Int_t zone = 0;
-  if(nXUp>=4)  zone = 1;
-  if(nXDown>=4) zone = 0;
-  PrSeedTrack  * track = PrSeedTrack(zone,zReference);
-  for(Int_t i=0;i<PrHit;i++){
-    PatHit hit = PatHit();
-    hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
-    //Select only Hits with charge ?
-    if(i>1 && PrHit_Zat0[i]>)
-
-  }
+  // Int_t zone = 0;
+  // if(nXUp>=4)  zone = 1;
+  // if(nXDown>=4) zone = 0;
+  // PrSeedTrack  * track = PrSeedTrack(zone,m_zReference);
+  // for(Int_t i=0;i<PrHit;i++){
+  //   PatHit hit = PatHit();
+  //   hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+  //   //Select only Hits with charge ?
+  //   if(i>1 && PrHit_Zat0[i]>)
+  //
+  // }
 
   //Here the study for the Fitting on PrHit
 
@@ -339,7 +359,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
 //     {
 //       const float w =  Hits[i].w2();//squared
 //       //std::cout<<"W\t"<<w<<std::endl;
-//       const float dz = Hits[i].GetZ() - m_zReference;
+//       const float dz = Hits[i].GetZ() - m_m_zReference;
 //       float deta = 0;
 //       deta = dz*dz*(1-m_dRatio*dz);
 //       Hit *hit = new Hit(Hits[i].GetX(),Hits[i].GetY(),Hits[i].GetZ());
@@ -363,21 +383,20 @@ Bool_t TrackStudy::Process(Long64_t entry)
 Bool_t TrackStudy::fitXProjection(PrSeedTrack * track){
   float mat[6];
   float rhs[3];
-  std::vector<Hits> Hits = track->hits();
+  std::vector<PatHit> Hits = track->hits();
   float dRatio=0;
   for(int loop = 0;3>loop;++loop){
     std::fill(mat,mat+6,0.);
     std::fill(rhs,rhs+3,0.);
     for( int i=0;i<Hits.size();i++){
       const float w = Hits[i].w2();
-      const float dz = Hits[i].zat0()-m_zReference;
+      const float dz = Hits[i].z(0.)-m_zReference;
       float deta = 0;
-      if(m_usedRatio){
-        deta = dz*dz*(1-dRatio*dz);
-      }
+      //if(m_usedRatio){
+      //deta = dz*dz*(1-dRatio*dz);
+      //}
       float dist = track->distance(Hits[i]);
-      mat[0]+=w;
-      mat[1]
+
       mat[0]+= w     ;
       mat[1]+= w * dz;
       mat[2]+= w * dz * dz;
@@ -398,6 +417,7 @@ Bool_t TrackStudy::fitXProjection(PrSeedTrack * track){
     decomp.Solve(rhs);
     track->updateParameters(rhs[0],rhs[1],rhs[2],0.,0.);
   }
+  return true;
 }
 
 void TrackStudy::SlaveTerminate()
@@ -420,7 +440,8 @@ void TrackStudy::Terminate()
 
   std::cout<<"Number of Clusters \t" <<m_long_NPrHit<<std::endl;
   std::cout<<"Number of diffrent Layers Clusters \t" <<m_long_NLayer_PrHit<<std::endl;
-
+  zMCHitClones->Draw();
+  zMCHitClonevsP->Draw("colz");
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.

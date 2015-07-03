@@ -98,12 +98,15 @@ StatusCode PrClustersResidual::execute() {
   
   if ( msgLevel(MSG::DEBUG) ) debug() << "==> Execute" << endmsg;
   if(m_doClusterResidual){
+    //Dump all the PrHits and the relative cluster information + the residual with the MCHits on it (filled in a fArray) the isNoise Flag
+    //It also check if the given PrHit ends up in a track which is associated to the first liner of the ChannelID <-> MCParticle, to figure our if the Hit is 1) used by the algorithm 2) Associated to a MCParticle which is hasT or long
     ClusterResidual();
   }
   if(m_doTrackStudy){
     TrackStudy();
   }
   if(m_dumpAllHits){
+    //Dump all the PrHits
     DumpAllHits();
   }
   return StatusCode::SUCCESS;
@@ -277,7 +280,8 @@ void PrClustersResidual::TrackStudy(){
 	  }
 	}
       }
-      //MCHits clones business
+      
+      //MCHits clones business for MCHits on PrHit
       debug()<<"For the processed MCParticle i found  "<<track.size()<<"PrHits   associated to "<<assoc_MCHit.size()<<"   MCHits"<<endmsg;
       tuple->farray("FiredLayers_Counter",firedLayers,"FiredLayers",24);
       tuple->column("CheatedSeeding_NHits",totHits);
@@ -287,6 +291,7 @@ void PrClustersResidual::TrackStudy(){
       std::vector<double> MCHit_time;
       std::vector<double> MCHit_Particle_P;
       std::vector<int> MCHit_Particle_key;
+      std::vector<double> MCHit_energy;
       std::vector<double> PrHit_Xat0,PrHit_Zat0,PrHit_dxDy,PrHit_w2,PrHit_yMin,PrHit_yMax,PrHit_dzDy;
       std::vector<bool> PrHit_isX;
       std::vector<int> PrHit_zone, PrHit_planeCode, PrHit_LHCBID;
@@ -344,6 +349,7 @@ void PrClustersResidual::TrackStudy(){
 	  MCHit_Particle_P.push_back(mcHit->mcParticle()->p());
 	  MCHit_time.push_back(mcHit->time());
 	  MCHit_Particle_key.push_back(mcHit->mcParticle()->key());
+	  MCHit_energy.push_back(mcHit->energy());
 	}
       }
       
@@ -387,10 +393,17 @@ void PrClustersResidual::TrackStudy(){
       if(assoc_MCHit.size()==0){
 	MCHit_ty.push_back(-999999.);
 	MCHit_tx.push_back(-999999.);
+	MCHit_p.push_back(-999999.);
+	MCHit_Particle_P.push_back(-999999.);
+	MCHit_time.push_back(-999999.);
+	MCHit_Particle_key.push_back(-999999.);
+	
 	MCHit_pathlength.push_back(-999999.);
 	MCHit_X.push_back(-999999.);
 	MCHit_Y.push_back(-999999.);
 	MCHit_Z.push_back(-999999.);
+	MCHit_energy.push_back(-999999.);
+	
       }
       if(track.size()==0){
 	PrHit_Xat0.push_back(-999999.);
@@ -432,6 +445,7 @@ void PrClustersResidual::TrackStudy(){
       tuple->farray("ChID_Module",ChID_Module,"ChID",100); 
       tuple->farray("ChID_Layer",ChID_Layer,"ChID",100); 
       tuple->farray("ChID_Quarter",ChID_Quarter,"ChID",100); 
+      tuple->farray("ChID_Charge",ChID_Charge,"ChID",100);
       tuple->farray("ChID_Mat",ChID_Mat,"ChID",100); 
       tuple->farray("ChID_SipmID",ChID_SipmID,"ChID",100); 
       tuple->farray("ChID_ID",ChID_ID,"ChID",100);
@@ -604,6 +618,7 @@ void PrClustersResidual::TrackStudy(){
 	MC_dydz.push_back(-9999999.);
 	MC_Particle_p.push_back(-9999999.);
 	MC_time.push_back(-9999999.);
+	MC_energy.push_back(-9999999.);
       }
       //we have the vector of MCHits of the MCParticle 
       //we need also to have the vector of PrHits_X,Z,XatYMCAssoc
@@ -840,129 +855,152 @@ void  PrClustersResidual::ClusterResidual(){
       LHCb::MCHit* mcHit = myFTCluster2MCHitLink.first( (*iHit)->id().ftID() ); 
       //took first MCHit associated to Hit channelID
       Int_t numberMCHitToCluster = 0 ; //to check if more than one MCHit per cluster
-      while(mcHit != nullptr){
-        Gaudi::XYZPoint pMid = mcHit->midPoint();
-        //here fill the tuple with watever you want
-        numberMCHitToCluster++;
-        //get Cluster associated to the Hit
-        LHCb::FTLiteCluster litecluster = getLiteCluster( (*iHit)->id());
-        tuple->column("numberMCHitToCluster",numberMCHitToCluster);
-        tuple->column("ClusterCharge",litecluster.charge());
-        tuple->column("ClusterSize",litecluster.size());
-        tuple->column("ClusterFraction",litecluster.fraction());
-        tuple->column("ClusterChannelID",litecluster.channelID());
-        tuple->column("ClusterChannelIDSipmCell",litecluster.channelID().sipmCell());
-        tuple->column("ClusterChannelIDSipmID",litecluster.channelID().sipmId());
-        tuple->column("ClusterChannelIDMat",litecluster.channelID().mat());
-        tuple->column("ClusterChannelIDModule",litecluster.channelID().module());
-        tuple->column("ClusterChannelLayer",litecluster.channelID().layer());
-        tuple->column("ClusterChannelQuarter",litecluster.channelID().quarter());
-        tuple->column("isX",isX);
-        tuple->column("isU",isU);
-        tuple->column("isV",isV);
-        tuple->column("isT1",isT1);
-        tuple->column("isT2",isT2);
-        tuple->column("isT3",isT3);
-	tuple->column("layer",layer);
-        // -- As the key of an FTCluster is its channelID, we can link LHCbID and MCParticle directly!
-        // -- Caveat: Only take the first link. This might not be fully correct if high precision is needed.
-        bool isLong = trackInfo.hasVeloAndT( mcPart1 );
-        bool isSeed  = trackInfo.hasT( mcPart1 );
-        bool accT = trackInfo.accT(mcPart1);
-        bool accTT = trackInfo.accTT(mcPart1);
-        
-        tuple->column("MCParticlePID",mcPart1->particleID().pid());
-        tuple->column("MCParticleIsLong",isLong);
-        tuple->column("MCParticleIsSeed",isSeed);
-        tuple->column("MCParticleP",mcPart1->p());
-        tuple->column("MCParticlePt",mcPart1->pt());
-        tuple->column("MCParticleGamma",mcPart1->gamma());
-        tuple->column("MCParticleBeta",mcPart1->beta());
-        tuple->column("MCParticleVirtualMass",mcPart1->virtualMass());
-        tuple->column("MCParticleCharge",mcPart1->particleID().threeCharge()/3.);  
-        tuple->column("MCParticlePseudoRapidity",mcPart1->pseudoRapidity());
-        tuple->column("MCParticleAccT",accT);
-        tuple->column("MCParticleAccTT",accTT);
-        tuple->column("zone",zone);
-        //MCHitInfos
-        tuple->column("MCHit_X",pMid.X());
-        tuple->column("MCHit_Y",pMid.Y());
-        tuple->column("MCHit_Z",pMid.Z());
-	tuple->column("PrHit_XatYEq0",(*iHit)->x());
-	tuple->column("PrHit_ZatYEq0",(*iHit)->z());
-	
-        tuple->column("PrHit_XatYMCHit",(*iHit)->x(pMid.Y()));
-        tuple->column("PrHit_ZatYMCHit",(*iHit)->z(pMid.Y()));
-        tuple->column("XResidual",(*iHit)->x(pMid.Y())-pMid.X());
-        tuple->column("ZResidual",(*iHit)->z(pMid.Y())-pMid.Z());
-        tuple->column("Hit_dxDy",(*iHit)->dxDy());
-        tuple->column("Hit_werr",(*iHit)->werr());
-        tuple->column("Hit_w",(*iHit)->w());
-        tuple->column("Hit_coord",(*iHit)->coord());
-        tuple->column("Hit_isUsed",(*iHit)->isUsed());
-        tuple->column("Hit_yMin",(*iHit)->yMin());
-        tuple->column("Hit_yMax",(*iHit)->yMax());
-        tuple->column("Hit_Zone",(*iHit)->zone());
-        tuple->column("Hit_dzDy_manually",((*iHit)->z(1000.)-(*iHit)->z(0.))/1000);
-           
-	//Get the list of tracks generated by the Hit i am lookign to 
-        std::vector<const LHCb::Track*> tracksFwd = getTrack( (*iHit)->id(), LHCb::TrackLocation::Forward );
-        std::vector<const LHCb::Track*> tracksSeed = getTrack( (*iHit)->id(), LHCb::TrackLocation::Seed );
-        //when assocFwd is true we consider it as reconstructed
-        //when assocFwd is false we hit belongs to 
-        bool isUsedByFwd = false;
-        bool assocFwd = false;
-        double Chi2NDofFwd = -10;
-        int NDoFFwd = -1;
-        
-        if( !tracksFwd.empty() ){
-          isUsedByFwd = true;
-          assocFwd = false;
-          // -- If one of the tracks associated to this LHCbID is associated to the same MCParticle 
-          // -- as the LHCbID is associated, then it is associated...
-          // -- (aka: if LHCbID->MCParticle == LHCbID->Track->MCParticle, then the hit was "efficient")
-          for(  const LHCb::Track* track : tracksFwd){
-            Chi2NDofFwd = track->chi2PerDoF();
-            NDoFFwd = track->nDoF();
-            LHCb::MCParticle* mcPart2 = myForwardLink.first( track->key() );
-            if( mcPart1 == mcPart2 ){
-              assocFwd = true;
-              break;
-            } 
-          }
-        }
-        double Chi2NDofSeed = -10;
-        int NDoFSeed = -1;
-        
-        bool isUsedBySeed = false;
-        bool assocSeed = false;
-        if( !tracksSeed.empty() ){
-          isUsedBySeed = true;
-          assocSeed = false;
-          for(  const LHCb::Track* track : tracksSeed){
-            Chi2NDofSeed = track->chi2PerDoF();
-            NDoFSeed = track->nDoF();
-            //LHCb::MCParticle* mcPart2 = mySeedLink.first( track->key() ); 
-            LHCb::MCParticle* mcPart2 = mySeedLink.first( track->key() );
-            if( mcPart1 == mcPart2 ){
-              assocSeed = true;
-              break;
-            }
-          }
-        }        
-        tuple->column("TrackChi2NDOFSeed",Chi2NDofSeed);
-        tuple->column("TrackNDoFSeed",NDoFSeed);
-        tuple->column("TrackChi2NDoFFwd",Chi2NDofFwd);
-        tuple->column("TrackNDoFFwd",NDoFFwd);
-        tuple->column("assocSeed",assocSeed);
-        tuple->column("isUsedBySeed",isUsedBySeed);
-        tuple->column("assocFwd",assocFwd);
-        tuple->column("isUsedByFwd",isUsedByFwd);
-	//one can also think about to put here the cheated seeding and compare with the real one.
-        tuple->write();
-	break; //use only first linker
-        //mcHit = myFTCluster2MCHitLink.next();
+      std::vector<double>  MCHit_X,MCHit_Y,MCHit_Z;
+      std::vector<double>  Residual_X,Residual_Z;
+      bool isNoise = false;
+      Int_t nMCHitToCluster=0;
+      if(mcHit==nullptr){
+	isNoise = true;
+	Residual_X.push_back(-9999.);
+	Residual_Z.push_back(-9999.);
+	MCHit_X.push_back(-9999.);
+	MCHit_Y.push_back(-9999.);
+	MCHit_Z.push_back(-9999.);
       }
+      while(mcHit != nullptr){
+	nMCHitToCluster++;
+        Gaudi::XYZPoint pMid = mcHit->midPoint();
+	Residual_X.push_back( (*iHit)->x(pMid.y()) - pMid.x());
+	Residual_Z.push_back( (*iHit)->z(pMid.z()) - pMid.y());
+	MCHit_X.push_back( pMid.x());
+	MCHit_Y.push_back( pMid.y());
+	MCHit_Z.push_back( pMid.z());
+	mcHit = myFTCluster2MCHitLink.next();
+      }
+      tuple->column("isNoiseCluster",isNoise);
+      tuple->farray("Residual_X",Residual_X.begin(),Residual_X.end(),"N_MC",100);
+      tuple->farray("Residual_Z",Residual_Z.begin(),Residual_Z.end(),"N_MC",100);
+      tuple->farray("MCHit_X",MCHit_X.begin(),MCHit_X.end(),"N_MC",100);
+      tuple->farray("MCHit_Z",MCHit_Z.begin(),MCHit_Z.end(),"N_MC",100);
+      tuple->farray("MCHit_Y",MCHit_Y.begin(),MCHit_Y.end(),"N_MC",100);
+		    //here fill the tuple with watever you want
+		    //get Cluster associated to the Hit
+      LHCb::FTLiteCluster litecluster = getLiteCluster( (*iHit)->id());
+      tuple->column("ClusterCharge",litecluster.charge());
+      tuple->column("ClusterSize",litecluster.size());
+      tuple->column("ClusterFraction",litecluster.fraction());
+      tuple->column("ClusterChannelID",litecluster.channelID());
+      tuple->column("ClusterChannelIDSipmCell",litecluster.channelID().sipmCell());
+      tuple->column("ClusterChannelIDSipmID",litecluster.channelID().sipmId());
+      tuple->column("ClusterChannelIDMat",litecluster.channelID().mat());
+      tuple->column("ClusterChannelIDModule",litecluster.channelID().module());
+      tuple->column("ClusterChannelLayer",litecluster.channelID().layer());
+      tuple->column("ClusterChannelQuarter",litecluster.channelID().quarter());
+      tuple->column("isX",isX);
+      tuple->column("isU",isU);
+      tuple->column("isV",isV);
+      tuple->column("isT1",isT1);
+      tuple->column("isT2",isT2);
+      tuple->column("isT3",isT3);
+      tuple->column("layer",layer);
+      // -- As the key of an FTCluster is its channelID, we can link LHCbID and MCParticle directly!
+      // -- Caveat: Only take the first link. This might not be fully correct if high precision is needed.
+      bool isLong = trackInfo.hasVeloAndT( mcPart1 );
+      bool isSeed  = trackInfo.hasT( mcPart1 );
+      bool accT = trackInfo.accT(mcPart1);
+      bool accTT = trackInfo.accTT(mcPart1);
+      //these are the information of the MCParticle!
+      tuple->column("MCParticleKey",mcPart1->key());
+      tuple->column("MCParticlePhi",mcPart1->momentum().Phi());
+      tuple->column("MCParticlePID",mcPart1->particleID().pid());
+      tuple->column("MCParticleIsLong",isLong);
+      tuple->column("MCParticleIsSeed",isSeed);
+      tuple->column("MCParticleP",mcPart1->p());
+      tuple->column("MCParticlePt",mcPart1->pt());
+      tuple->column("MCParticleGamma",mcPart1->gamma());
+      tuple->column("MCParticleBeta",mcPart1->beta());
+      tuple->column("MCParticleVirtualMass",mcPart1->virtualMass());
+      tuple->column("MCParticlePseudoRapidity",mcPart1->pseudoRapidity());
+      tuple->column("MCParticleAccT",accT);
+      tuple->column("MCParticleAccTT",accTT);
+      tuple->column("zone",zone);
+      //MCHitInfos
+      tuple->column("PrHit_XatYEq0",(*iHit)->x());
+      tuple->column("PrHit_ZatYEq0",(*iHit)->z());
+      tuple->column("Hit_dxDy",(*iHit)->dxDy());
+      tuple->column("Hit_werr",(*iHit)->werr());
+      tuple->column("Hit_w",(*iHit)->w());
+      tuple->column("Hit_coord",(*iHit)->coord());
+      tuple->column("Hit_isUsed",(*iHit)->isUsed());
+      tuple->column("Hit_yMin",(*iHit)->yMin());
+      tuple->column("Hit_yMax",(*iHit)->yMax());
+      tuple->column("Hit_Zone",(*iHit)->zone());
+      tuple->column("Hit_dzDy_manually",((*iHit)->z(1000.)-(*iHit)->z(0.))/1000);
+      
+      //Get the list of tracks generated by the Hit i am lookign to 
+      std::vector<const LHCb::Track*> tracksFwd = getTrack( (*iHit)->id(), LHCb::TrackLocation::Forward );
+      std::vector<const LHCb::Track*> tracksSeed = getTrack( (*iHit)->id(), LHCb::TrackLocation::Seed );
+      //when assocFwd is true we consider it as reconstructed
+      //when assocFwd is false we hit belongs to 
+      bool isUsedByFwd = false;
+      bool assocFwd = false;
+      double Chi2NDofFwd = -10;
+      int NDoFFwd = -1;
+      
+      if( !tracksFwd.empty() ){
+	isUsedByFwd = true;
+	assocFwd = false;
+	// -- If one of the tracks associated to this LHCbID is associated to the same MCParticle 
+	// -- as the LHCbID is associated, then it is associated...
+          // -- (aka: if LHCbID->MCParticle == LHCbID->Track->MCParticle, then the hit was "efficient")
+	for(  const LHCb::Track* track : tracksFwd){
+	  Chi2NDofFwd = track->chi2PerDoF();
+	  NDoFFwd = track->nDoF();
+	  LHCb::MCParticle* mcPart2 = myForwardLink.first( track->key() );
+	  if( mcPart1 == mcPart2 ){
+	    assocFwd = true;
+	    break;
+	  } 
+	}
+      }
+      double Chi2NDofSeed = -10;
+      int NDoFSeed = -1;
+      // bool hasT = false;
+      // bool isLong = false;
+      // bool isElectron = false;
+      // double eta = -999.;
+      // double phi = -999.;
+      // bool over5;
+      
+      bool isUsedBySeed = false;
+      bool assocSeed = false;
+      if( !tracksSeed.empty() ){
+	isUsedBySeed = true;
+	assocSeed = false;
+	for(  const LHCb::Track* track : tracksSeed){
+	  Chi2NDofSeed = track->chi2PerDoF();
+	  NDoFSeed = track->nDoF();
+	  //LHCb::MCParticle* mcPart2 = mySeedLink.first( track->key() ); 
+	  LHCb::MCParticle* mcPart2 = mySeedLink.first( track->key() );
+	  if( mcPart1 == mcPart2 ){
+	    assocSeed = true;
+	    break;
+	  }
+	}
+      }        
+      tuple->column("TrackChi2NDOFSeed",Chi2NDofSeed);
+      tuple->column("TrackNDoFSeed",NDoFSeed);
+      tuple->column("TrackChi2NDoFFwd",Chi2NDofFwd);
+      tuple->column("TrackNDoFFwd",NDoFFwd);
+      tuple->column("assocSeed",assocSeed);
+      tuple->column("isUsedBySeed",isUsedBySeed);
+      tuple->column("assocFwd",assocFwd);
+      tuple->column("isUsedByFwd",isUsedByFwd);
+      //one can also think about to put here the cheated seeding and compare with the real one.
+      tuple->write();
+      break; //use only first linker
+      //mcHit = myFTCluster2MCHitLink.next();
+    
     }
   }
 }

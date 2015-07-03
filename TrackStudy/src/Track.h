@@ -13,7 +13,8 @@
 class PrSeedTrack {
 public:
   PrSeedTrack(Int_t zone, Float_t zRef):
-  m_zone(zone),m_zRef(zRef){
+  m_zone(zone),
+  m_zRef(zRef){
     init();
   };
   PrSeedTrack(Int_t zone, Float_t zRef ,std::vector<PatHit>& hits):
@@ -32,38 +33,51 @@ public:
     m_hits.insert(m_hits.end(),hits.begin(),hits.end());
   }
   Int_t zone() const{return m_zone;}
-  void setParameters(Float_t ax, Float_t bx, Float_t cx, Float_t ay, Float_t by){
+  void setParameters(Float_t ax, Float_t bx, Float_t cx, Float_t ay, Float_t by , Float_t dx=0.){
     m_ax=ax;
     m_bx=bx;
     m_cx=cx;
     m_ay=ay;
     m_by=by;
+    m_dx=dx;
   }
-  void updateParameters(Float_t dax, Float_t dbx, Float_t dcx, Float_t day=0., Float_t dby=0.){
+  void updateParameters(Float_t dax, Float_t dbx, Float_t dcx, Float_t day=0., Float_t dby=0., Float_t ddx=0.){
     m_ax+=dax;
     m_bx+=dbx;
     m_cx+=dcx;
     m_ay+=day;
     m_by+=dby;
+    m_dx+=ddx;
   }
-  Float_t x(Float_t z) const{
-    Float_t dz = z-m_zRef;
-    return m_ax + dz*(m_bx + dz*m_cx*(1+m_dRatio*dz));
-  }
+
   Float_t xSlope( Float_t z) const{
     Float_t dz = z-m_zRef;
-    return m_bx + 2. * dz * m_cx + 3.*dz*dz*m_cx*m_dRatio;
+    return m_bx + 2. * dz * m_cx + 3.*dz*dz*m_dx;
   }
   Float_t y(Float_t z) const{
     return m_ay+(z-m_zRef)*m_by;
   }
+
+  Float_t x(Float_t z) const{
+    Float_t dz = z-m_zRef;
+    return m_ax+m_bx*dz+m_cx*dz*dz + m_dx*dz*dz;
+  }
+  Float_t distance(PatHit hit)const{
+    Float_t y0 = m_ay - m_zRef*m_by;
+    Float_t dyDz = m_by;
+    Float_t yTra = (y0 + dyDz*hit.z(0.))/(1.- dyDz*hit.dzDy());
+    return hit.x(yTra)-x(hit.z(yTra));
+  }
   void PrintHits()
   {
-    std.setPr
-    std::cout<<"Hits On Track"
-    <<"\n X"
+    std::cout.precision(4);
+    std::cout<<"Nb. Hits on the track = "<<m_hits.size();
+    std::cout<<"i \t Xat0 \t Zat0 \t planeCode \t zone \t dxDy \t dzDy"<<"\t Fraction"<<"\t Size"<<"\t Charge"<<std::endl;
+    for(Int_t i =0; i<m_hits.size(); i++){
+      m_hits[i].PrintHit();
+      std::cout<<i<<"\t"<<m_hits[i].x(0.)<<"\t"<<m_hits[i].z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
+    }
   }
-  Float_t
 private:
   float  m_zRef;
   std::vector<PatHit> m_hits;
@@ -71,6 +85,8 @@ private:
   float m_ax;
   float m_bx;
   float m_cx;
+  float m_dx; //not dRatio (just Cubic Term)
+  //float m_dRatio;
   float m_ay;
   float m_by;
   float m_chi2;
@@ -80,7 +96,6 @@ private:
   float m_dXCoord;
   float m_dRatio;
   Int_t m_zone;
-private:
   void init(){
     m_hits.reserve(32);
     m_ax=0.;
