@@ -28,15 +28,15 @@ void dRatioStudy(){
   t1->SetBranchAddress("cx_cubXZ",&cx);
   t1->SetBranchAddress("dx_cubXZ",&dx);
   const Int_t nBinX = 39;
-  Double_t BinningX[nBinX] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2300.,3000.,4000.};
+  // Double_t BinningX[nBinX] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2300.,3000.,4000.};
   const Int_t nBinY = 38;
   Int_t NBINS=100;
   TH2D *histogramOld = new TH2D("dRatio","dRatio",NBINS,-3000,3000,NBINS,-2400,2400);
   TH2D *histogramCount = new TH2D("dRatioCount","dRatioCount",100,-3000,3000,100,-2400,2400);
 
-
-  Double_t BinningY[nBinY] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2400.,3000.};
-  TH2D *histogram = new TH2D("dRatio","dRatio",39,BinningX,38,BinningY);
+  
+  // Double_t BinningY[nBinY] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2400.,3000.};
+  //TH2D *histogram = new TH2D("dRatio","dRatio",39,BinningX,38,BinningY);
   cout<<"Histogram Generated"<<endl;
   Int_t nSelected= (Int_t)t1->GetEntries("dx_cubXZ/cx_cubXZ>-0.001 && dx_cubXZ/cx_cubXZ<-0.000001 && Track_P>2000");
   std::cout<<"Selected = "<<nSelected<<std::endl;

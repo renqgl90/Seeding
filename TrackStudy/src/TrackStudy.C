@@ -171,7 +171,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
   // if(!isSeed) return kTRUE;
   // if(P<2000) return kTRUE; //Study done for P>2000 !electron & LongTracks
   if(MC_Ovtx_z>4000) return kTRUE; //Study done for Tracks not generated in interactions (naively)
-  std::vector<PatHit> track(100); //Create the Vector of Hit to be analysed in terms of hit content (remove some of them? (like duplicates in layers?))
+  //std::vector<PatHit> track(100); //Create the Vector of Hit to be analysed in terms of hit content (remove some of them? (like duplicates in layers?))
   std::vector<MCHit> track_MC(100); //Vector of MCHit going into cluster
   std::vector<MCHit> Particle_GeantHit(100);
   //Create a vector of hits to be placed in the PrSeedTrack to be analysed: check if it's the case to remove clones
@@ -246,6 +246,8 @@ Bool_t TrackStudy::Process(Long64_t entry)
       LinParFit<double> fit_parabolaXZ(3);
       LinParFit<double> fit_parabolaY(3);
       LinParFit<double> fit_LineY(2);
+      //double ErrorX = gRandom->Gaus(0,100);
+      //double ErrorX =
       for (int i = 0; i<MC_ass; i++){
         dz=(double)((double)MCHit_Assoc_Z[i]-m_zReference);
 
@@ -255,6 +257,7 @@ Bool_t TrackStudy::Process(Long64_t entry)
         resYZ_par=(double)((double)MCHit_Assoc_Y[i]- (solution_yz_par[0]+solution_yz_par[1]*dz+solution_yz_par[2]*dz*dz));
         fit_parabolaXZ.accumulate(resXZ_par,ErrorX,dz);
         fit_LineY.accumulate(resYZ_lin,ErrorX/(TMath::Sin(5./TMath::Pi()*180)),dz);
+
         fit_parabolaY.accumulate(resYZ_par,1.14,dz);
         fit_CubicXZ.accumulate(resXZ_cub,0.100,dz);
       }
@@ -325,18 +328,17 @@ Bool_t TrackStudy::Process(Long64_t entry)
 
   //FitXProjection(track);
   //Direct Track Study for Fit
-  // Int_t zone = 0;
-  // if(nXUp>=4)  zone = 1;
-  // if(nXDown>=4) zone = 0;
-  // PrSeedTrack  * track = PrSeedTrack(zone,m_zReference);
-  // for(Int_t i=0;i<PrHit;i++){
-  //   PatHit hit = PatHit();
-  //   hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
-  //   //Select only Hits with charge ?
-  //   if(i>1 && PrHit_Zat0[i]>)
-  //
-  // }
-
+  Int_t zone = 0;
+  if(nXUp>=4)  zone = 1;
+  if(nxDown>=4) zone = 0;
+  PrSeedTrack track = PrSeedTrack(zone,m_zReference);
+  for(Int_t i=0;i<PrHit;i++){
+    PatHit hit = PatHit();
+    hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+    //Select only Hits with charge ?
+    track.addHit(hit);
+  }
+  track.PrintHits();
   //Here the study for the Fitting on PrHit
 
 
@@ -390,6 +392,7 @@ Bool_t TrackStudy::fitXProjection(PrSeedTrack * track){
     std::fill(rhs,rhs+3,0.);
     for( int i=0;i<Hits.size();i++){
       const float w = Hits[i].w2();
+      std::cout<<"Hit w2"<<Hits[i].w2()<<std::endl;
       const float dz = Hits[i].z(0.)-m_zReference;
       float deta = 0;
       //if(m_usedRatio){

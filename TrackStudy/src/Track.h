@@ -2,6 +2,7 @@
 #define TRACK_H
 
 #include <iostream>
+#include <iomanip>
 #include "./PatHit.h"
 /** @class PrSeedTrack PrSeedTrack.h
 *  This is the working class inside the T station pattern reco
@@ -9,7 +10,10 @@
 *  @author Renato Quagliani
 *  @date   2015-03-20
 */
-
+using std::cout;
+using std::endl;
+using std::setw;
+using std::internal;
 class PrSeedTrack {
 public:
   PrSeedTrack(Int_t zone, Float_t zRef):
@@ -70,12 +74,12 @@ public:
   }
   void PrintHits()
   {
-    std::cout.precision(4);
-    std::cout<<"Nb. Hits on the track = "<<m_hits.size();
-    std::cout<<"i \t Xat0 \t Zat0 \t planeCode \t zone \t dxDy \t dzDy"<<"\t Fraction"<<"\t Size"<<"\t Charge"<<std::endl;
+    std::cout.precision(3);
+    std::cout<<" Nb. Hits on the track =   "<<m_hits.size()<<endl;
+    std::cout<<"i"<<setw(20)<<"Xat0"<<setw(20)<<"Zat0"<<setw(20)<<"planeCode"<<setw(20)<<"zone"<<setw(20)<<"dxDy"<<setw(20)<<"dzDy"<<setw(20)<<"Fraction"<<setw(20)<<"Size"<<setw(20)<<"Charge \n"<<std::scientific;
     for(Int_t i =0; i<m_hits.size(); i++){
-      m_hits[i].PrintHit();
-      std::cout<<i<<"\t"<<m_hits[i].x(0.)<<"\t"<<m_hits[i].z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
+      //m_hits[i].PrintHit();
+      std::cout<<i<<setw(20)<<m_hits[i].x(0.)<<setw(20)<<m_hits[i].z(0.)<<setw(20)<<m_hits[i].planeCode()<<setw(20)<<m_hits[i].zone()<<setw(20)<<m_hits[i].dxDy()<<setw(20)<<m_hits[i].dzDy()<<setw(20)<<m_hits[i].cluster().charge()<<setw(20)<<m_hits[i].cluster().fraction()<<setw(20)<<m_hits[i].cluster().size()<<setw(20)<<m_hits[i].cluster().charge()<<std::endl;
     }
   }
 private:
