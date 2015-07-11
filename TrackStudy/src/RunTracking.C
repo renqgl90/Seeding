@@ -4,6 +4,7 @@
 #include "TSystem.h"
 #include "TString.h"
 #include "TrackStudy.h"
+#include "Track.h"
 #include "PatHit.h"
 #include "MCHit.h"
 //#include "TSelector.h"
@@ -25,11 +26,12 @@ int main() {
   // std::cout<<"With Jacco Modification"<<std::endl;
 
   TChain ch2("PrClustersResidual/TrackStudy");
-  ch2.Add("./data/SciFi-Tuple-Debug_1000_old.root");
+  ch2.Add("./data/SciFi-Tuple-Debug_1000_Alessio.root");
   TrackStudy *perfectSeeding1 = new TrackStudy();
   perfectSeeding1->Init( (TTree*)  &ch2);
   perfectSeeding1->Begin( (TTree*) &ch2);
   Int_t nEntries1 = ch2.GetEntries();
+  //nEntries1 =
   for (Int_t i = 0; i<nEntries1;i++)
     {
       perfectSeeding1->Process(i);

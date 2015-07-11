@@ -47,11 +47,11 @@ public:
     m_coord = coord;
     }
   void PrintHit(){
-  //  std::cout<<i<<"\t"<<m_xat <<"\t"<<m_hits[i].z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
+    //std::cout<<i<<"\t"<<m_xa0t <<"\t"<<z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
   }
   void SetCluster(FTCluster cluster) {m_Cluster=cluster;}
-  Float_t x(Float_t y) const{return m_xatyEq0+y*m_dxDy;}
-  Float_t z(Float_t y) const{return m_zatyEq0+m_dzDy*y;}
+  Float_t x(Float_t y=0) const{return m_xatyEq0+y*m_dxDy;}
+  Float_t z(Float_t y=0) const{return m_zatyEq0+m_dzDy*y;}
   Int_t planeCode() const{return m_planeCode;}
   Int_t zone() const{return m_zone;}
   Float_t dxDy() const{return m_dxDy;}
