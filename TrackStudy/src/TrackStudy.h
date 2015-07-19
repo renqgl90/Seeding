@@ -289,6 +289,10 @@ class TrackStudy : public TSelector {
    virtual void    Terminate();
    Bool_t          fitXProjection(PrSeedTrack & track);
    void  solveParabola2(  const PatHit hit1,const PatHit hit2,const PatHit hit3,double& a1, double& b1,double& c1 );
+
+   void CountHits();
+   void FitHits();
+   void XZStudy(PrSeedTrack xProj);
 private:
    double m_dRatio0;
    Float_t m_zReference;
