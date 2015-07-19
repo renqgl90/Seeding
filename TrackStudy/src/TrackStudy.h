@@ -293,6 +293,7 @@ class TrackStudy : public TSelector {
    void CountHits();
    void FitHits();
    void XZStudy(PrSeedTrack xProj);
+   void StereoSearch(PrSeedTrack xProj, PrSeedTrack UVSegment);
 private:
    double m_dRatio0;
    Float_t m_zReference;
