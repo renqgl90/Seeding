@@ -292,7 +292,10 @@ class TrackStudy : public TSelector {
 
    void CountHits();
    void FitHits();
-   void XZStudy(PrSeedTrack xProj);
+   void CountClones(PrSeedTrack fullTrack);
+   bool XZStudyCase0(PrSeedTrack xProj);
+   bool XZStudyCase1(PrSeedTrack xProj);
+   bool XZStudyCase2(PrSeedTrack xProj);
    void StereoSearch(PrSeedTrack xProj, PrSeedTrack UVSegment);
 private:
    double m_dRatio0;
@@ -309,6 +312,25 @@ private:
    Int_t m_physicalCase0IntrinsicWithduplicates;
    Int_t m_physicalCase0IntrinsicWithduplicatesMore4;
    Int_t m_physicalCase0IntrinsicWithduplicatesMore5;
+
+
+   Int_t m_physicalCase1Intrinsic;
+   Int_t m_physicalCase1IntrinsicMore4;
+   Int_t m_physicalCase1IntrinsicMore5;
+
+   Int_t m_physicalCase1IntrinsicWithduplicates;
+   Int_t m_physicalCase1IntrinsicWithduplicatesMore4;
+   Int_t m_physicalCase1IntrinsicWithduplicatesMore5;
+
+
+
+   Int_t m_physicalCase2Intrinsic;
+   Int_t m_physicalCase2IntrinsicMore4;
+   Int_t m_physicalCase2IntrinsicMore5;
+
+   Int_t m_physicalCase2IntrinsicWithduplicates;
+   Int_t m_physicalCase2IntrinsicWithduplicatesMore4;
+   Int_t m_physicalCase2IntrinsicWithduplicatesMore5;
 
    Int_t m_nbTrackCloneUV;
    Int_t m_nbTrackCloneX;

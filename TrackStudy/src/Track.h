@@ -36,6 +36,10 @@ private:
    float m_dXCoord;
    float m_dRatio;
    Int_t m_zone;
+   float m_chi2X;
+   int m_nDoFX;
+   float m_chi2Full;
+   int m_nDoFFUll;
 
 
 public:
@@ -69,6 +73,10 @@ public:
       m_nDoF = -1;
       m_dXCoord = 0.;
       m_meanDy  = 0.;
+      m_chi2X=0.;
+      m_nDoFX=0.;
+      m_chi2Full=0.;
+      m_nDoFFUll=0.;
 
    }
    virtual ~PrSeedTrack() {};
@@ -88,6 +96,16 @@ public:
       m_ay=ay;
       m_by=by;
       m_dx=dx;
+   }
+   PatHit hitInPlane(int val) const{
+      for(int i=0; i<m_hits.size();i++){
+         if(m_hits[i].planeCode()==val){
+            PatHit hit = m_hits[i];
+            return hit;
+         }
+      }
+      PatHit hit1 = PatHit();
+      return hit1;
    }
    void updateParameters(Float_t dax, Float_t dbx, Float_t dcx, Float_t day=0., Float_t dby=0., Float_t ddx=0.){
       m_ax+=dax;
@@ -122,6 +140,14 @@ public:
       Float_t d = distance(hit);
       return d*d*hit.w2();
    }
+   void setChi2X(Float_t Chi2){ m_chi2X = Chi2; }
+   void setNDOFX(Int_t val){m_nDoFX = val;}
+   Int_t ndofX() const{return m_nDoFX;}
+   void setChi2Full(Float_t Chi2){ m_chi2Full = Chi2; }
+   void setNDOFFull(Int_t val){m_nDoFFUll = val;}
+   Int_t ndofFull() const{return m_nDoFFUll;}
+
+
    Float_t Chi2() const{
       Float_t Chi2=0;
       for(Int_t i = 0;i<m_hits.size(); i++){
@@ -130,6 +156,10 @@ public:
       //Chi2;
       return Chi2;
    }
+
+   Float_t chi2X() const{ return m_chi2X;}
+   Float_t chi2XnDoF() const{ return m_chi2X/(Float_t)m_nDoFX;}
+   Float_t cHi2FullnDoF() const{ return m_chi2Full/(Float_t)m_nDoFFUll;}
 
 
 
@@ -140,20 +170,59 @@ public:
    }
    void PrintTrack(){
       std::cout.precision(6);
-      std::cout<<"i"<<setw(20)<<"Hit X"<<setw(20)<<"Track X"<<setw(20)<<"Chi2 Contrib"<<std::endl;
+      std::cout<<"i"<<setw(15)<<"Hit X"<<setw(15)<<"Track X"<<setw(15)<<"Chi2 Contrib"<<std::endl;
       for(Int_t i =0; i<m_hits.size(); i++){
          Float_t distance2oe = m_hits[i].w2()*std::pow((x(m_hits[i].z(0.))-m_hits[i].x(0.)),2);
-         std::cout<<i<<setw(20)<<m_hits[i].x(0.)<<setw(20)<<x(m_hits[i].z(0.))<<setw(20)<<Chi2Hit(m_hits[i])<<std::endl;
+         std::cout<<i<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<x(m_hits[i].z(0.))<<setw(15)<<Chi2Hit(m_hits[i])<<std::endl;
       }
    }
+   bool hasHitInPlane(Int_t val){
+      bool returnst = false;
+      for( int i =0; i<m_hits.size();i++){
+         if(m_hits[i].planeCode()==val){
+            returnst = true;
+            break;
+         }
+      }
+      return returnst;
+   }
+   int worst(){
+      Float_t maxChi2 = -1;
+      int worsti=-10;
+      //PatHit worst = PatHit();
+      for(int i=0; i<m_hits.size(); i++){
+         Float_t Chi2onHit = Chi2Hit(m_hits[i]);
+         if(Chi2onHit>maxChi2){
+            maxChi2 =Chi2onHit;
+            worsti = i;
+         }
+      }
+      return worsti;
+   }
+   Float_t maxChi2Hit(){
+      Float_t maxChi2 = -1;
+      PatHit worst = PatHit();
+      for(int i=0; i<m_hits.size(); i++){
+         Float_t Chi2onHit = Chi2Hit(m_hits[i]);
+         if(Chi2onHit>maxChi2){
+            maxChi2 =Chi2onHit;
+            worst = m_hits[i];
+         }
+      }
+      return maxChi2;
+   }
    void PrintHits()
-   {
+   {  int j = worst();
       std::cout.precision(8);
       std::cout<<" Nb. Hits on the track =   "<<m_hits.size()<<endl;
-      std::cout<<"i"<<setw(20)<<"1/w"<<setw(20)<<"Xat0"<<setw(20)<<"Zat0"<<setw(20)<<"planeCode"<<setw(20)<<"zone"<<setw(20)<<"isX"<<setw(20)<<"dxDy"<<setw(20)<<"dzDy"<<setw(20)<<"Fraction"<<setw(20)<<"Size"<<setw(20)<<"Charge \n"<<std::endl;
+      std::cout<<"i"<<setw(15)<<"1/w"<<setw(15)<<"Xat0"<<setw(15)<<"Zat0"<<setw(15)<<"planeCode"<<setw(15)<<"zone"<<setw(15)<<"isX"<<setw(15)<<"dxDy"<<setw(15)<<"dzDy"<<setw(15)<<"Fraction"<<setw(15)<<"Size"<<setw(15)<<"Charge"<<setw(15)<<"Chi2OnHit"<<setw(15)<<"Worst"<<std::endl;
       for(Int_t i =0; i<m_hits.size(); i++){
          //m_hits[i].PrintHit();
-         std::cout<<i<<setw(20)<<sqrt(1./m_hits[i].w2())<<setw(20)<<m_hits[i].x(0.)<<setw(20)<<m_hits[i].z(0.)<<setw(20)<<m_hits[i].planeCode()<<setw(20)<<m_hits[i].zone()<<setw(20)<<m_hits[i].isX()<<setw(20)<<m_hits[i].dxDy()<<setw(20)<<m_hits[i].dzDy()<<setw(20)<<m_hits[i].cluster().fraction()<<setw(20)<< m_hits[i].cluster().size()<<setw(20)<<m_hits[i].cluster().charge()<<std::endl;
+         if(i==j){
+            std::cout<<i<<setw(15)<<sqrt(1./m_hits[i].w2())<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<m_hits[i].z(0.)<<setw(15)<<m_hits[i].planeCode()<<setw(15)<<m_hits[i].zone()<<setw(15)<<m_hits[i].isX()<<setw(15)<<m_hits[i].dxDy()<<setw(15)<<m_hits[i].dzDy()<<setw(15)<<m_hits[i].cluster().fraction()<<setw(15)<< m_hits[i].cluster().size()<<setw(15)<<m_hits[i].cluster().charge()<<setw(15)<<Chi2Hit(m_hits[i])<<setw(15)<<"Worst"<<std::endl;
+         }else{
+         std::cout<<i<<setw(15)<<sqrt(1./m_hits[i].w2())<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<m_hits[i].z(0.)<<setw(15)<<m_hits[i].planeCode()<<setw(15)<<m_hits[i].zone()<<setw(15)<<m_hits[i].isX()<<setw(15)<<m_hits[i].dxDy()<<setw(15)<<m_hits[i].dzDy()<<setw(15)<<m_hits[i].cluster().fraction()<<setw(15)<< m_hits[i].cluster().size()<<setw(15)<<m_hits[i].cluster().charge()<<setw(15)<<Chi2Hit(m_hits[i])<<std::endl;
+      }
       }
    }
    //friend bool operator== (PrSeedTrack cP1, PrSeedTrack cP2);
@@ -172,6 +241,11 @@ private:
       m_nDoF = -1;
       m_dXCoord = 0.;
       m_meanDy  = 0.;
+
+      m_chi2X=0.;
+      m_nDoFX=0.;
+      m_chi2Full=0.;
+      m_nDoFFUll=0.;
    }
 };
 typedef std::vector<PrSeedTrack> PrSeedTracks;

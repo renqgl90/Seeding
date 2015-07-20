@@ -65,6 +65,7 @@ public:
   Float_t w2() const{ return m_w2;}
   Float_t w() const{ return m_w;}
   Bool_t isX() const{ return m_isX;}
+  Float_t id() const{ return m_id;}
 private:
 
   Float_t m_w;
