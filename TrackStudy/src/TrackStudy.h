@@ -279,7 +279,7 @@ class TrackStudy : public TSelector {
    virtual void    SlaveBegin(TTree *tree);
    virtual void    Init(TTree *tree);
    virtual Bool_t  Notify();
-   virtual Bool_t  Process(Long64_t entry);
+   virtual Bool_t  Process(Long64_t entry, Bool_t debug);
    virtual Int_t   GetEntry(Long64_t entry, Int_t getall = 0) { return fChain ? fChain->GetTree()->GetEntry(entry, getall) : 0; }
    virtual void    SetOption(const char *option) { fOption = option; }
    virtual void    SetObject(TObject *obj) { fObject = obj; }
@@ -287,16 +287,16 @@ class TrackStudy : public TSelector {
    virtual TList  *GetOutputList() const { return fOutput; }
    virtual void    SlaveTerminate();
    virtual void    Terminate();
-   Bool_t          fitXProjection(PrSeedTrack & track);
+   Bool_t          fitXProjection(PrSeedTrack & track,Bool_t debug);
    void  solveParabola2(  const PatHit hit1,const PatHit hit2,const PatHit hit3,double& a1, double& b1,double& c1 );
-
-   void CountHits();
-   void FitHits();
-   void CountClones(PrSeedTrack fullTrack);
-   bool XZStudyCase0(PrSeedTrack xProj);
-   bool XZStudyCase1(PrSeedTrack xProj);
-   bool XZStudyCase2(PrSeedTrack xProj);
-   void StereoSearch(PrSeedTrack xProj, PrSeedTrack UVSegment);
+   bool FitSimultaneouslyXY(PrSeedTrack & Track,PrSeedTrack & UVSegment,Bool_t debug);
+   void CountHits(Bool_t debug);
+   void FitHits(Bool_t debug);
+   void CountClones(PrSeedTrack fullTrack,Bool_t debug);
+   bool XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment, Bool_t debug);
+   bool XZStudyCase1(PrSeedTrack xProj,Bool_t debug);
+   bool XZStudyCase2(PrSeedTrack xProj,Bool_t debug);
+   void StereoSearch(PrSeedTrack xProj, PrSeedTrack UVSegment, Bool_t debug);
 private:
    double m_dRatio0;
    Float_t m_zReference;

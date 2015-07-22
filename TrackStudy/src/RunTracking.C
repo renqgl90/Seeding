@@ -32,9 +32,12 @@ int main() {
   perfectSeeding1->Begin( (TTree*) &ch2);
   Int_t nEntries1 = ch2.GetEntries();
   //nEntries1 =
+  Bool_t debug = false;
+  std::cout<<"==========Will Process   "<<nEntries1<<"   Tracks"<<"==========="<<std::endl;
   for (Int_t i = 0; i<nEntries1;i++)
     {
-      perfectSeeding1->Process(i);
+      if( i %10000 == 0 ) std::cout<<"============="<<100.*i/(float)nEntries1<<" % completed ========="<<std::endl;
+      perfectSeeding1->Process(i,debug);
     }
   perfectSeeding1->Terminate();
   std::cout<<"Before Jacco Modification"<<std::endl;

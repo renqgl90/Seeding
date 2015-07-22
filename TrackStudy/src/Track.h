@@ -77,6 +77,7 @@ public:
       m_nDoFX=0.;
       m_chi2Full=0.;
       m_nDoFFUll=0.;
+      m_dx = 0.;
 
    }
    virtual ~PrSeedTrack() {};
@@ -123,15 +124,21 @@ public:
       return m_bx + 2. * dz * m_cx + 3.*dz*dz*m_dx;
    }
    Float_t y(Float_t z) const{
-      return m_ay+(z-m_zRef)*m_by;
+      return m_ay+m_by*z;
    }
-
+   void setdRatio( Float_t val ){
+      m_dx = val;
+   }
+   Float_t dRatio()const {return m_dx;}
    Float_t x(Float_t z) const{
       Float_t dz = z-m_zRef;
-      return m_ax+m_bx*dz+m_cx*dz*dz*(1.-0.000262*dz);//+ m_dx*dz*dz;
+      return m_ax+m_bx*dz+m_cx*dz*dz*(1. + m_dx*dz);//+ m_dx*dz*dz;
    }
+   Float_t ay()const{  return m_ay;}
+   Float_t by()const{  return m_by;}
+
    Float_t distance(PatHit hit)const{
-      Float_t y0 = m_ay - m_zRef*m_by;
+      Float_t y0 = m_ay;
       Float_t dyDz = m_by;
       Float_t yTra = (y0 + dyDz*hit.z(0.))/(1.- dyDz*hit.dzDy());
       return hit.x(yTra)-x(hit.z(yTra));
@@ -149,11 +156,10 @@ public:
 
 
    Float_t Chi2() const{
-      Float_t Chi2=0;
+      Float_t Chi2=0.;
       for(Int_t i = 0;i<m_hits.size(); i++){
          Chi2+= Chi2Hit(m_hits[i]);
       }
-      //Chi2;
       return Chi2;
    }
 
@@ -170,10 +176,22 @@ public:
    }
    void PrintTrack(){
       std::cout.precision(6);
-      std::cout<<"i"<<setw(15)<<"Hit X"<<setw(15)<<"Track X"<<setw(15)<<"Chi2 Contrib"<<std::endl;
+      std::cout<<"--------Track Parameters   XZ   ----"<<std::endl;
+      std::cout<<"ax + bx *(z-zRef) + cx*(z-zRef)^{2}(1+dRatio(z-zRef))"<<std::endl;
+      std::cout<<"ax"<<setw(15)<<ax()<<std::endl;
+      std::cout<<"bx"<<setw(15)<<bx()<<std::endl;
+      std::cout<<"cx"<<setw(15)<<cx()<<std::endl;
+      std::cout<<"dRatio"<<setw(15)<<dRatio()<<std::endl;
+      std::cout<<"--------Track Parameters   YZ   ----"<<std::endl;
+      std::cout<<"ay + by *(z-zRef)"<<std::endl;
+      std::cout<<"ay"<<setw(15)<<ay()<<std::endl;
+      std::cout<<"by"<<setw(15)<<by()<<std::endl;
+      std::cout<<"y(7000)"<<setw(15)<<y(7000)<<std::endl;
+      std::cout<<"y(10000)"<<setw(15)<<y(10000)<<std::endl;
+      std::cout<<"i"<<setw(15)<<"Hit X"<<setw(15)<<"Track X"<<setw(15)<<"Chi2 Contrib"<<setw(0)<<"y At Z"<<std::endl;
       for(Int_t i =0; i<m_hits.size(); i++){
          Float_t distance2oe = m_hits[i].w2()*std::pow((x(m_hits[i].z(0.))-m_hits[i].x(0.)),2);
-         std::cout<<i<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<x(m_hits[i].z(0.))<<setw(15)<<Chi2Hit(m_hits[i])<<std::endl;
+         std::cout<<i<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<x(m_hits[i].z(0.))<<setw(15)<<Chi2Hit(m_hits[i])<<setw(15)<<y(m_hits[i].z(0.))<<std::endl;
       }
    }
    bool hasHitInPlane(Int_t val){
@@ -235,6 +253,7 @@ private:
       m_ax = 0.;
       m_bx = 0.;
       m_cx = 0.;
+      m_dx = -0.000262;
       m_by = 0.;
       m_ay = 0.;
       m_chi2 = 0.;
