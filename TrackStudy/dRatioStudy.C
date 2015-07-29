@@ -27,25 +27,30 @@ void dRatioStudy(){
   Double_t axis_X=2000;
   Double_t axis_Y=1000;
   Double_t eta;
+  Double_t Ovtx_Z;
+  Bool_t isElectron;
+  Int_t ID;
   t1->SetBranchAddress("Track_P",&P);
-  t1->SetBranchAddress("ax_parXZ",&ax);
+  t1->SetBranchAddress("ax_cubXZ",&ax);
   t1->SetBranchAddress("ay_line",&ay);
   t1->SetBranchAddress("cx_cubXZ",&cx);
   t1->SetBranchAddress("dx_cubXZ",&dx);
   t1->SetBranchAddress("Track_eta",&eta);
-  t1->SetBranchAddress("bx_parXZ",&bx);
+  t1->SetBranchAddress("bx_cubXZ",&bx);
   t1->SetBranchAddress("by_line",&by);
-
+  t1->SetBranchAddress("Ovtx_Z",&Ovtx_Z);
+  t1->SetBranchAddress("isElectron",&isElectron);
+  t1->SetBranchAddress("MCParticleID",&ID);
 
   const Int_t nBinX = 39;
   // Double_t BinningX[nBinX] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2300.,3000.,4000.};
   const Int_t nBinY = 38;
   Int_t NBINS=100;
   TH2D *histogramOld = new TH2D("dRatio","dRatio",NBINS,-3000,3000,NBINS,-2400,2400);
-  TH2D *histogramCount = new TH2D("dRatioCount","dRatioCount",100,-3000,3000,100,-2400,2400);
+  TH2D *histogramCount = new TH2D("dRatioCount","dRatioCount",NBINS,-3000,3000,NBINS,-2400,2400);
 
-  TH2D *dRatiobxby = new TH2D("dRatiobxby","dRatiobxby",100,-0.45,0.45,100,-2,2);
-  TH2D *dRatiobxbyCount = new TH2D("dRatiobxbyCount","dRatiobxbyCount",100,-0.45,0.45,100,-2,2);
+  TH2D *dRatiobxby = new TH2D("dRatiobxby","dRatiobxby;by;bx",NBINS,-0.3,0.3,NBINS,-0.8,0.8);
+  TH2D *dRatiobxbyCount = new TH2D("dRatiobxbyCount","dRatiobxbyCount",NBINS,-0.3,0.3,NBINS,-0.8,0.8);
 
 
 
@@ -60,15 +65,18 @@ void dRatioStudy(){
   typedef std::pair<Int_t , Int_t> xyBinPair;
 
   typedef std::map<xyBinPair,std::vector<Double_t>> XYBinToValue;
-  TH1D *dRatioH = new TH1D("dRatio_1D","dRatio_1D;dRatio",500,-0.001,0.000010001);
-  TH1D *histogramRadius = new TH1D("dRatio_1DRad","dRatio vs Radius; R[mm] = #sqrt{(a_x*a_x *|a_x|/2000 + a_y*a_y* |a_y|/1000)};dRatio (inv sign)",200,0,6000);
-  TH1D *histogramRadiusNorm = new TH1D("dRatio_1DRadNorm","dRatio vs Radius norm",200,0,6000);
-  TH1D *histogramRadiusSlope = new TH1D("dRatio_1DRadSlope","dRatio vs RadiusSlope; R[mm] = #sqrt{(b_x*b_x *|b_x|/0.5 + a_y*a_y* |a_y|/0.1)};dRatio (inv sign)",200,0,3);
-  TH1D *histogramRadiusNormSlope = new TH1D("dRatio_1DRadNormSlope","dRatio vs Radius norm Slope",200,0,3);
+  TH1D *dRatioH = new TH1D("dRatio_1D","dRatio_1D;dRatio",500,-0.001,0.00001000);
+  TH1D *histogramRadius = new TH1D("dRatio_1DRad","dRatio vs Radius; R[mm] = #sqrt{(a_x*a_x *|a_x|/2000 + a_y*a_y* |a_y|/1000)};dRatio (inv sign)",100,0,4000);
+  TH2D *histogramRadiuRadius = new TH2D("dRatio_RadiusRadius","dRatio_RadiusRadius;RadiusGeometry;RadiusSlope",100,0,4000,100,0,1.8);
+  TH2D *histogramRadiuRadiusNorm = new TH2D("dRatio_RadiusRadiusNorm","dRatio_RadiusRadius",100,0,4000,100,0,1.8);
+  //x is the radius in axay y is the radius in slopes
+  TH1D *histogramRadiusNorm = new TH1D("dRatio_1DRadNorm","dRatio vs Radius norm",100,0,4000);
+  TH1D *histogramRadiusSlope = new TH1D("dRatio_1DRadSlope","dRatio vs RadiusSlope; R[mm] = #sqrt{(b_x*b_x *|b_x|/0.5 + a_y*a_y* |a_y|/0.1)};dRatio (inv sign)",100,0,1.8);
+  TH1D *histogramRadiusNormSlope = new TH1D("dRatio_1DRadNormSlope","dRatio vs Radius norm Slope",100,0,1.8);
 
 
-  TH2D *histogramRadVsRadSlope = new TH2D("dRatio_RadVsRadSlope","dRatio vs RadVsRadSlope",100,0,3,100,0,6000);
-  TH2D *histogramRadVsRadSlope_norm = new TH2D("dRatio_RadVsRadSlope","dRatio vs RadVsRadSlope",100,0,3,100,0,6000);
+  TH2D *histogramRadVsRadSlope = new TH2D("dRatio_RadVsRadSlope","dRatio vs RadVsRadSlope",100,0,1.8,100,0,4000);
+  TH2D *histogramRadVsRadSlope_norm = new TH2D("dRatio_RadVsRadSlope","dRatio vs RadVsRadSlope",100,0,1.8,100,0,4000);
 
   Int_t j=0;
   double data[nSelected*2];
@@ -86,21 +94,25 @@ void dRatioStudy(){
     //i have the dRatio Value the ax value and the ay value;
     //for (j=0;j<38;j++)
     /*-0.000001*/
-    //if(dRatio>-0.001 && dRatio<0  && P>2000){
-    if(dRatio<0 && P>2000 && eta<5 && eta>2){
+    if(dRatio>-0.001 && dRatio<0  && P>5000 && Ovtx_Z<2000  && eta>2 && eta<5 ){
+    //if(dRatio<0 && P>2000 && eta<5 && eta>2){
 
       dRatiobxby->Fill(by,bx,-dRatio);
       dRatiobxbyCount->Fill(by,bx);
       Double_t Radius = std::sqrt( abs(ax*ax*abs(ax)/(axis_X) + ay*ay*abs(ay)/(axis_Y)));
-      Double_t RadiusSlope = std::sqrt( abs(bx*bx+abs(bx)/0.5 + by*by*abs(by)/0.1));
+      Double_t RadiusSlope = std::sqrt( abs(bx*bx+abs(bx)/0.3 + by*by*abs(by)/0.1));
       histogramRadVsRadSlope->Fill(RadiusSlope,Radius,-dRatio);
       histogramRadVsRadSlope_norm->Fill(RadiusSlope,Radius);
-      
+      if(bx>0.45){
+         std::cout<<"Particle ID"<<ID<<std::endl;
+      }
       histogramRadiusSlope->Fill(RadiusSlope,-dRatio);
       histogramRadiusNormSlope->Fill(RadiusSlope);
-      std::cout<<"Radius = "<<Radius<<std::endl;
+      //std::cout<<"Radius = "<<Radius<<std::endl;
       histogramRadius->Fill(Radius,-dRatio);
       histogramRadiusNorm->Fill(Radius);
+      histogramRadiuRadius->Fill(Radius, RadiusSlope,-dRatio);
+      histogramRadiuRadiusNorm->Fill(Radius,RadiusSlope);
       j++;
       dRatioH->Fill(dRatio);
       data[nSelected+j]=ay;
@@ -121,7 +133,11 @@ void dRatioStudy(){
   histogramRadVsRadSlope->Divide(histogramRadVsRadSlope,histogramRadVsRadSlope_norm);
   c1->cd(6);
   histogramRadVsRadSlope->Draw("colz");
+  c1->cd(5);
+  histogramRadiuRadius->Divide(histogramRadiuRadius,histogramRadiuRadiusNorm);
+  histogramRadiuRadius->Draw("colz");
   c1->cd(1);
+
   histogramOld->Divide(histogramOld,histogramCount,1,1);
   histogramOld->Draw("colz");
   //dumpMap(histogramOld);

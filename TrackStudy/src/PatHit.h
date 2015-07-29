@@ -1,7 +1,11 @@
 #ifndef PatHit_H
 #define PatHit_H 1
 #include <TROOT.h>
-#include "./FTCluster.h"
+#include "FTCluster.h"
+#include <iostream>
+#include <cstring>
+#include <iomanip>
+
 class PatHit{
 
 public:
@@ -47,7 +51,8 @@ public:
     m_coord = coord;
     }
   void PrintHit(){
-    //std::cout<<i<<"\t"<<m_xa0t <<"\t"<<z(0.)<<"\t"<<m_hits[i].planeCode()<<"\t"<<m_hits[i].cluster().charge()<<"\t"<<m_hits[i].cluster().fraction()<<"\t"<<m_hits[i].cluster().size()<<"\t"<<m_hits[i].cluster().charge()<<std::endl;
+    std::cout<< "X at 0" << std::setw(20) << "z at 0" << std::setw(20) << "dxDy" << std::setw(20) << "planeCode" <<std::setw(20)<<"zone"<<std::setw(20)<<"Cl Size"<<std::setw(20)<<"fraction"<<std::setw(20)<<"charge"<<std::endl;
+    std::cout<< m_xatyEq0 << std::setw(20)<<m_zatyEq0<<std::setw(20)<<m_dxDy<<std::setw(20)<<m_planeCode<<std::setw(20)<<m_zone<<std::setw(20)<<m_Cluster.size()<<std::setw(20)<<m_Cluster.fraction()<<std::setw(20)<<m_Cluster.charge()<<std::endl;
   }
   void SetCluster(FTCluster cluster) {m_Cluster=cluster;}
   Float_t x(Float_t y=0) const{return m_xatyEq0+y*m_dxDy;}
@@ -59,6 +64,7 @@ public:
   FTCluster cluster() const{return m_Cluster;}
   Float_t w2() const{ return m_w2;}
   Float_t w() const{ return m_w;}
+  Bool_t isX() const{ return m_isX;}
 private:
 
   Float_t m_w;

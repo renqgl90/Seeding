@@ -7,6 +7,8 @@
 void Chi2StudyOnMCHit()
 {
   Double_t Phi;
+
+ 
   Double_t Pt;
   Double_t P;
   Double_t Eta;
@@ -139,7 +141,7 @@ void Chi2StudyOnMCHit()
 
     Phi_LineY->Fill(Phi,Chi2LineY);
     Phi_LineY_norm->Fill(Phi);
-
+    
     Phi_ParY->Fill(Phi,Chi2ParY);
     Phi_ParY_norm->Fill(Phi);
 
