@@ -46,6 +46,10 @@ char NameFile[100]="Analysed_Track.root";
 TFile*file = new TFile(NameFile,"RECREATE");
 TTree * t1 = new TTree("treee","Track_Fit");
 //Parabolic XZ
+//Track n Hits
+
+
+
 //------------------------------------------Track Fit Business with MCHits
 //------------ Parabolic XZ
 Double_t Chi2_ParabolaXZ;
@@ -107,6 +111,8 @@ Int_t NUV;
 
 
 //Coord hough transformation
+Double_t minY;
+Double_t maxY;
 Double_t minCoord;
 Double_t maxCoord;
 Double_t avgCoord;
@@ -138,18 +144,21 @@ Double_t YVT2Projected;
 Double_t OVTX_Z;
 Bool_t ISDOWN;
 Bool_t PhysicsInterest;
-Bool_t Case0Accepted;
-Bool_t Case1Accepted;
 Bool_t Case2Accepted;
 
-Double_t Chi2X_Case0;
-Double_t Chi2X_Case1;
 Double_t Chi2X_Case2;
 
+
+
+
+//Case 0
+Bool_t Case0Accepted;
+Double_t Chi2X_Case0;
 int NX_Case0;
-int NX_Case1;
-int NX_Case2;
 int NUV_Case0;
+Double_t ax_FitHitCase0;
+Double_t bx_FitHitCase0;
+Double_t cx_FitHitCase0;
 Double_t ax_fullFitCase0;
 Double_t bx_fullFitCase0;
 Double_t cx_fullFitCase0;
@@ -159,18 +168,14 @@ Double_t Chi2_fullFitCase0;
 Double_t MaxChi2_fullFitCase0;
 int NHits_fullFitCase0;
 Double_t y0_fullFitCase0;
-
-
-
-Double_t ax_FitHitCase2 ;
-Double_t bx_FitHitCase2;
-Double_t cx_FitHitCase2;
-Double_t ax_FitHitCase1 ;
-Double_t bx_FitHitCase1;
-Double_t cx_FitHitCase1;
-Double_t ax_FitHitCase0 ;
-Double_t bx_FitHitCase0;
-Double_t cx_FitHitCase0;
+Double_t tx_inf_Case0;
+Double_t x0_Case0;
+Double_t x_inf_Case0;
+Double_t Del_x_inf_Case0;
+Double_t tx_pickedcombination_Case0;
+Double_t DelxProjectedSeed1_Case0;
+Double_t DelxProjectedSeed2_Case0;
+Double_t MaxChi2Hit_Case0;
 Double_t ax_Case0_Seed1;
 Double_t bx_Case0_Seed1;
 Double_t cx_Case0_Seed1;
@@ -178,6 +183,53 @@ Double_t ax_Case0_Seed2;
 Double_t bx_Case0_Seed2;
 Double_t cx_Case0_Seed2;
 
+
+Double_t FitLineY_ay_case0;
+Double_t FitLineY_by_case0;
+Double_t FitLineY_Chi2_case0;
+Double_t FitLineY_Chi2DoF_case0;
+Double_t FitParY_Chi2_case0;
+Double_t FitParY_Chi2DoF_case0;
+
+
+Double_t FitLineY_ay_case1;
+Double_t FitLineY_by_case1;
+Double_t FitLineY_Chi2_case1;
+Double_t FitLineY_Chi2DoF_case1;
+Double_t FitParY_Chi2_case1;
+Double_t FitParY_Chi2DoF_case1;  
+Double_t FitLineY_ay_case2;
+Double_t FitLineY_by_case2;
+Double_t FitLineY_Chi2_case2;
+Double_t FitLineY_Chi2DoF_case2;
+Double_t FitParY_Chi2_case2;
+Double_t FitParY_Chi2DoF_case2;  
+
+//Case 1
+Bool_t Case1Accepted;
+Double_t Chi2X_Case1;
+int NX_Case1;
+int NUV_Case1;
+Double_t ax_FitHitCase1;
+Double_t bx_FitHitCase1;
+Double_t cx_FitHitCase1;
+Double_t ax_fullFitCase1;
+Double_t bx_fullFitCase1;
+Double_t cx_fullFitCase1;
+Double_t ay_fullFitCase1;
+Double_t by_fullFitCase1;
+Double_t Chi2_fullFitCase1;
+Double_t MaxChi2_fullFitCase1;
+int NHits_fullFitCase1;
+Double_t y0_fullFitCase1;
+Double_t tx_inf_Case1;
+Double_t x0_Case1;
+Double_t x_inf_Case1;
+Double_t Del_x_inf_Case1;
+Double_t tx_pickedcombination_Case1;
+Double_t DelxProjectedSeed1_Case1;
+Double_t DelxProjectedSeed2_Case1;
+Double_t MaxChi2Hit_Case1;
 Double_t ax_Case1_Seed1;
 Double_t bx_Case1_Seed1;
 Double_t cx_Case1_Seed1;
@@ -185,7 +237,29 @@ Double_t ax_Case1_Seed2;
 Double_t bx_Case1_Seed2;
 Double_t cx_Case1_Seed2;
 
-
+//Case 2
+int NX_Case2;
+int NUV_Case2;
+Double_t ax_FitHitCase2 ;
+Double_t bx_FitHitCase2;
+Double_t cx_FitHitCase2;
+Double_t ax_fullFitCase2;
+Double_t bx_fullFitCase2;
+Double_t cx_fullFitCase2;
+Double_t ay_fullFitCase2;
+Double_t by_fullFitCase2;
+Double_t Chi2_fullFitCase2;
+Double_t MaxChi2_fullFitCase2;
+int NHits_fullFitCase2;
+Double_t y0_fullFitCase2;
+Double_t tx_inf_Case2;
+Double_t x0_Case2;
+Double_t x_inf_Case2;
+Double_t Del_x_inf_Case2;
+Double_t tx_pickedcombination_Case2;
+Double_t DelxProjectedSeed1_Case2;
+Double_t DelxProjectedSeed2_Case2;
+Double_t MaxChi2Hit_Case2;
 Double_t ax_Case2_Seed1;
 Double_t bx_Case2_Seed1;
 Double_t cx_Case2_Seed1;
@@ -193,66 +267,80 @@ Double_t ax_Case2_Seed2;
 Double_t bx_Case2_Seed2;
 Double_t cx_Case2_Seed2;
 
-Double_t tx_inf_Case0;
-Double_t tx_inf_Case1;
-Double_t tx_inf_Case2;
-
-
-Double_t x0_Case0;
-Double_t x0_Case1;
-Double_t x0_Case2;
-
-Double_t x_inf_Case0;
-Double_t x_inf_Case1;
-Double_t x_inf_Case2;
-
-Double_t Del_x_inf_Case0;
-Double_t Del_x_inf_Case1;
-Double_t Del_x_inf_Case2;
-
-Double_t tx_pickedcombination_Case0;
-Double_t tx_pickedcombination_Case1;
-Double_t tx_pickedcombination_Case2;
-
-Double_t DelxProjectedSeed1_Case0;
-Double_t DelxProjectedSeed1_Case1;
-Double_t DelxProjectedSeed1_Case2;
-
-Double_t DelxProjectedSeed2_Case0;
-Double_t DelxProjectedSeed2_Case1;
-Double_t DelxProjectedSeed2_Case2;
-
-Double_t MaxChi2Hit_Case0;
-Double_t MaxChi2Hit_Case1;
-Double_t MaxChi2Hit_Case2;
 
 
 void TrackStudy::Begin(TTree * /*tree*/)
 {
-  t1->Branch("ax_fullFitCase0",&ax_fullFitCase0,"ax_fullFitCase0/D");
-  t1->Branch("bx_fullFitCase0",&bx_fullFitCase0,"bx_fullFitCase0/D");
-  t1->Branch("cx_fullFitCase0",&cx_fullFitCase0,"cx_fullFitCase0/D");
-  t1->Branch("ay_fullFitCase0",&ay_fullFitCase0,"ay_fullFitCase0/D");
-  t1->Branch("by_fullFitCase0",&by_fullFitCase0,"by_fullFitCase0/D");
-  t1->Branch("Chi2_fullFitCase0",&Chi2_fullFitCase0,"Chi2_fullFitCase0/D");
-  t1->Branch("MaxChi2_fullFitCase0",&MaxChi2_fullFitCase0,"MaxChi2_fullFitCase0/D");
-  t1->Branch("NHits_fullFitCase0",&NHits_fullFitCase0,"NHits_fullFitCase0/I");
-  t1->Branch("y0_fullFitCase0",&y0_fullFitCase0,"y0_fullFitCase0");
+   //Y segment fit with XZ fit
+  //case 0
+   t1->Branch("FitLineY_ay_case0",& FitLineY_ay_case0,"FitLineY_ay_case0/D");
+   t1->Branch("FitLineY_by_case0",& FitLineY_by_case0,"FitLineY_by_case0/D");
+   t1->Branch("FitLineY_Chi2_case0",& FitLineY_Chi2_case0,"FitLineY_Chi2_case0/D");
+   t1->Branch("FitLineY_Chi2DoF_case0",& FitLineY_Chi2DoF_case0,"FitLineY_Chi2DoF_case0/D");
+   t1->Branch("BestUV_NHits_case0",& NUV_Case0, "BestUV_NHits_case0/I");
 
-    t1->Branch("ax_FitHitCase0",&ax_FitHitCase0,"ax_FitHitCase0/D");
-    t1->Branch("bx_FitHitCase0",&bx_FitHitCase0,"bx_FitHitCase0/D");
-    t1->Branch("cx_FitHitCase0",&cx_FitHitCase0,"cx_FitHitCase0/D");
-    t1->Branch("ax_FitHitCase1",&ax_FitHitCase1,"ax_FitHitCase1/D");
-    t1->Branch("bx_FitHitCase1",&bx_FitHitCase1,"bx_FitHitCase1/D");
-    t1->Branch("cx_FitHitCase1",&cx_FitHitCase1,"cx_FitHitCase1/D");
-    t1->Branch("ax_FitHitCase2",&ax_FitHitCase2,"ax_FitHitCase2/D");
-    t1->Branch("bx_FitHitCase2",&bx_FitHitCase2,"bx_FitHitCase2/D");
-    t1->Branch("cx_FitHitCase2",&cx_FitHitCase2,"cx_FitHitCase2/D");
+   t1->Branch("FitLineY_ay_case1",& FitLineY_ay_case1,"FitLineY_ay_case1/D");
+   t1->Branch("FitLineY_by_case1",& FitLineY_by_case1,"FitLineY_by_case1/D");
+   t1->Branch("FitLineY_Chi2_case1",& FitLineY_Chi2_case1,"FitLineY_Chi2_case1/D");
+   t1->Branch("FitLineY_Chi2DoF_case1",& FitLineY_Chi2DoF_case1,"FitLineY_Chi2DoF_case1/D"); 
+   t1->Branch("BestUV_NHits_case1",& NUV_Case1, "BestUV_NHits_case1/I");
+
+   t1->Branch("FitLineY_ay_case2",& FitLineY_ay_case2,"FitLineY_ay_case2/D");
+   t1->Branch("FitLineY_by_case2",& FitLineY_by_case2,"FitLineY_by_case2/D");
+   t1->Branch("FitLineY_Chi2_case2",& FitLineY_Chi2_case2,"FitLineY_Chi2_case2/D");
+   t1->Branch("FitLineY_Chi2DoF_case2",& FitLineY_Chi2DoF_case2,"FitLineY_Chi2DoF_case2/D");  
+   t1->Branch("BestUV_NHits_case2",& NUV_Case2, "BestUV_NHits_case2/I");
+
+   //Full fit case 0
+   t1->Branch("ax_fullFitCase0",&ax_fullFitCase0,"ax_fullFitCase0/D");
+   t1->Branch("bx_fullFitCase0",&bx_fullFitCase0,"bx_fullFitCase0/D");
+   t1->Branch("cx_fullFitCase0",&cx_fullFitCase0,"cx_fullFitCase0/D");
+   t1->Branch("ay_fullFitCase0",&ay_fullFitCase0,"ay_fullFitCase0/D");
+   t1->Branch("by_fullFitCase0",&by_fullFitCase0,"by_fullFitCase0/D");
+   t1->Branch("Chi2_fullFitCase0",&Chi2_fullFitCase0,"Chi2_fullFitCase0/D");
+   t1->Branch("MaxChi2_fullFitCase0",&MaxChi2_fullFitCase0,"MaxChi2_fullFitCase0/D");
+   t1->Branch("NHits_fullFitCase0",&NHits_fullFitCase0,"NHits_fullFitCase0/I");
+   t1->Branch("y0_fullFitCase0",&y0_fullFitCase0,"y0_fullFitCase0/D");
 
 
-  t1->Branch("MaxChi2Hit_Case0",&MaxChi2Hit_Case0,"MaxChi2Hit_Case0/D");
-  t1->Branch("MaxChi2Hit_Case1",&MaxChi2Hit_Case1,"MaxChi2Hit_Case1/D");
-  t1->Branch("MaxChi2Hit_Case2",&MaxChi2Hit_Case2,"MaxChi2Hit_Case2/D");
+   //Full fit case 1
+
+   t1->Branch("ax_fullFitCase1",&ax_fullFitCase1,"ax_fullFitCase1/D");
+   t1->Branch("bx_fullFitCase1",&bx_fullFitCase1,"bx_fullFitCase1/D");
+   t1->Branch("cx_fullFitCase1",&cx_fullFitCase1,"cx_fullFitCase1/D");
+   t1->Branch("ay_fullFitCase1",&ay_fullFitCase1,"ay_fullFitCase1/D");
+   t1->Branch("by_fullFitCase1",&by_fullFitCase1,"by_fullFitCase1/D");
+   t1->Branch("Chi2_fullFitCase1",&Chi2_fullFitCase1,"Chi2_fullFitCase1/D");
+   t1->Branch("MaxChi2_fullFitCase1",&MaxChi2_fullFitCase1,"MaxChi2_fullFitCase1/D");
+   t1->Branch("NHits_fullFitCase1",&NHits_fullFitCase1,"NHits_fullFitCase1/I");
+   t1->Branch("y0_fullFitCase1",&y0_fullFitCase1,"y0_fullFitCase1/D");
+
+   //Full fit case 2
+   t1->Branch("ax_fullFitCase2",&ax_fullFitCase2,"ax_fullFitCase2/D");
+   t1->Branch("bx_fullFitCase2",&bx_fullFitCase2,"bx_fullFitCase2/D");
+   t1->Branch("cx_fullFitCase2",&cx_fullFitCase2,"cx_fullFitCase2/D");
+   t1->Branch("ay_fullFitCase2",&ay_fullFitCase2,"ay_fullFitCase2/D");
+   t1->Branch("by_fullFitCase2",&by_fullFitCase2,"by_fullFitCase2/D");
+   t1->Branch("Chi2_fullFitCase2",&Chi2_fullFitCase2,"Chi2_fullFitCase2/D");
+   t1->Branch("MaxChi2_fullFitCase2",&MaxChi2_fullFitCase2,"MaxChi2_fullFitCase2/D");
+   t1->Branch("NHits_fullFitCase2",&NHits_fullFitCase2,"NHits_fullFitCase2/I");
+   t1->Branch("y0_fullFitCase2",&y0_fullFitCase2,"y0_fullFitCase2/D");
+
+   // Fit XZ Case 0 ,1 ,2
+   t1->Branch("ax_FitHitCase0",&ax_FitHitCase0,"ax_FitHitCase0/D");
+   t1->Branch("bx_FitHitCase0",&bx_FitHitCase0,"bx_FitHitCase0/D");
+   t1->Branch("cx_FitHitCase0",&cx_FitHitCase0,"cx_FitHitCase0/D");
+   t1->Branch("ax_FitHitCase1",&ax_FitHitCase1,"ax_FitHitCase1/D");
+   t1->Branch("bx_FitHitCase1",&bx_FitHitCase1,"bx_FitHitCase1/D");
+   t1->Branch("cx_FitHitCase1",&cx_FitHitCase1,"cx_FitHitCase1/D");
+   t1->Branch("ax_FitHitCase2",&ax_FitHitCase2,"ax_FitHitCase2/D");
+   t1->Branch("bx_FitHitCase2",&bx_FitHitCase2,"bx_FitHitCase2/D");
+   t1->Branch("cx_FitHitCase2",&cx_FitHitCase2,"cx_FitHitCase2/D");
+
+//Solve Parabola Seed 1 /2 Case 0,1,2
+   t1->Branch("MaxChi2Hit_Case0",&MaxChi2Hit_Case0,"MaxChi2Hit_Case0/D");
+   t1->Branch("MaxChi2Hit_Case1",&MaxChi2Hit_Case1,"MaxChi2Hit_Case1/D");
+   t1->Branch("MaxChi2Hit_Case2",&MaxChi2Hit_Case2,"MaxChi2Hit_Case2/D");
    t1->Branch("ax_Case0_Seed1",&ax_Case0_Seed1,"ax_Case0_Seed1/D");
    t1->Branch("bx_Case0_Seed1",&bx_Case0_Seed1,"bx_Case0_Seed1/D");
    t1->Branch("cx_Case0_Seed1",&cx_Case0_Seed1,"cx_Case_Seed1/D");
@@ -317,7 +405,9 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("minCoord",&minCoord,"minCoord/D");
    t1->Branch("maxCoord",&maxCoord,"maxCoord/D");
    t1->Branch("avgCoord",&avgCoord,"avgCoord/D");
-   t1->Branch("NUV",&NUV,"NUV/D");
+   t1->Branch("minY",&minY,"minY/D");
+   t1->Branch("maxY",&maxY,"maxY/D");
+   t1->Branch("NUV",&NUV,"NUV/I");
    //t1->Branch("nCombT1",nCombT1,"nCombT1/D");
    //t1->Branch("DeltaYT1",)
    t1->Branch("DeltaXT1BestCorrSlopeTy",&DeltaXBestCombCorrSlopeY,"DeltaXT1BestCorrSlopeTy/D");
@@ -428,15 +518,15 @@ void TrackStudy::SlaveBegin(TTree * /*tree*/)
 Bool_t TrackStudy::Process(Long64_t entry, Bool_t debug)
 {
 
-  // std::cout<"Processing Entry = "<<entry<<std::endl;
-  fChain->GetTree()->GetEntry(entry);
-  // std::cout<"Processing Entry = "<<entry<<std::endl;
-  //Bool_t debug = true;
-  if(!(PrHit>1)) return kTRUE;
-  if(debug) std::cout<<"Ciao"<<std::endl;
+   // std::cout<"Processing Entry = "<<entry<<std::endl;
+   fChain->GetTree()->GetEntry(entry);
+   // std::cout<"Processing Entry = "<<entry<<std::endl;
+   //Bool_t debug = true;
+   if(!(PrHit>1)) return kTRUE;
+   if(debug) std::cout<<"Ciao"<<std::endl;
    // HERE DEBUG AND PRINT AT VIDEO OF HIT CONTENT
-  Double_t PCut =0;
-  ISLONG= isLong;
+   Double_t PCut =0;
+   ISLONG= isLong;
    ISDOWN = isDown;
    IsElectron = isElectron;
    MCParticleiD = MCParticleID;
@@ -490,9 +580,9 @@ Bool_t TrackStudy::Process(Long64_t entry, Bool_t debug)
 
    Case0Accepted =  XZStudyCase0(xProj,UVSegment,debug);
    // Case 1 first -2 last =11;
-   Case1Accepted = XZStudyCase1(xProj,debug);
+   Case1Accepted = XZStudyCase1(xProj,UVSegment,debug);
    //Case 2 first -1 last =8;
-   Case2Accepted = XZStudyCase2(xProj,debug);
+   Case2Accepted = XZStudyCase2(xProj,UVSegment,debug);
 
    t1->Fill();
    if(PrHit<9) return kTRUE;
@@ -537,12 +627,12 @@ Bool_t TrackStudy::fitXProjection(PrSeedTrack & track, Bool_t debug)
    float dRatio=m_dRatio0;
    track.setdRatio(dRatio);
    for(int loop = 0;3>loop;++loop){
-     std::fill(mat,mat+6,0.);
-     std::fill(rhs,rhs+3,0.);
-     if(debug) std::cout<<"******************* Fit Loop "<<loop<<"*********************"<<std::endl;
-     for( int i=0;i<Hits.size();i++){
-       const float w = Hits[i].w2();
-       if(debug) std::cout<<"Hit w2"<<Hits[i].w2()<<std::endl;
+      std::fill(mat,mat+6,0.);
+      std::fill(rhs,rhs+3,0.);
+      if(debug) std::cout<<"******************* Fit Loop "<<loop<<"*********************"<<std::endl;
+      for( int i=0;i<Hits.size();i++){
+         const float w = Hits[i].w2();
+         if(debug) std::cout<<"Hit w2"<<Hits[i].w2()<<std::endl;
          const float dz = Hits[i].z(0.)-m_zReference;
          float deta = dz*dz*(1.+m_dRatio0*dz);
          //if(m_usedRatio){
@@ -564,8 +654,8 @@ Bool_t TrackStudy::fitXProjection(PrSeedTrack & track, Bool_t debug)
 
       ROOT::Math::CholeskyDecomp<float,3> decomp(mat);
       if(!decomp){
-        std::cout<<"Failed to decompose matrix"<<std::endl;
-        return false;
+         std::cout<<"Failed to decompose matrix"<<std::endl;
+         return false;
       }
       decomp.Solve(rhs);
       track.updateParameters(rhs[0],rhs[1],rhs[2],0.,0.,0.);
@@ -773,7 +863,7 @@ void TrackStudy::FitHits(Bool_t debug){
    bx_par=solution_xz_par[1];
    cx_par=solution_xz_par[2];
 
-   ay_line=solution_yz_line[0]-solution_yz_line[0];
+   ay_line=solution_yz_line[0];
    by_line=solution_yz_line[1];
 
    ay_par=solution_yz_par[0];
@@ -926,6 +1016,47 @@ void TrackStudy::CountClones(PrSeedTrack fullTrack,Bool_t debug){
 
 bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t debug){
 
+   NUV_Case0 = -10;
+   ax_Case0_Seed1 = -99.;
+   bx_Case0_Seed1 = -99.;
+   cx_Case0_Seed1 = -99.;
+   ax_Case0_Seed2 = -9999.;
+   bx_Case0_Seed2 = -99.;
+   cx_Case0_Seed2 = -99.;
+   Chi2X_Case0 = -99.;
+   NX_Case0 = -1;
+   tx_inf_Case0 = -99.;
+   x0_Case0 = -99.;
+   x_inf_Case0 = -99.;
+   Del_x_inf_Case0 = -99.;
+   tx_pickedcombination_Case0 = -99.;
+   DelxProjectedSeed2_Case0 = -99.;
+   DelxProjectedSeed1_Case0 = -99.;
+   MaxChi2Hit_Case0 = -99.;
+   //Full Fit
+   ax_FitHitCase0 = -99.;
+   bx_FitHitCase0 = -99.;
+   cx_FitHitCase0 = -99.;
+
+   ax_fullFitCase0 = -9999.;
+   bx_fullFitCase0= -99.;
+   cx_fullFitCase0 = -99.;
+   ay_fullFitCase0 = -9999.;
+   by_fullFitCase0 = -99.;
+   Chi2_fullFitCase0 =  -99.;
+   MaxChi2_fullFitCase0 = -99.;
+   NHits_fullFitCase0= -1;
+   y0_fullFitCase0 = -9999.;
+
+
+   FitLineY_ay_case0 = -999;
+   FitLineY_by_case0 = -999;
+   FitLineY_Chi2_case0= -999;
+   FitLineY_Chi2DoF_case0= -999;
+   FitParY_Chi2_case0= -999;
+   FitParY_Chi2DoF_case0= -999;
+   
+
    // if(debug) std::cout<<"Start XZ study"<<std::endl;
    //extract the T1X hit
    //std::vector<PatHit>  XZHit;
@@ -1031,30 +1162,8 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    bool PrelimSele_Case0 = false;
    if(Case0First.size()!=0 && Case0Last.size()!=0 && (ParabolaSeedHits1.size()!=0 || ParabolaSeedHits2.size()!=0)) PrelimSele_Case0 = true;
 
-   ax_Case0_Seed1 = -99.;
-   bx_Case0_Seed1 = -99.;
-   cx_Case0_Seed1 = -99.;
-   ax_Case0_Seed2 = -99.;
-   bx_Case0_Seed2 = -99.;
-   cx_Case0_Seed2 = -99.;
-   Chi2X_Case0 = -99.;
-   NX_Case0 = -1;
-   tx_inf_Case0 = -99.;
-   x0_Case0 = -99.;
-   x_inf_Case0 = -99.;
-   Del_x_inf_Case0 = -99.;
-   tx_pickedcombination_Case0 = -99.;
-   DelxProjectedSeed2_Case0 = -99.;
-   DelxProjectedSeed1_Case0 = -99.;
-   MaxChi2Hit_Case0 = -99.;
-   //Full Fit
-   ax_FitHitCase0 = -99.;
-   bx_FitHitCase0 = -99.;
-   cx_FitHitCase0 = -99.;
-   ax_fullFitCase0 = -99.;
-   bx_fullFitCase0= -99.;
-   NHits_fullFitCase0 = -1;
-   y0_fullFitCase0 = -9999.;
+
+
    //std::vector<double> DeltaZ;
    if(PrelimSele_Case0)
    {
@@ -1268,22 +1377,25 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       {
          std::vector<std::pair<PrSeedTrack,double>> trackChi2;
          for(int i = 0;i<xProjections.size();i++){
-           fitXProjection(xProjections[i],debug);
+            fitXProjection(xProjections[i],debug);
          }
          std::sort(xProjections.begin(),xProjections.end(),[](PrSeedTrack val1, PrSeedTrack val2)->bool{return val1.chi2XnDoF()<val2.chi2XnDoF();});
       }
       PrSeedTrack bestXZ = xProjections[0];
       bool OK = false;
       OK = fitXProjection(bestXZ,debug);
+
+
+      ax_FitHitCase0 = bestXZ.ax();
+      bx_FitHitCase0 = bestXZ.bx();
+      cx_FitHitCase0 = bestXZ.cx();
+
       if(!OK){
          bestXZ.PrintHits();
          std::cout<<"Case 0:  Chi2 ="<<setw(20)<<bestXZ.chi2X()<<std::endl;
          std::cout<<"         NDOF ="<<setw(20)<<bestXZ.ndofX()<<std::endl;
          std::cout<<"     Chi2NdoF ="<<setw(20)<<bestXZ.chi2XnDoF()<<std::endl;
       }
-      ax_FitHitCase0 = bestXZ.ax();
-      bx_FitHitCase0 = bestXZ.bx();
-      cx_FitHitCase0 = bestXZ.cx();
 
       //Case 0 first Plane = 0; Last = 11;
       PatHit first = bestXZ.hitInPlane(0);
@@ -1295,7 +1407,9 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          PrelimSele_Case0 = false;
       }
       tx_inf_Case0 = first.x(0.)/first.z(0.);
+      //if(NX_Case0 <4){ bestXZ.PrintHits(); }
       NX_Case0= bestXZ.hits().size();
+      if(NX_Case0 <4){ Case0Accepted = false; }
       Chi2X_Case0 =bestXZ.chi2X();
       MaxChi2Hit_Case0 = bestXZ.maxChi2Hit();
       tx_inf_Case0 =first.x(0.)/first.z(0.);
@@ -1317,32 +1431,187 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       }
 
       for(int i = 0; i<PrHit; i++){
-        PatHit hit = PatHit();
-        hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
-        FTCluster cluster;
-        cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
-        hit.SetCluster(cluster);
-        if(!hit.isX())   bestXZ.addHit(hit);
+         PatHit hit = PatHit();
+         hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+         FTCluster cluster;
+         cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
+         hit.SetCluster(cluster);
+         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX())bestXZ.addHit(hit);
 
       }
       bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
+
+      int nT1U = bestXZ.nHitsInPlane( 1 );
+      int nT1V = bestXZ.nHitsInPlane( 2 );
+      int nT2U = bestXZ.nHitsInPlane( 5 );
+      int nT2V = bestXZ.nHitsInPlane( 6 );
+      int nT3U = bestXZ.nHitsInPlane( 9 );
+      int nT3V = bestXZ.nHitsInPlane( 10 );
+
+      std::vector<PatHit> hitT1U = bestXZ.hitsinPlane(1);
+      std::vector<PatHit> hitT1V = bestXZ.hitsinPlane(2);
+      std::vector<PatHit> hitT2U = bestXZ.hitsinPlane(5);
+      std::vector<PatHit> hitT2V = bestXZ.hitsinPlane(6);
+      std::vector<PatHit> hitT3U = bestXZ.hitsinPlane(9);
+      std::vector<PatHit> hitT3V = bestXZ.hitsinPlane(10);
+
+      std::vector<PatHit> HitsUVT1 = hitT1U;
+      HitsUVT1.insert(HitsUVT1.end(),hitT1V.begin(),hitT1V.end());
+
+      std::vector<PatHit> HitsUVT2 = hitT2U;
+      HitsUVT2.insert(HitsUVT2.end(),hitT2V.begin(),hitT2V.end());
+
+      std::vector<PatHit> HitsUVT3 = hitT3U;
+      HitsUVT3.insert(HitsUVT3.end(),hitT3V.begin(),hitT3V.end());
+
+      //if(nT1U>1){std::cout<<"Has duplicate in T1U"<<std::endl; bestXZ.PrintHits(); bestXZ.removeAllHitInPlane(1); std::cout<<"removed duplicates in plane 1"<<std::endl; bestXZ.PrintHits();}
+      PrSeedTracks bestXZplusUV;
+      if(nT1U+nT1V ==0) {PrelimSele_Case0 = false; std::cout<<"NO Hits in U + V stereo T1!"<<std::endl;}
+      if(nT2U+nT2V ==0) {PrelimSele_Case0 = false; std::cout<<"NO Hits in U + V stereo T2!"<<std::endl;}
+      if(nT3U+nT3V ==0) {PrelimSele_Case0 = false; std::cout<<"NO Hits in U + V stereo T3!"<<std::endl;}
+      bool FindBest = false;
+      PrSeedTrack beforeFindBest = bestXZ;
+
+      if( (nT1U+nT1V)*(nT2U+nT2V)*(nT3U+nT3V) != 0){ //reconstructibility
+         if(nT1U>1){bestXZ.removeAllHitInPlane(1); FindBest= true;}
+         if(nT1V>1){bestXZ.removeAllHitInPlane(2); FindBest= true;}
+         if(nT2U>1){bestXZ.removeAllHitInPlane(5); FindBest = true;}
+         if(nT2V>1){bestXZ.removeAllHitInPlane(6); FindBest = true;}
+         if(nT3U>1){bestXZ.removeAllHitInPlane(9); FindBest = true;}
+         if(nT3V>1){bestXZ.removeAllHitInPlane(10); FindBest = true;}
+         PrSeedTracks xzplussingleUVcombinations;
+         bestXZ.sortbyZ();
+      }
+      double minChi2 = bestXZ.Chi2()+1e3;
+      PrSeedTrack BestCombination = PrSeedTrack(0, m_zReference);
+      if(FindBest){ // if you enter here you have removed in one of the layer all the hits
+         for(int i = 0 ; i< HitsUVT1.size();i++){
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) == 0){
+               bestXZ.addHit(HitsUVT1[i]);
+            }
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) >0 ){
+               bestXZ.substituteHitinSameLayer( HitsUVT1[i]); //will be dummy if already present 1 single hit, if not it really makes the susbtitution
+            }
+            for(int j = 0 ; j<HitsUVT2.size();j++){
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())==0){
+                  bestXZ.addHit(HitsUVT2[j]);
+               }
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())>0){
+                  bestXZ.substituteHitinSameLayer( HitsUVT2[j]);
+               }
+               for( int k = 0; k< HitsUVT3.size(); k++){
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())==0){
+                     bestXZ.addHit(HitsUVT3[k]);
+                  }
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())>0){
+                     bestXZ.substituteHitinSameLayer(HitsUVT3[k]);
+
+                     bestXZ.sortbyZ();
+                     //bestXZ.PrintTrack();
+                     bool Ok =  FitSimultaneouslyXY(bestXZ, UVSegment, false);
+                     if(bestXZ.Chi2()< minChi2){
+                        minChi2 = bestXZ.Chi2();
+                        BestCombination = bestXZ;
+                     }
+                  }
+               }
+            }
+         }
+         if(debug){
+         //need to find best combination of the UV layers hit
+            if(nT1U>1)
+            {  std::cout<<"Had duplicate in T1U"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT2U>1)
+            {  std::cout<<"Had duplicate in T2U"<<std::endl;}
+            if(nT2V>1)
+            {  std::cout<<"Had duplicate in T2V"<<std::endl;}
+            if(nT3U>1)
+            {  std::cout<<"Had duplicate in T3U"<<std::endl;}
+            if(nT3V>1)
+            {  std::cout<<"Had duplicate in T3V"<<std::endl;}
+         }
+         // std::cout<<"\n \n ===================Before Finding the best track==================="<<std::endl;
+         // beforeFindBest.PrintHits();
+         // beforeFindBest.PrintTrack();
+         // std::cout<<"\n \n ===========================Best Combination=====================\n\n"<<std::endl;
+         // BestCombination.PrintHits();
+         // BestCombination.PrintTrack();
+         // std::cout<<"\n \n"<<std::endl;
+         // for(layer1){
+         bestXZ=BestCombination;
+      }
+      PrSeedTrack BestUVSegment = PrSeedTrack(bestXZ.zone(), m_zReference);
+      for(int i =0; i<bestXZ.hits().size(); i++){
+         if( !bestXZ.hits()[i].isX()){
+            BestUVSegment.addHit(bestXZ.hits()[i]);
+         }
+      }
+      if(debug) {
+         std::cout<<"Best UV Segment Case0"<<std::endl;
+         BestUVSegment.PrintHits();
+      }
+
+      //Fit a single Line for It.
+      BestUVSegment.setParameters( ax_FitHitCase0, bx_FitHitCase0, cx_FitHitCase0 ,0,0);
+      FitLine(BestUVSegment,debug, 0);
+      NUV_Case0 = (int)BestUVSegment.hits().size();
+
       //std::cout<<"ax = "<<bestXZ.ax();
-       ax_fullFitCase0 = (Double_t )bestXZ.ax();
-       bx_fullFitCase0= (Double_t )bestXZ.bx();
-       cx_fullFitCase0 =  (Double_t )bestXZ.cx();
-       ay_fullFitCase0 =  (Double_t )bestXZ.ay();
-       by_fullFitCase0 =  (Double_t )bestXZ.by();
-       Chi2_fullFitCase0 =  (Double_t )bestXZ.Chi2();
-       MaxChi2_fullFitCase0 =  (Double_t )bestXZ.maxChi2Hit();
-       NHits_fullFitCase0= (int)bestXZ.hits().size();
-       y0_fullFitCase0 =  (Double_t )bestXZ.y(0.);
+      ax_fullFitCase0 = (Double_t )bestXZ.ax();
+      bx_fullFitCase0= (Double_t )bestXZ.bx();
+      cx_fullFitCase0 =  (Double_t )bestXZ.cx();
+      ay_fullFitCase0 =  (Double_t )bestXZ.ay();
+      by_fullFitCase0 =  (Double_t )bestXZ.by();
+      Chi2_fullFitCase0 =  (Double_t )bestXZ.Chi2();
+      MaxChi2_fullFitCase0 =  (Double_t )bestXZ.maxChi2Hit();
+      NHits_fullFitCase0= (int)bestXZ.hits().size();
+      y0_fullFitCase0 =  (Double_t )bestXZ.y(0.);
       if(debug) std::cout<<"Number of XZ Projections after erase"<<xProjections.size()<<std::endl;
    }
    //End Case 0 Prelim Sele
    return PrelimSele_Case0;
 }
 
-bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
+bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool_t debug){
+  NUV_Case1 = -10;
+  ax_Case1_Seed1 = -99.;
+  bx_Case1_Seed1 = -99.;
+  cx_Case1_Seed1 = -99.;
+  ax_Case1_Seed1 = -99.;
+  bx_Case1_Seed1 = -99.;
+  cx_Case1_Seed1 = -99.;
+  
+   Chi2X_Case1 = -99.;
+   NX_Case1 = -1;
+   tx_inf_Case1 = -99.;
+   x0_Case1 = -99.;
+   x_inf_Case1 = -99.;
+   Del_x_inf_Case1 = -99.;
+   tx_pickedcombination_Case1 = -99.;
+   DelxProjectedSeed2_Case1 = -99.;
+   DelxProjectedSeed1_Case1 = -99.;
+   MaxChi2Hit_Case1= -99;
+
+   ax_FitHitCase1 = -99.;
+   bx_FitHitCase1 = -99.;
+   cx_FitHitCase1 = -99.;
+
+   ax_fullFitCase1 = -9999.;
+   bx_fullFitCase1= -99.;
+   cx_fullFitCase1 = -99.;
+   ay_fullFitCase1 = -9999.;
+   by_fullFitCase1 = -99.;
+   Chi2_fullFitCase1 =  -99.;
+   MaxChi2_fullFitCase1 = -99.;
+   NHits_fullFitCase1 = -1;
+   y0_fullFitCase1 = -9999.;
+
+
 
    std::vector<PatHit> Case1First ;
    Case1First.reserve(10);
@@ -1396,25 +1665,6 @@ bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
    if(Case1First.size()!=0 && Case1Last.size()!=0 && (ParabolaSeedHits1.size()!=0 || ParabolaSeedHits2.size()!=0)){
       PrelimSele_Case1 = true;
    }
-   Chi2X_Case1 = -99.;
-   NX_Case1 = -1;
-   tx_inf_Case1 = -99.;
-   x0_Case1 = -99.;
-   x_inf_Case1 = -99.;
-   Del_x_inf_Case1 = -99.;
-   tx_pickedcombination_Case1 = -99.;
-   DelxProjectedSeed2_Case1 = -99.;
-   DelxProjectedSeed1_Case1 = -99.;
-   MaxChi2Hit_Case1= -99;
-   ax_Case1_Seed1 = -99.;
-   bx_Case1_Seed1 = -99.;
-   cx_Case1_Seed1 = -99.;
-   ax_Case1_Seed1 = -99.;
-   bx_Case1_Seed1 = -99.;
-   cx_Case1_Seed1 = -99.;
-   ax_FitHitCase1 = -99.;
-   bx_FitHitCase1 = -99.;
-   cx_FitHitCase1 = -99.;
 
    if(PrelimSele_Case1){
       m_physicalCase1Intrinsic++;
@@ -1427,16 +1677,8 @@ bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
          for(int j = 0;j<Case1Last.size();j++)
          {
             if(debug) std::cout<<"Second Hit"<<std::endl;
-            //Case1Last[j].PrintHit();
             if(debug) std::cout<<"Loop Last Layer"<<std::endl;
-            // double deltaz = Case1Last[j].z()-Case1First[i].z();
-            // double tx_pickedcombination = ( Case1Last[j].x(0.)-Case1First[i].x(0.))  /( Case1Last[j].z()-Case1First[i].z());
-            // double xFirstProjected = Case1First[i].x(0.) + Case1First[i].x(0.)/Case1First[i].z(0.)*( deltaz);
-            // double txinf = Case1First[i].x(0.)/Case1First[i].z(0.);
-            //PrSeedTrack xProjection1(0, m_zReference);
-            //PatHit fHit = Case1First[i];
 
-            //PatHit lHit = Case1Last[j];
             if(debug) std::cout<<"Loop Last "<<std::endl;
             if(debug) std::cout<<"parabolaSeedHits1 sizee   "<<ParabolaSeedHits1.size()<<std::endl;
             //FInd Given the parabolaSeedHit1 the best combination
@@ -1640,7 +1882,7 @@ bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
       {
          std::vector<std::pair<PrSeedTrack,double>> trackChi2;
          for(int i = 0;i<xProjections.size();i++){
-           fitXProjection(xProjections[i],debug);
+            fitXProjection(xProjections[i],debug);
          }
          std::sort(xProjections.begin(),xProjections.end(),[](PrSeedTrack val1, PrSeedTrack val2)->bool{return val1.chi2XnDoF()<val2.chi2XnDoF();});
       }
@@ -1675,6 +1917,7 @@ bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
       }
       tx_inf_Case1 = first.x(0.)/first.z(0.);
       NX_Case1= bestXZ.hits().size();
+      if(NX_Case1 <4){Case1Accepted = false;}
       Chi2X_Case1 =bestXZ.chi2X();
       MaxChi2Hit_Case1 = bestXZ.maxChi2Hit();
       tx_inf_Case1 =first.x(0.)/first.z(0.);
@@ -1697,22 +1940,189 @@ bool TrackStudy::XZStudyCase1(PrSeedTrack xProj,Bool_t debug){
 
 
 
+      for(int i = 0; i<PrHit; i++){
+         PatHit hit = PatHit();
+         hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+         FTCluster cluster;
+         cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
+         hit.SetCluster(cluster);
+         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX())bestXZ.addHit(hit);
+      }
+      bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
+
+      int nT1U = bestXZ.nHitsInPlane( 1 );
+      int nT1V = bestXZ.nHitsInPlane( 2 );
+      int nT2U = bestXZ.nHitsInPlane( 5 );
+      int nT2V = bestXZ.nHitsInPlane( 6 );
+      int nT3U = bestXZ.nHitsInPlane( 9 );
+      int nT3V = bestXZ.nHitsInPlane( 10 );
+
+      std::vector<PatHit> hitT1U = bestXZ.hitsinPlane(1);
+      std::vector<PatHit> hitT1V = bestXZ.hitsinPlane(2);
+      std::vector<PatHit> hitT2U = bestXZ.hitsinPlane(5);
+      std::vector<PatHit> hitT2V = bestXZ.hitsinPlane(6);
+      std::vector<PatHit> hitT3U = bestXZ.hitsinPlane(9);
+      std::vector<PatHit> hitT3V = bestXZ.hitsinPlane(10);
+
+      std::vector<PatHit> HitsUVT1 = hitT1U;
+      HitsUVT1.insert(HitsUVT1.end(),hitT1V.begin(),hitT1V.end());
+
+      std::vector<PatHit> HitsUVT2 = hitT2U;
+      HitsUVT2.insert(HitsUVT2.end(),hitT2V.begin(),hitT2V.end());
+
+      std::vector<PatHit> HitsUVT3 = hitT3U;
+      HitsUVT3.insert(HitsUVT3.end(),hitT3V.begin(),hitT3V.end());
+
+      //if(nT1U>1){std::cout<<"Has duplicate in T1U"<<std::endl; bestXZ.PrintHits(); bestXZ.removeAllHitInPlane(1); std::cout<<"removed duplicates in plane 1"<<std::endl; bestXZ.PrintHits();}
+      PrSeedTracks bestXZplusUV;
+      if(nT1U+nT1V ==0) {PrelimSele_Case1 = false; std::cout<<"NO Hits in U + V stereo T1!"<<std::endl;}
+      if(nT2U+nT2V ==0) {PrelimSele_Case1 = false; std::cout<<"NO Hits in U + V stereo T2!"<<std::endl;}
+      if(nT3U+nT3V ==0) {PrelimSele_Case1 = false; std::cout<<"NO Hits in U + V stereo T3!"<<std::endl;}
+      bool FindBest = false;
+      PrSeedTrack beforeFindBest = bestXZ;
+
+      if( (nT1U+nT1V)*(nT2U+nT2V)*(nT3U+nT3V) != 0){ //reconstructibility
+         if(nT1U>1){bestXZ.removeAllHitInPlane(1); FindBest= true;}
+         if(nT1V>1){bestXZ.removeAllHitInPlane(2); FindBest= true;}
+         if(nT2U>1){bestXZ.removeAllHitInPlane(5); FindBest = true;}
+         if(nT2V>1){bestXZ.removeAllHitInPlane(6); FindBest = true;}
+         if(nT3U>1){bestXZ.removeAllHitInPlane(9); FindBest = true;}
+         if(nT3V>1){bestXZ.removeAllHitInPlane(10); FindBest = true;}
+         PrSeedTracks xzplussingleUVcombinations;
+         bestXZ.sortbyZ();
+      }
+      double minChi2 = bestXZ.Chi2()+1e3;
+      PrSeedTrack BestCombination = PrSeedTrack(0, m_zReference);
+      if(FindBest){ // if you enter here you have removed in one of the layer all the hits
+         for(int i = 0 ; i< HitsUVT1.size();i++){
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) == 0){
+               bestXZ.addHit(HitsUVT1[i]);
+            }
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) >0 ){
+               bestXZ.substituteHitinSameLayer( HitsUVT1[i]); //will be dummy if already present 1 single hit, if not it really makes the susbtitution
+            }
+            for(int j = 0 ; j<HitsUVT2.size();j++){
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())==0){
+                  bestXZ.addHit(HitsUVT2[j]);
+               }
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())>0){
+                  bestXZ.substituteHitinSameLayer( HitsUVT2[j]);
+               }
+               for( int k = 0; k< HitsUVT3.size(); k++){
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())==0){
+                     bestXZ.addHit(HitsUVT3[k]);
+                  }
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())>0){
+                     bestXZ.substituteHitinSameLayer(HitsUVT3[k]);
+
+                     bestXZ.sortbyZ();
+                     //bestXZ.PrintTrack();
+                     bool Ok =  FitSimultaneouslyXY(bestXZ, UVSegment, false);
+                     if(bestXZ.Chi2()< minChi2){
+                        minChi2 = bestXZ.Chi2();
+                        BestCombination = bestXZ;
+                     }
+                  }
+               }
+            }
+         }
+         if(debug){
+         //need to find best combination of the UV layers hit
+            if(nT1U>1)
+            {  std::cout<<"Had duplicate in T1U"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT2U>1)
+            {  std::cout<<"Had duplicate in T2U"<<std::endl;}
+            if(nT2V>1)
+            {  std::cout<<"Had duplicate in T2V"<<std::endl;}
+            if(nT3U>1)
+            {  std::cout<<"Had duplicate in T3U"<<std::endl;}
+            if(nT3V>1)
+            {  std::cout<<"Had duplicate in T3V"<<std::endl;}
+         }
+         // std::cout<<"\n \n ===================Before Finding the best track==================="<<std::endl;
+         // beforeFindBest.PrintHits();
+         // beforeFindBest.PrintTrack();
+         // std::cout<<"\n \n ===========================Best Combination=====================\n\n"<<std::endl;
+         // BestCombination.PrintHits();
+         // BestCombination.PrintTrack();
+         // std::cout<<"\n \n"<<std::endl;
+         // for(layer1){
+         bestXZ=BestCombination;
+      }
+      PrSeedTrack BestUVSegment = PrSeedTrack(bestXZ.zone(), m_zReference);
+      for(int i =0; i<bestXZ.hits().size(); i++){
+         if( !bestXZ.hits()[i].isX()){
+            BestUVSegment.addHit(bestXZ.hits()[i]);
+         }
+      }
+      if(debug){
+         std::cout<<"Best UV Segment Case 1"<<std::endl;
+         BestUVSegment.PrintHits();
+      }
+      BestUVSegment.setParameters(ax_FitHitCase1,bx_FitHitCase1,cx_FitHitCase1,0,0);
+      FitLine(BestUVSegment,debug,1);
+      NUV_Case1 = (int)BestUVSegment.hits().size();
+
+      //std::cout<<"ax = "<<bestXZ.ax();
+      ax_fullFitCase1 = (Double_t )bestXZ.ax();
+      bx_fullFitCase1= (Double_t )bestXZ.bx();
+      cx_fullFitCase1 =  (Double_t )bestXZ.cx();
+      ay_fullFitCase1 =  (Double_t )bestXZ.ay();
+      by_fullFitCase1 =  (Double_t )bestXZ.by();
+      Chi2_fullFitCase1 =  (Double_t )bestXZ.Chi2();
+      MaxChi2_fullFitCase1 =  (Double_t )bestXZ.maxChi2Hit();
+      NHits_fullFitCase1= (int)bestXZ.hits().size();
+      y0_fullFitCase1 =  (Double_t )bestXZ.y(0.);
+      if(debug) std::cout<<"Number of XZ Projections after erase"<<xProjections.size()<<std::endl;
+
+
+
    }
-
-
-
-
-
-
-
-
-
    return PrelimSele_Case1;
 }
 
-bool TrackStudy::XZStudyCase2(PrSeedTrack xProj, Bool_t debug){
-
-   std::vector<PatHit> Case2First ;
+bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t debug){
+  NUV_Case2 = -10;
+  ax_Case2_Seed1 = -99.;
+  bx_Case2_Seed1 = -99.;
+  cx_Case2_Seed1 = -99.;
+  ax_Case2_Seed2 = -99.;
+  bx_Case2_Seed2 = -99.;
+  cx_Case2_Seed2 = -99.;
+  Chi2X_Case2 = -99.;
+  NX_Case2 = -1;
+  tx_inf_Case2 = -99.;
+  x0_Case2 = -99.;
+  x_inf_Case2 = -99.;
+  Del_x_inf_Case2 = -99.;
+  tx_pickedcombination_Case2 = -99.;
+  DelxProjectedSeed2_Case2 = -99.;
+  DelxProjectedSeed1_Case2 = -99.;
+  MaxChi2Hit_Case2 = -99;
+  
+  
+  ax_FitHitCase2 = -99.;
+  bx_FitHitCase2 = -99.;
+  cx_FitHitCase2 = -99.;
+  
+  ax_fullFitCase2 = -9999.;
+  bx_fullFitCase2= -99.;
+  cx_fullFitCase2 = -99.;
+  ay_fullFitCase2 = -9999.;
+  by_fullFitCase2 = -99.;
+  Chi2_fullFitCase2 =  -99.;
+  MaxChi2_fullFitCase2 = -99.;
+  NHits_fullFitCase2 = -1;
+  y0_fullFitCase2 = -9999.;
+  
+  
+  
+  std::vector<PatHit> Case2First ;
    Case2First.reserve(10);
    std::vector<PatHit> Case2Last  ;
    Case2Last.reserve(10);
@@ -1761,25 +2171,6 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack xProj, Bool_t debug){
    if(Case2First.size()!=0 && Case2Last.size()!=0 && (ParabolaSeedHits1.size()!=0 || ParabolaSeedHits2.size()!=0)){
       PrelimSele_Case2 = true;
    }
-   Chi2X_Case2 = -99.;
-   NX_Case2 = -1;
-   tx_inf_Case2 = -99.;
-   x0_Case2 = -99.;
-   x_inf_Case2 = -99.;
-   Del_x_inf_Case2 = -99.;
-   tx_pickedcombination_Case2 = -99.;
-   DelxProjectedSeed2_Case2 = -99.;
-   DelxProjectedSeed1_Case2 = -99.;
-   MaxChi2Hit_Case2 = -99;
-   ax_Case2_Seed1 = -99.;
-   bx_Case2_Seed1 = -99.;
-   cx_Case2_Seed1 = -99.;
-   ax_Case2_Seed2 = -99.;
-   bx_Case2_Seed2 = -99.;
-   cx_Case2_Seed2 = -99.;
-   ax_FitHitCase2 = -99.;
-   bx_FitHitCase2 = -99.;
-   cx_FitHitCase2 = -99.;
 
 
    if(PrelimSele_Case2){
@@ -2002,56 +2393,197 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack xProj, Bool_t debug){
 
 
       if(xProjections.size()>1)
-       {
-          std::vector<std::pair<PrSeedTrack,double>> trackChi2;
-          for(int i = 0;i<xProjections.size();i++){
+      {
+         std::vector<std::pair<PrSeedTrack,double>> trackChi2;
+         for(int i = 0;i<xProjections.size();i++){
             fitXProjection(xProjections[i],debug);
-          }
-          std::sort(xProjections.begin(),xProjections.end(),[](PrSeedTrack val1, PrSeedTrack val2)->bool{return val1.chi2XnDoF()<val2.chi2XnDoF();});
-       }
-       PrSeedTrack bestXZ = xProjections[0];
-       bool OK = false;
-       OK = fitXProjection(bestXZ,debug);
-       if(!OK){
-          bestXZ.PrintHits();
-          std::cout<<"Case 0:  Chi2 ="<<setw(20)<<bestXZ.chi2X()<<std::endl;
-          std::cout<<"         NDOF ="<<setw(20)<<bestXZ.ndofX()<<std::endl;
-          std::cout<<"     Chi2NdoF ="<<setw(20)<<bestXZ.chi2XnDoF()<<std::endl;
-       }
+         }
+         std::sort(xProjections.begin(),xProjections.end(),[](PrSeedTrack val1, PrSeedTrack val2)->bool{return val1.chi2XnDoF()<val2.chi2XnDoF();});
+      }
+      PrSeedTrack bestXZ = xProjections[0];
+      bool OK = false;
+      OK = fitXProjection(bestXZ,debug);
+      if(!OK){
+         bestXZ.PrintHits();
+         std::cout<<"Case 0:  Chi2 ="<<setw(20)<<bestXZ.chi2X()<<std::endl;
+         std::cout<<"         NDOF ="<<setw(20)<<bestXZ.ndofX()<<std::endl;
+         std::cout<<"     Chi2NdoF ="<<setw(20)<<bestXZ.chi2XnDoF()<<std::endl;
+      }
 
-       ax_FitHitCase2 = bestXZ.ax();
-       bx_FitHitCase2 = bestXZ.bx();
-       cx_FitHitCase2 = bestXZ.cx();
+      ax_FitHitCase2 = bestXZ.ax();
+      bx_FitHitCase2 = bestXZ.bx();
+      cx_FitHitCase2 = bestXZ.cx();
 
-       //Case 0 first Plane = 0; Last = 11;
-       PatHit first = bestXZ.hitInPlane(0);
-       // first.PrintHit();
-       PatHit last = bestXZ.hitInPlane(8);
-       //last.PrintHit();
-       if(first.zone() != last.zone()) {
+      //Case 0 first Plane = 0; Last = 11;
+      PatHit first = bestXZ.hitInPlane(0);
+      // first.PrintHit();
+      PatHit last = bestXZ.hitInPlane(8);
+      //last.PrintHit();
+      if(first.zone() != last.zone()) {
          std::cout<<"Killed Track because Up->Down or vice versa"<<std::endl;
          PrelimSele_Case2 = false;
-       }
-       tx_inf_Case2 = first.x(0.)/first.z(0.);
-       NX_Case2= bestXZ.hits().size();
-       Chi2X_Case2 =bestXZ.chi2X();
-       MaxChi2Hit_Case2 = bestXZ.maxChi2Hit();
-       tx_inf_Case2 =first.x(0.)/first.z(0.);
-       tx_pickedcombination_Case2 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
-       x_inf_Case2 = tx_inf_Case2 * ( last.z(0.) - first.z(0.)) +first.x(0.);
-       Del_x_inf_Case2 =  last.x(0.)-x_inf_Case2;
-       tx_pickedcombination_Case2 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
-       x0_Case2 = first.x(0) - tx_pickedcombination_Case2 *(first.z(0.) );
-       if(bestXZ.hasHitInPlane(4)){
-          PatHit parSeed1 = bestXZ.hitInPlane(4);
-          Double_t xProectedSeed1 = first.x(0.)+tx_pickedcombination_Case2*(parSeed1.z()-first.z(0.));
-          DelxProjectedSeed1_Case2 = parSeed1.x(0.)-xProectedSeed1;
-       }
-       if(bestXZ.hasHitInPlane(7)){
-          PatHit parSeed2 =  bestXZ.hitInPlane(7);
-          Double_t xProectedSeed2 = first.x(0.)+tx_pickedcombination_Case2*(parSeed2.z()-first.z(0.));
-          DelxProjectedSeed2_Case2 = parSeed2.x(0.)-xProectedSeed2;
-       }
+      }
+      tx_inf_Case2 = first.x(0.)/first.z(0.);
+      NX_Case2= bestXZ.hits().size();
+      if(NX_Case2 <4 ){Case2Accepted = false;}
+      Chi2X_Case2 =bestXZ.chi2X();
+      MaxChi2Hit_Case2 = bestXZ.maxChi2Hit();
+      tx_inf_Case2 =first.x(0.)/first.z(0.);
+      tx_pickedcombination_Case2 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
+      x_inf_Case2 = tx_inf_Case2 * ( last.z(0.) - first.z(0.)) +first.x(0.);
+      Del_x_inf_Case2 =  last.x(0.)-x_inf_Case2;
+      tx_pickedcombination_Case2 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
+      x0_Case2 = first.x(0) - tx_pickedcombination_Case2 *(first.z(0.) );
+      if(bestXZ.hasHitInPlane(4)){
+         PatHit parSeed1 = bestXZ.hitInPlane(4);
+         Double_t xProectedSeed1 = first.x(0.)+tx_pickedcombination_Case2*(parSeed1.z()-first.z(0.));
+         DelxProjectedSeed1_Case2 = parSeed1.x(0.)-xProectedSeed1;
+      }
+      if(bestXZ.hasHitInPlane(7)){
+         PatHit parSeed2 =  bestXZ.hitInPlane(7);
+         Double_t xProectedSeed2 = first.x(0.)+tx_pickedcombination_Case2*(parSeed2.z()-first.z(0.));
+         DelxProjectedSeed2_Case2 = parSeed2.x(0.)-xProectedSeed2;
+      }
+      for(int i = 0; i<PrHit; i++){
+         PatHit hit = PatHit();
+         hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
+         FTCluster cluster;
+         cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
+         hit.SetCluster(cluster);
+         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX())bestXZ.addHit(hit);
+
+      }
+      bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
+
+      int nT1U = bestXZ.nHitsInPlane( 1 );
+      int nT1V = bestXZ.nHitsInPlane( 2 );
+      int nT2U = bestXZ.nHitsInPlane( 5 );
+      int nT2V = bestXZ.nHitsInPlane( 6 );
+      int nT3U = bestXZ.nHitsInPlane( 9 );
+      int nT3V = bestXZ.nHitsInPlane( 10 );
+
+      std::vector<PatHit> hitT1U = bestXZ.hitsinPlane(1);
+      std::vector<PatHit> hitT1V = bestXZ.hitsinPlane(2);
+      std::vector<PatHit> hitT2U = bestXZ.hitsinPlane(5);
+      std::vector<PatHit> hitT2V = bestXZ.hitsinPlane(6);
+      std::vector<PatHit> hitT3U = bestXZ.hitsinPlane(9);
+      std::vector<PatHit> hitT3V = bestXZ.hitsinPlane(10);
+
+      std::vector<PatHit> HitsUVT1 = hitT1U;
+      HitsUVT1.insert(HitsUVT1.end(),hitT1V.begin(),hitT1V.end());
+
+      std::vector<PatHit> HitsUVT2 = hitT2U;
+      HitsUVT2.insert(HitsUVT2.end(),hitT2V.begin(),hitT2V.end());
+
+      std::vector<PatHit> HitsUVT3 = hitT3U;
+      HitsUVT3.insert(HitsUVT3.end(),hitT3V.begin(),hitT3V.end());
+
+      //if(nT1U>1){std::cout<<"Has duplicate in T1U"<<std::endl; bestXZ.PrintHits(); bestXZ.removeAllHitInPlane(1); std::cout<<"removed duplicates in plane 1"<<std::endl; bestXZ.PrintHits();}
+      PrSeedTracks bestXZplusUV;
+      if(nT1U+nT1V ==0) {PrelimSele_Case2 = false; std::cout<<"NO Hits in U + V stereo T1!"<<std::endl;}
+      if(nT2U+nT2V ==0) {PrelimSele_Case2 = false; std::cout<<"NO Hits in U + V stereo T2!"<<std::endl;}
+      if(nT3U+nT3V ==0) {PrelimSele_Case2 = false; std::cout<<"NO Hits in U + V stereo T3!"<<std::endl;}
+      bool FindBest = false;
+      PrSeedTrack beforeFindBest = bestXZ;
+
+      if( (nT1U+nT1V)*(nT2U+nT2V)*(nT3U+nT3V) != 0){ //reconstructibility
+         if(nT1U>1){bestXZ.removeAllHitInPlane(1); FindBest= true;}
+         if(nT1V>1){bestXZ.removeAllHitInPlane(2); FindBest= true;}
+         if(nT2U>1){bestXZ.removeAllHitInPlane(5); FindBest = true;}
+         if(nT2V>1){bestXZ.removeAllHitInPlane(6); FindBest = true;}
+         if(nT3U>1){bestXZ.removeAllHitInPlane(9); FindBest = true;}
+         if(nT3V>1){bestXZ.removeAllHitInPlane(10); FindBest = true;}
+         PrSeedTracks xzplussingleUVcombinations;
+         bestXZ.sortbyZ();
+      }
+      double minChi2 = bestXZ.Chi2()+1e3;
+      PrSeedTrack BestCombination = PrSeedTrack(0, m_zReference);
+      if(FindBest){ // if you enter here you have removed in one of the layer all the hits
+         for(int i = 0 ; i< HitsUVT1.size();i++){
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) == 0){
+               bestXZ.addHit(HitsUVT1[i]);
+            }
+            if(bestXZ.nHitsInPlane(HitsUVT1[i].planeCode()) >0 ){
+               bestXZ.substituteHitinSameLayer( HitsUVT1[i]); //will be dummy if already present 1 single hit, if not it really makes the susbtitution
+            }
+            for(int j = 0 ; j<HitsUVT2.size();j++){
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())==0){
+                  bestXZ.addHit(HitsUVT2[j]);
+               }
+               if(bestXZ.nHitsInPlane(HitsUVT2[j].planeCode())>0){
+                  bestXZ.substituteHitinSameLayer( HitsUVT2[j]);
+               }
+               for( int k = 0; k< HitsUVT3.size(); k++){
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())==0){
+                     bestXZ.addHit(HitsUVT3[k]);
+                  }
+                  if(bestXZ.nHitsInPlane(HitsUVT3[k].planeCode())>0){
+                     bestXZ.substituteHitinSameLayer(HitsUVT3[k]);
+
+                     bestXZ.sortbyZ();
+                     //bestXZ.PrintTrack();
+                     bool Ok =  FitSimultaneouslyXY(bestXZ, UVSegment, false);
+                     if(bestXZ.Chi2()< minChi2){
+                        minChi2 = bestXZ.Chi2();
+                        BestCombination = bestXZ;
+                     }
+                  }
+               }
+            }
+         }
+         //need to find best combination of the UV layers hit
+         if(debug){
+            if(nT1U>1)
+            {  std::cout<<"Had duplicate in T1U"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT1V>1)
+            {  std::cout<<"Had duplicate in T1V"<<std::endl;}
+            if(nT2U>1)
+            {  std::cout<<"Had duplicate in T2U"<<std::endl;}
+            if(nT2V>1)
+            {  std::cout<<"Had duplicate in T2V"<<std::endl;}
+            if(nT3U>1)
+            {  std::cout<<"Had duplicate in T3U"<<std::endl;}
+            if(nT3V>1)
+            {  std::cout<<"Had duplicate in T3V"<<std::endl;}
+         }
+         // std::cout<<"\n \n ===================Before Finding the best track==================="<<std::endl;
+         // beforeFindBest.PrintHits();
+         // beforeFindBest.PrintTrack();
+         // std::cout<<"\n \n ===========================Best Combination=====================\n\n"<<std::endl;
+         // BestCombination.PrintHits();
+         // BestCombination.PrintTrack();
+         // std::cout<<"\n \n"<<std::endl;
+         // for(layer1){
+         bestXZ=BestCombination;
+      }
+      PrSeedTrack BestUVSegment = PrSeedTrack(bestXZ.zone(), m_zReference);
+      for(int i =0; i<bestXZ.hits().size(); i++){
+         if( !bestXZ.hits()[i].isX()){
+            BestUVSegment.addHit(bestXZ.hits()[i]);
+         }
+      }
+      if(debug){
+         std::cout<<"Best UV Segment Case 2"<<std::endl;
+         BestUVSegment.PrintHits();
+      }
+      BestUVSegment.setParameters( ax_FitHitCase2, bx_FitHitCase2, cx_FitHitCase2,0,0);
+      FitLine(BestUVSegment,debug,2);
+      NUV_Case2 = (int) BestUVSegment.hits().size();
+      //std::cout<<"ax = "<<bestXZ.ax();
+      ax_fullFitCase2 = (Double_t )bestXZ.ax();
+      bx_fullFitCase2= (Double_t )bestXZ.bx();
+      cx_fullFitCase2 =  (Double_t )bestXZ.cx();
+      ay_fullFitCase2 =  (Double_t )bestXZ.ay();
+      by_fullFitCase2 =  (Double_t )bestXZ.by();
+      Chi2_fullFitCase2 =  (Double_t )bestXZ.Chi2();
+      MaxChi2_fullFitCase2 =  (Double_t )bestXZ.maxChi2Hit();
+      NHits_fullFitCase2= (int)bestXZ.hits().size();
+      y0_fullFitCase2 =  (Double_t )bestXZ.y(0.);
+      if(debug) std::cout<<"Number of XZ Projections after erase"<<xProjections.size()<<std::endl;
+
 
    }
 
@@ -2060,7 +2592,7 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack xProj, Bool_t debug){
 }
 
 void TrackStudy::StereoSearch(PrSeedTrack xProj,PrSeedTrack UVSegment,Bool_t debug){
-  fitXProjection(xProj,debug);
+   fitXProjection(xProj,debug);
    std::vector<PatHit> HitsUVT1;
    std::vector<PatHit> HitsUVT2;
    std::vector<PatHit> HitsUVT3;
@@ -2218,8 +2750,16 @@ void TrackStudy::StereoSearch(PrSeedTrack xProj,PrSeedTrack UVSegment,Bool_t deb
    minCoord =AllUV[0].coord();
    maxCoord =AllUV[0].coord();
    avgCoord =0;
+   minY = 100000.;
+   maxY = -100000.;
    NUV=0;
    for(int i = 0 ; i< AllUV.size();i++){
+     double y = AllUV[i].coord()*AllUV[i].z();
+     if(y<minY){
+       minY=y;}
+     if(y>maxY){
+       maxY=y;}
+       
       if(AllUV[i].coord() < minCoord) minCoord = AllUV[i].coord();
       if(AllUV[i].coord() > maxCoord) maxCoord = AllUV[i].coord();
       avgCoord+=AllUV[i].coord()/AllUV.size();
@@ -2230,90 +2770,181 @@ void TrackStudy::StereoSearch(PrSeedTrack xProj,PrSeedTrack UVSegment,Bool_t deb
    //std::cout<<"X0Back = "<<X0Back<<std::endl;
 }
 
+bool TrackStudy::FitLine( PrSeedTrack &UVSegment, Bool_t debug , Int_t Case ){
 
+   LinParFit<double> fit_LineY(2);
+   double solution_yz_line[2];
+   double solution_yz_par[3];
+   std::fill(solution_yz_par, solution_yz_par+3,0.);
+   std::fill(solution_yz_line, solution_yz_line+2,0.);
+   std::vector<double> dsolution_yz_par;
+   std::vector<double> dsolution_yz_line;
+   if(debug) UVSegment.PrintTrack();
+   double dz = 0.;
+   double resYZ_lin = 0.;
+   double resYZ_par = 0.;
+   for (int j = 0; j < 9;j ++) {
+      //dz = 0.;
+      //resYZ_lin = 0.;
+      LinParFit<double> fit_LineY(2);
+      LinParFit<double> fit_ParY(3);
+      for(int i = 0 ; i<UVSegment.hits().size(); i++){
+         PatHit hit = UVSegment.hits()[i];
+         double dz= (double) (UVSegment.hits()[i].z() - m_zReference);
+         double y = (double) (hit.x(0)-UVSegment.x(hit.z()))/hit.dxDy();
+         resYZ_lin = y - (solution_yz_line[0] + dz* solution_yz_line[1]) ;
+         resYZ_par = y - (solution_yz_par[0] + dz* solution_yz_par[1]+ dz*dz*solution_yz_par[2]);
+         double erry = std::fabs(1./(hit.w()*hit.dxDy()));
+         fit_LineY.accumulate(resYZ_lin, erry , dz );
+         fit_ParY.accumulate(resYZ_par,erry,dz);
+      }
+      if(!fit_LineY.solve()){
+         return false;
+         if(debug) std::cout<<"Not able to fit the Line in Y"<<std::endl;
+      }
+      dsolution_yz_par = fit_ParY.solution();
+      dsolution_yz_line = fit_LineY.solution();
+      solution_yz_line[0]+=dsolution_yz_line[0];
+      solution_yz_line[1]+=dsolution_yz_line[1];
+
+      solution_yz_par[0]+=dsolution_yz_par[0];
+      solution_yz_par[1]+=dsolution_yz_par[1];
+      solution_yz_par[2]+=dsolution_yz_par[2];
+   }
+   if(debug) std::cout<<"solution ay" <<setw(15)<<solution_yz_line[0]<<std::endl;
+   if(debug) std::cout<<"solution by" <<setw(15)<<solution_yz_line[1]<<std::endl;
+   double Chi2_ParY = 0.;
+   double Chi2_LineBestUVSegm = 0.;
+   for(int i =0; i<UVSegment.hits().size(); i++){
+      PatHit hit = UVSegment.hits()[i];
+      if(debug) std::cout<<"Err X "<<1./hit.w()<<std::endl;
+      double y = ( hit.x() - UVSegment.x(hit.z()))/ hit.dxDy();
+      if(debug) std::cout<<"y = "<<setw(15)<<y<<std::endl;
+      double err = std::abs( 1./hit.w() * 1./hit.dxDy());
+      if(debug) std::cout<<"y pred = "<<setw(15)<<solution_yz_line[0]+solution_yz_line[1]*(hit.z()-m_zReference)<<std::endl;
+      if(debug) std::cout<<"Err y ="<<setw(15)<<err<<std::endl;
+      if(debug) std::cout<<"Contribution = "<< y - (solution_yz_line[0] + solution_yz_line[1]*(hit.z()-m_zReference))<<std::endl;
+      Chi2_LineBestUVSegm+= std::pow(y - (solution_yz_line[0] + solution_yz_line[1]*(hit.z()-m_zReference)) ,2 )/ std::pow(err,2);
+      Chi2_ParY+= std::pow( y - solution_yz_par[0]- (hit.z()-m_zReference)* solution_yz_par[1]- std::pow(hit.z()-m_zReference,2)* solution_yz_par[2],2)/std::pow(err,2);
+   }
+   if(debug) std::cout<<"Chi2 Line in Y "<<setw(15)<<Chi2_LineBestUVSegm<<std::endl;
+   if(debug) std::cout<<"Chi2 Par in Y"<<setw(15) <<Chi2_ParY<<std::endl;
+   if(debug) std::cout<<"Chi2PerDof Line in Y"<<setw(15)<<Chi2_LineBestUVSegm/(UVSegment.hits().size()-2.)<<std::endl;
+   if(debug) std::cout<<"Chi2PerDof Par in Y"<<setw(15)<<Chi2_ParY/(UVSegment.hits().size()-3.)<<std::endl;
+
+
+   if(Case ==0 ){
+     FitLineY_ay_case0 = solution_yz_line[0]-m_zReference*solution_yz_line[1];
+     FitLineY_by_case0 = solution_yz_line[1];
+     FitLineY_Chi2_case0 = Chi2_LineBestUVSegm;
+     FitLineY_Chi2DoF_case0 = Chi2_LineBestUVSegm/(UVSegment.hits().size()- 2. );
+     FitParY_Chi2_case0 = Chi2_ParY;
+     FitParY_Chi2DoF_case0 = Chi2_ParY/(UVSegment.hits().size()-3. );
+     
+   }
+   if(Case ==1 ){
+     FitLineY_ay_case1 = solution_yz_line[0]-m_zReference*solution_yz_line[1];
+     FitLineY_by_case1 = solution_yz_line[1];
+     FitLineY_Chi2_case1 = Chi2_LineBestUVSegm;
+     FitLineY_Chi2DoF_case1 = Chi2_LineBestUVSegm/(UVSegment.hits().size()- 2. );
+     FitParY_Chi2_case1 = Chi2_ParY;
+     FitParY_Chi2DoF_case1 = Chi2_ParY/(UVSegment.hits().size()-3. );
+
+   }
+   if(Case ==2 ){
+     FitLineY_ay_case2 = solution_yz_line[0]-m_zReference*solution_yz_line[1];
+     FitLineY_by_case2 = solution_yz_line[1];
+     FitLineY_Chi2_case2 = Chi2_LineBestUVSegm;
+     FitLineY_Chi2DoF_case2 = Chi2_LineBestUVSegm/(UVSegment.hits().size()- 2. );
+     FitParY_Chi2_case2 = Chi2_ParY;
+     FitParY_Chi2DoF_case2 = Chi2_ParY/(UVSegment.hits().size()-3. );
+   }
+   
+   return true;
+}
 bool TrackStudy::FitSimultaneouslyXY(PrSeedTrack& track,PrSeedTrack& UVSegment,Bool_t debug)
 {
-  // PrSeedTrack track = XSegment;
-  // track.PrintTrack();
-  // for(int i =0; i< UVSegment.hits().size(); i++){
-  //   PatHit hitUV = UVSegment.hits()[i];
-  //   track.addHit(hitUV);
-  // }
-  //track.setParameters(0,0,0,0,0);
-  track.sortbyZ();
-  //track.PrintTrack();
-  float mat[15];
-  float rhs[5];
-  int nHitsX =0;
-  int nHitsStereo=0;
-  float m_dRatio = -2.622e-4;
-  track.setdRatio(m_dRatio);
-  float zRef = m_zReference;
-  for(int loop = 0; 3 > loop ; ++loop ){
-    //std::cout<<"Loop\t"<<loop<<std::endl;
-    if(loop ==1 ){
-      float RadiusPosition = std::sqrt( (track.ax()*track.ax()*std::fabs(track.ax())/2000.) +
-      (track.y(zRef)*track.y(zRef)*std::fabs(track.y(zRef))/1000.));
-      float RadiusSlopes = std::sqrt( track.bx()*track.bx()*std::fabs(track.bx())/0.3 +
-      track.by()*track.by()*std::fabs(track.by())/0.1   );
-      float dRatioPos = - (2.622e-4 +1.943e-8*RadiusPosition + 1.08e-11*RadiusPosition*RadiusPosition);
-      float dRatioSlopes = - ( 2.6098e-4+ 6.31e-5*RadiusSlopes  -0.000156778*RadiusSlopes*RadiusSlopes + 0.000134126*RadiusSlopes*RadiusSlopes*RadiusSlopes);
-      track.setdRatio(dRatioPos);
-    }
-    std::fill(mat,mat+15,0.);
-    std::fill(rhs,rhs+5,0.);
-    float z0 = m_zReference;
-    for ( int i =0; i< track.hits().size(); i++ )
-    {
-      PatHit hit = track.hits()[i];
-      if(hit.isX())
+   // PrSeedTrack track = XSegment;
+   // track.PrintTrack();
+   // for(int i =0; i< UVSegment.hits().size(); i++){
+   //   PatHit hitUV = UVSegment.hits()[i];
+   //   track.addHit(hitUV);
+   // }
+   //track.setParameters(0,0,0,0,0);
+   track.sortbyZ();
+   //track.PrintTrack();
+   float mat[15];
+   float rhs[5];
+   int nHitsX =0;
+   int nHitsStereo=0;
+   float m_dRatio = -2.622e-4;
+   track.setdRatio(m_dRatio);
+   float zRef = m_zReference;
+   for(int loop = 0; 3 > loop ; ++loop ){
+      //std::cout<<"Loop\t"<<loop<<std::endl;
+      if(loop ==1 ){
+         float RadiusPosition = std::sqrt( (track.ax()*track.ax()*std::fabs(track.ax())/2000.) +
+         (track.y(zRef)*track.y(zRef)*std::fabs(track.y(zRef))/1000.));
+         float RadiusSlopes = std::sqrt( track.bx()*track.bx()*std::fabs(track.bx())/0.3 +
+         track.by()*track.by()*std::fabs(track.by())/0.1   );
+         float dRatioPos = - (2.622e-4 +1.943e-8*RadiusPosition + 1.08e-11*RadiusPosition*RadiusPosition);
+         float dRatioSlopes = - ( 2.6098e-4+ 6.31e-5*RadiusSlopes  -0.000156778*RadiusSlopes*RadiusSlopes + 0.000134126*RadiusSlopes*RadiusSlopes*RadiusSlopes);
+         track.setdRatio(dRatioPos);
+      }
+      std::fill(mat,mat+15,0.);
+      std::fill(rhs,rhs+5,0.);
+      float z0 = m_zReference;
+      for ( int i =0; i< track.hits().size(); i++ )
       {
-        nHitsX++;
-      }else{  nHitsStereo++;}
-      float w = hit.w2();
-      float dxdy = hit.dxDy();
-      //      if(debug)std::cout<<" dxDy "<<dxdy<<std::endl;
-      float dz =(hit.z(0.) - m_zReference);
-      //  float deta = 0.;
+         PatHit hit = track.hits()[i];
+         if(hit.isX())
+         {
+            nHitsX++;
+         }else{  nHitsStereo++;}
+         float w = hit.w2();
+         float dxdy = hit.dxDy();
+         //      if(debug)std::cout<<" dxDy "<<dxdy<<std::endl;
+         float dz =(hit.z(0.) - m_zReference);
+         //  float deta = 0.;
 
-      float deta = dz*dz*(1+m_dRatio*dz);
+         float deta = dz*dz*(1+m_dRatio*dz);
 
-      float wdz = w * dz;
-      float eta = dz * dz * (1. + dz * m_dRatio);
-      float weta = w * deta;
-      float wdxdy = w * dxdy;
-      float wdxdydz = wdxdy * dz;
-      float dist = track.distance( hit );
-      //Fill Matrix
-      mat[0] += w;
-      mat[1] += wdz; mat[2] += wdz * dz;
-      mat[3] += weta; mat[4] += weta * dz; mat[5] += weta * eta;
-      mat[6] -= wdxdy;mat[7] -= wdxdydz;   mat[8] -= wdxdy * deta;  mat[9] += wdxdy * dxdy;
-      mat[10] -= wdxdydz; mat[11] -= wdxdydz * dz;  mat[12] -= wdxdydz * deta;  mat[13] += wdxdydz * dxdy; mat[14] += wdxdydz * dz * dxdy;
-      // fill right hand side
-      rhs[0] += w * dist;
-      rhs[1] += wdz * dist;
-      rhs[2] += weta * dist;
-      rhs[3] -= wdxdy * dist;
-      rhs[4] -= wdxdydz * dist;
-    }//Loop over Hits to fill the matrix
-    // decompose matrix, protect against numerical troubles
-    if(nHitsX < 4 || nHitsStereo < 4) return false;
-    ROOT::Math::CholeskyDecomp<float, 5> decomp(mat);
-    if (!decomp) return false;
-    decomp.Solve(rhs);
-    //float yAtZRef = rhs[3];
-    //rhs[4]*=1.e3;
-    //rhs[2]*=1.e6;
-    //rhs[1]*=1.e3;
-    rhs[3] -= rhs[4] * z0; // ???? this should be here only if the track y part is ay + b_y*(z-zref)
-    track.updateParameters(rhs[0],rhs[1],rhs[2],rhs[3],rhs[4],0.);
-    // if (std::abs(rhs[0]) > 1e4 || std::abs(rhs[1]) > 5. ||
-    //     std::abs(rhs[2]) > 1e-3 || std::abs(rhs[3]) > 1e4 ||
-  }
-  track.setChi2Full(track.Chi2());
-  track.setNDOFFull(track.hits().size()-5);
-  //track.PrintTrack();
-  //std::cout<<"End fit"<<std::endl;
-  return false;
+         float wdz = w * dz;
+         float eta = dz * dz * (1. + dz * m_dRatio);
+         float weta = w * deta;
+         float wdxdy = w * dxdy;
+         float wdxdydz = wdxdy * dz;
+         float dist = track.distance( hit );
+         //Fill Matrix
+         mat[0] += w;
+         mat[1] += wdz; mat[2] += wdz * dz;
+         mat[3] += weta; mat[4] += weta * dz; mat[5] += weta * eta;
+         mat[6] -= wdxdy;mat[7] -= wdxdydz;   mat[8] -= wdxdy * deta;  mat[9] += wdxdy * dxdy;
+         mat[10] -= wdxdydz; mat[11] -= wdxdydz * dz;  mat[12] -= wdxdydz * deta;  mat[13] += wdxdydz * dxdy; mat[14] += wdxdydz * dz * dxdy;
+         // fill right hand side
+         rhs[0] += w * dist;
+         rhs[1] += wdz * dist;
+         rhs[2] += weta * dist;
+         rhs[3] -= wdxdy * dist;
+         rhs[4] -= wdxdydz * dist;
+      }//Loop over Hits to fill the matrix
+      // decompose matrix, protect against numerical troubles
+      if(nHitsX < 4 || nHitsStereo < 4) return false;
+      ROOT::Math::CholeskyDecomp<float, 5> decomp(mat);
+      if (!decomp) return false;
+      decomp.Solve(rhs);
+      //float yAtZRef = rhs[3];
+      //rhs[4]*=1.e3;
+      //rhs[2]*=1.e6;
+      //rhs[1]*=1.e3;
+      rhs[3] -= rhs[4] * z0; // ???? this should be here only if the track y part is ay + b_y*(z-zref)
+      track.updateParameters(rhs[0],rhs[1],rhs[2],rhs[3],rhs[4],0.);
+      // if (std::abs(rhs[0]) > 1e4 || std::abs(rhs[1]) > 5. ||
+      //     std::abs(rhs[2]) > 1e-3 || std::abs(rhs[3]) > 1e4 ||
+   }
+   track.setChi2Full(track.Chi2());
+   track.setNDOFFull(track.hits().size()-5);
+   //track.PrintTrack();
+   //std::cout<<"End fit"<<std::endl;
+   return false;
 }

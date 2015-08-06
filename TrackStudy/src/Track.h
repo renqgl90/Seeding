@@ -108,6 +108,29 @@ public:
       PatHit hit1 = PatHit();
       return hit1;
    }
+   void substituteHitinSameLayer(PatHit hit){
+      int planeCode = hit.planeCode();
+      int index = -1;
+      for(int i = 0; i<m_hits.size();i++){
+         if(m_hits[i].planeCode() == planeCode){ index = i; break;}
+      }
+      if(index !=-1){
+         m_hits.erase(m_hits.begin()+index);
+         addHit(hit);
+         sortbyZ();
+      }
+   }
+
+   void removeAllHitInPlane(int val){
+      std::vector<int> indexes;
+      for(int i = 0; i<m_hits.size(); i++)
+      {
+         if( m_hits[i].planeCode() == val) indexes.push_back(i);
+      }
+      for(int j = 0;j<indexes.size();j++){
+         m_hits.erase(m_hits.begin() + indexes[j] -j );
+      }
+   }
    void updateParameters(Float_t dax, Float_t dbx, Float_t dcx, Float_t day=0., Float_t dby=0., Float_t ddx=0.){
       m_ax+=dax;
       m_bx+=dbx;
@@ -188,10 +211,10 @@ public:
       std::cout<<"by"<<setw(15)<<by()<<std::endl;
       std::cout<<"y(7000)"<<setw(15)<<y(7000)<<std::endl;
       std::cout<<"y(10000)"<<setw(15)<<y(10000)<<std::endl;
-      std::cout<<"i"<<setw(15)<<"Hit X"<<setw(15)<<"Track X"<<setw(15)<<"Chi2 Contrib"<<setw(0)<<"y At Z"<<std::endl;
+      std::cout<<"i"<<setw(15)<<"Hit X"<<setw(15)<<"Track X"<<setw(15)<<"Chi2 Contrib"<<setw(15)<<"y At Z"<<setw(15)<<"coord"<<std::endl;
       for(Int_t i =0; i<m_hits.size(); i++){
          Float_t distance2oe = m_hits[i].w2()*std::pow((x(m_hits[i].z(0.))-m_hits[i].x(0.)),2);
-         std::cout<<i<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<x(m_hits[i].z(0.))<<setw(15)<<Chi2Hit(m_hits[i])<<setw(15)<<y(m_hits[i].z(0.))<<std::endl;
+         std::cout<<i<<setw(15)<<m_hits[i].x(0.)<<setw(15)<<x(m_hits[i].z(0.))<<setw(15)<<Chi2Hit(m_hits[i])<<setw(15)<<y(m_hits[i].z(0.))<<setw(15)<<m_hits[i].coord()<<std::endl;
       }
    }
    bool hasHitInPlane(Int_t val){
@@ -203,6 +226,22 @@ public:
          }
       }
       return returnst;
+   }
+   int nHitsInPlane(int val) const{
+     int n = 0;
+     for(int i=0; i<m_hits.size();i++){
+       if(m_hits[i].planeCode()==val) n++;
+     }
+     return n;
+   }
+   std::vector<PatHit> hitsinPlane( int val) const{
+     std::vector<PatHit> hits;
+     for(int i=0;i<m_hits.size();i++){
+       if(m_hits[i].planeCode()==val){
+         hits.push_back(m_hits[i]);
+       }
+     }
+     return hits;
    }
    int worst(){
       Float_t maxChi2 = -1;

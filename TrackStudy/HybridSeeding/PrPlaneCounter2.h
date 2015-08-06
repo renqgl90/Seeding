@@ -36,11 +36,8 @@ public:
       m_nbFiredLayers = 0;
       m_nbFiredLayers_singleHit = 0;
       m_planeList = {{0,0,0,0,0,0,0,0,0,0,0,0}};
-      m_nbT1UV_singleHit = 0;
       m_nbT1X=0;
       m_nbT1X_singleHit=0;
-      m_nbT2X=0;
-      m_nbT2X_singleHit=0;
       m_nbT2X=0;
       m_nbT2X_singleHit=0;
       m_nbT3X=0;
@@ -49,10 +46,11 @@ public:
       m_nbT1UV_singleHit=0;
       m_nbT2UV=0;
       m_nbT2UV_singleHit=0;
-      m_nbT2UV=0;
-      m_nbT2UV_singleHit=0;
       m_nbT3UV=0;
       m_nbT3UV_singleHit=0;
+      m_nbT1_singleHit = 0;
+      m_nbT2_singleHit = 0;
+      m_nbT3_singleHit = 0;
     }
     PrHit *hit = nullptr;
     for ( PrHits::const_iterator itH = itBeg; itEnd != itH; ++itH) {
@@ -84,7 +82,7 @@ public:
           if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit--;}
           if(isT1(hit)){ m_nbT1_singleHit--; }
           if(isT2(hit)){ m_nbT2_singleHit--; }
-          if(isT3(hit)){ m_nbT2_singleHit--; }
+          if(isT3(hit)){ m_nbT3_singleHit--; }
         }
       }
     }//end loop hits
@@ -104,7 +102,7 @@ public:
        if( isT3(hit) && !hit->isX()){ m_nbT3UV++ ;m_nbT3UV_singleHit++;}
        if(isT1(hit)){ m_nbT1++; m_nbT1_singleHit++; }
        if(isT2(hit)){ m_nbT2++; m_nbT2_singleHit++; }
-       if(isT3(hit)){ m_nbT3++; m_nbT2_singleHit++; }
+       if(isT3(hit)){ m_nbT3++; m_nbT3_singleHit++; }
     }else{
       if( 2 == m_planeList[plane]){ //if you are adding a hit where already present one singlecounting decreased
         m_nbFiredLayers_singleHit --;
@@ -116,7 +114,7 @@ public:
         if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit--;}
         if(isT1(hit)){ m_nbT1_singleHit--; }
         if(isT2(hit)){ m_nbT2_singleHit--; }
-        if(isT3(hit)){ m_nbT2_singleHit--; }
+        if(isT3(hit)){ m_nbT3_singleHit--; }
       }
     } 
     return m_nbFiredLayers;
@@ -144,27 +142,16 @@ public:
     {
       m_nbFiredLayers_singleHit++;
       if( isT1(hit) && !hit->isX()){ m_nbT1UV_singleHit++;}
+      if( isT1(hit) && hit->isX()) { m_nbT1X_singleHit++;  }
       if( isT2(hit) && hit->isX()) { m_nbT2X_singleHit++; }
       if( isT2(hit) && !hit->isX()){ m_nbT2UV_singleHit++;}
       if( isT3(hit) && hit->isX()) { m_nbT3X_singleHit++; }
       if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit++;}
       if(isT1(hit)){ m_nbT1_singleHit++; }
       if(isT2(hit)){ m_nbT2_singleHit++; }
-      if(isT3(hit)){ m_nbT2_singleHit++; }
+      if(isT3(hit)){ m_nbT3_singleHit++; }
     }
     return m_nbFiredLayers;
-  }
-  unsigned int nbDifferentUVT1() const
-  {
-    return m_nbT1UV;
-  }
-  unsigned int nbDifferentUVT2() const
-  {
-    return m_nbT2UV;
-  }
-  unsigned int nbDifferentUVT3() const 
-  {
-    return m_nbT3UV;
   }
   
   unsigned int nbDifferent() const{ return m_nbFiredLayers;}
