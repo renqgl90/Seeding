@@ -27,69 +27,105 @@ public:
     m_nbT2UV(0),
     m_nbT2UV_singleHit(0),
     m_nbT3UV(0),
-    m_nbT3UV_singleHit(0)
+    m_nbT3UV_singleHit(0),
+    m_nbHits(0)
   { };
   
   void set( PrHits::iterator itBeg, PrHits::iterator itEnd, const bool fill = true){
-    if(fill)
-    {
+    if(fill){
+      m_nbUsed=0;
+      m_nbHits=0;
       m_nbFiredLayers = 0;
       m_nbFiredLayers_singleHit = 0;
       m_planeList = {{0,0,0,0,0,0,0,0,0,0,0,0}};
+      //X layer T1
       m_nbT1X=0;
       m_nbT1X_singleHit=0;
+      //X layer T2
       m_nbT2X=0;
       m_nbT2X_singleHit=0;
+      //X layer T3
       m_nbT3X=0;
       m_nbT3X_singleHit=0;
+      //UV Layer T1
       m_nbT1UV=0;
       m_nbT1UV_singleHit=0;
+      //UV Layer T2
       m_nbT2UV=0;
       m_nbT2UV_singleHit=0;
+      //UV Layer T3
       m_nbT3UV=0;
       m_nbT3UV_singleHit=0;
+      
       m_nbT1_singleHit = 0;
       m_nbT2_singleHit = 0;
       m_nbT3_singleHit = 0;
     }
     PrHit *hit = nullptr;
     for ( PrHits::const_iterator itH = itBeg; itEnd != itH; ++itH) {
+      m_nbHits++;
       hit = (*itH);
-      if(hit->isUsed()) continue;
+      if(hit->isUsed()) m_nbUsed++;
       unsigned int plane = hit->planeCode();
+      if( m_planeList[plane] >0 ){m_planeList[plane]++;}
       //if no hits in the plane, increase the counters anyway even if the plane
-      if( 0 == m_planeList[ plane ] ++ ){
-        m_nbFiredLayers_singleHit ++;
-        m_nbFiredLayers ++;
-        if( isT1(hit) && hit->isX()) { m_nbT1X++; m_nbT1X_singleHit++; }
-        if( isT1(hit) && !hit->isX()){ m_nbT1UV++ ; m_nbT1UV_singleHit++;}
-        if( isT2(hit) && hit->isX()) { m_nbT2X++; m_nbT2X_singleHit++; }
-        if( isT2(hit) && !hit->isX()){ m_nbT2UV++ ;m_nbT2UV_singleHit++;}
-        if( isT3(hit) &&  hit->isX()) { m_nbT3X++; m_nbT3X_singleHit++; }
-        if( isT3(hit) && !hit->isX()){ m_nbT3UV++; m_nbT3UV_singleHit++;}
-        
-        if(isT1(hit)){ m_nbT1++; m_nbT1_singleHit++; }
-        if(isT2(hit)){ m_nbT2++; m_nbT2_singleHit++; }
-        if(isT3(hit)){ m_nbT3++; m_nbT2_singleHit++; }
-      }else{
-        if (2== m_planeList[plane]){
-          m_nbFiredLayers_singleHit --;
-          if( isT1(hit) && hit->isX()) { m_nbT1X_singleHit--;}
-          if( isT1(hit) && !hit->isX()){ m_nbT1UV_singleHit--;}
-          if( isT2(hit) && hit->isX()) { m_nbT2X_singleHit--; }
-          if( isT2(hit) && !hit->isX()){ m_nbT2UV_singleHit--;}
-          if( isT3(hit) && hit->isX()) {  m_nbT3X_singleHit--; }
-          if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit--;}
-          if(isT1(hit)){ m_nbT1_singleHit--; }
-          if(isT2(hit)){ m_nbT2_singleHit--; }
-          if(isT3(hit)){ m_nbT3_singleHit--; }
+      if( 0 == m_planeList[ plane ] ){
+        m_planeList[plane]++;
+        m_nbFiredLayers_singleHit++;
+        m_nbFiredLayers++;
+        if( isT1(hit) &&  hit->isX()){
+          m_nbT1X++  ; 
+          m_nbT1X_singleHit++;  
         }
+        if( isT1(hit) && !hit->isX()) {
+          m_nbT1UV++ ; 
+          m_nbT1UV_singleHit++; 
+        }
+        if( isT2(hit) &&  hit->isX()){ 
+          m_nbT2X++  ; 
+          m_nbT2X_singleHit++;  
+        }
+        if( isT2(hit) && !hit->isX()){ 
+          m_nbT2UV++ ;
+          m_nbT2UV_singleHit++; 
+        }
+        if( isT3(hit) &&  hit->isX()){ 
+          m_nbT3X++  ; 
+          m_nbT3X_singleHit++;  
+        }
+        if( isT3(hit) && !hit->isX()){
+          m_nbT3UV++ ; m_nbT3UV_singleHit++; 
+        }
+        if(isT1(hit)){ 
+          m_nbT1++; m_nbT1_singleHit++;  }
+        if(isT2(hit)){ 
+          m_nbT2++; m_nbT2_singleHit++;  }
+        if(isT3(hit)){ 
+          m_nbT3++; m_nbT3_singleHit++;  }
+      }
+      if(2 == m_planeList[plane]){
+        m_nbFiredLayers_singleHit --;
+        if( isT1(hit) && hit->isX()) { m_nbT1X_singleHit--;}
+        
+        if( isT1(hit) && !hit->isX()){ m_nbT1UV_singleHit--;}
+        
+        if( isT2(hit) && hit->isX() ) { m_nbT2X_singleHit--; }
+        
+        if( isT2(hit)&& !hit->isX()){ m_nbT2UV_singleHit--;}
+        
+        if( isT3(hit) && hit->isX()) { m_nbT3X_singleHit--; }
+        
+        if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit--;}
+        
+        if(isT1(hit)){ m_nbT1_singleHit--; }
+        if(isT2(hit)){ m_nbT2_singleHit--; }
+        if(isT3(hit)){ m_nbT3_singleHit--; }
       }
     }//end loop hits
   }
   
   int addHit( const PrHit* hit){
-    if(hit->isUsed()) return m_nbFiredLayers;
+    //if(hit->isUsed()) return m_nbFiredLayers;
     unsigned int plane = hit->planeCode();
     if( 0 == m_planeList[plane]++){
        m_nbFiredLayers_singleHit ++;
@@ -100,17 +136,17 @@ public:
        if( isT2(hit) && !hit->isX()){ m_nbT2UV++ ;m_nbT2UV_singleHit++;}
        if( isT3(hit) && hit->isX()) { m_nbT3X++; m_nbT3X_singleHit++;}
        if( isT3(hit) && !hit->isX()){ m_nbT3UV++ ;m_nbT3UV_singleHit++;}
-       if(isT1(hit)){ m_nbT1++; m_nbT1_singleHit++; }
-       if(isT2(hit)){ m_nbT2++; m_nbT2_singleHit++; }
-       if(isT3(hit)){ m_nbT3++; m_nbT3_singleHit++; }
+       if( isT1(hit) ){ m_nbT1++; m_nbT1_singleHit++; }
+       if( isT2(hit) ){ m_nbT2++; m_nbT2_singleHit++; }
+       if( isT3(hit) ){ m_nbT3++; m_nbT3_singleHit++; }
     }else{
       if( 2 == m_planeList[plane]){ //if you are adding a hit where already present one singlecounting decreased
         m_nbFiredLayers_singleHit --;
         if( isT1(hit) && hit->isX()) { m_nbT1X_singleHit--;}
         if( isT1(hit) && !hit->isX()){ m_nbT1UV_singleHit--;}
-        if( isT2(hit) && hit->isX()) { m_nbT2X_singleHit--; }
+        if( isT2(hit) && hit->isX()) { m_nbT2X_singleHit--;}
         if( isT2(hit) && !hit->isX()){ m_nbT2UV_singleHit--;}
-        if( isT3(hit) && hit->isX()) {  m_nbT3X_singleHit--; }
+        if( isT3(hit) && hit->isX()) {  m_nbT3X_singleHit--;}
         if( isT3(hit) && !hit->isX()){ m_nbT3UV_singleHit--;}
         if(isT1(hit)){ m_nbT1_singleHit--; }
         if(isT2(hit)){ m_nbT2_singleHit--; }
@@ -121,20 +157,20 @@ public:
   }
   
   int removeHit( const PrHit* hit){
-    if(hit->isUsed() ) return m_nbFiredLayers;
+    //if(hit->isUsed() ) return m_nbFiredLayers;
     unsigned int plane = hit->planeCode();
     unsigned int NumberInLayerAfterRemove = m_planeList[plane] -1;
     m_planeList[plane]--;
     if( 0 == NumberInLayerAfterRemove){ //you remain with 0 hits in that plane decrease everything
       m_nbFiredLayers_singleHit --;
       m_nbFiredLayers --;
-      if( isT1(hit) && hit->isX()) { m_nbT1X--; m_nbT1X_singleHit--; }
+      if( isT1(hit) && hit->isX()) {m_nbT1X--; m_nbT1X_singleHit--;}
       if( isT1(hit) && !hit->isX()){ m_nbT1UV-- ;m_nbT1UV_singleHit--;}
       if( isT2(hit) && hit->isX()) { m_nbT2X--; m_nbT2X_singleHit--; }
       if( isT2(hit) && !hit->isX()){ m_nbT2UV-- ;m_nbT2UV_singleHit--;}
       if( isT3(hit) && hit->isX()) { m_nbT3X--; m_nbT3X_singleHit--; }
       if( isT3(hit) && !hit->isX()){ m_nbT3UV-- ;m_nbT3UV_singleHit--;}
-      if(isT1(hit)){ m_nbT1--; m_nbT1_singleHit--; }
+      if( isT1(hit)){ m_nbT1--; m_nbT1_singleHit--; }
       if(isT2(hit)){ m_nbT2--; m_nbT2_singleHit--; }
       if(isT3(hit)){ m_nbT3--; m_nbT2_singleHit--; }
     }
@@ -158,61 +194,55 @@ public:
   unsigned int nbSingle() const{ return m_nbFiredLayers_singleHit;}
   
   unsigned int nbDifferentX() const { return m_nbT1X + m_nbT2X + m_nbT3X; }
-  unsigned int nbSingleX() const{ return m_nbT1X_singleHit + m_nbT2X_singleHit + m_nbT3X_singleHit;}
-  unsigned int nbDifferentUV() const{ return m_nbT1UV + m_nbT2UV + m_nbT3UV;}
-  unsigned int nbSingleUV() const{return m_nbT1UV_singleHit + m_nbT2UV_singleHit + m_nbT3UV_singleHit;}
+  unsigned int nbSingleX() const{ return (m_nbT1X_singleHit + m_nbT2X_singleHit + m_nbT3X_singleHit);}
+  unsigned int nbDifferentUV() const{ return (m_nbT1UV + m_nbT2UV + m_nbT3UV);}
+  unsigned int nbSingleUV() const{return (m_nbT1UV_singleHit + m_nbT2UV_singleHit + m_nbT3UV_singleHit);}
+  unsigned int nbHits() const{return m_nbHits;}
   
   bool isOKUV() const{
-    return (m_nbT1UV>=1 && m_nbT2UV>=1 && m_nbT3UV>=1);
+    return ( (m_nbT1UV>=1 && m_nbT2UV>=1 && m_nbT3UV>=1) && 
+             ( m_nbT1UV>1 || m_nbT2UV>1 || m_nbT3UV>1) );
     return false;
   }
-  
+  bool isOKX() const{
+    return ( (m_nbT1X>=1 && m_nbT2X>=1 && m_nbT3X>=1) && 
+             (m_nbT1X>1 || m_nbT2X>1 || m_nbT3X>1));
+    
+    return false;
+  }
   bool isOK() const{ 
-    return ( m_nbT1X>=1 &&
-             m_nbT1UV>=1 && 
-             m_nbT2X>=1 && 
-             m_nbT2UV>=1 && 
-             m_nbT3UV >=1 && 
-             m_nbT3X>=1);
+    return ( isOKX() && isOKUV() );
     return false;
   }
   unsigned int nbInPlane( const int plane) const{return m_planeList[plane];}
   
-  
-  
-    
-  
-  
-  
-  
-  
-
   //Checkers for the Hits
   bool isT1(const PrHit *hit)const{
-    if(hit->planeCode() >=0 && hit->planeCode() <=4)
+    if( hit->planeCode() >-1 && hit->planeCode() <4){
       return true;
+    }
     return false;
   }
   bool isT2(const PrHit *hit)const{
-    if(hit->planeCode() >=5 && hit->planeCode() <=8)
+    if(hit->planeCode() >3 && hit->planeCode() <8){
       return true;
+    }
     return false;
   }
   bool isT3(const PrHit *hit)const{
-    if(hit->planeCode() >=8 && hit->planeCode() <=11)      
+    if( hit->planeCode() >7 && hit->planeCode() < 12){
       return true;
+    }
     return false;
   }
-  
-  
-  virtual ~PrPlaneCounter2( ) {} ///< Destructor
-  
 
-  
+  virtual ~PrPlaneCounter2( ) {} ///< Destructor
 protected:
   
 private:
+  unsigned int m_nbUsed;
   unsigned int m_nbFiredLayers; 
+  
   unsigned int m_nbFiredLayers_singleHit;
   std::array<unsigned int,12> m_planeList;
   unsigned int m_nbT1X;
@@ -241,5 +271,8 @@ private:
   
   unsigned int m_nbT3;
   unsigned int m_nbT3_singleHit;
+  
+  unsigned int m_nbHits;
+  
 };
 #endif // PRPLANECOUNTER2_H
