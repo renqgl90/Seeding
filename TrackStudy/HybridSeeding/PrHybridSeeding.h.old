@@ -1,14 +1,13 @@
 #ifndef PRHYBRIDSEEDING_H 
 #define PRHYBRIDSEEDING_H 1
 
-
-
 // Include files 
 // from Gaudi
 #include "PrSeedTrack2.h"
 
 //uncomment this line if you want to do truth matching and do plots
-//#include "GaudiAlg/GaudiAlgorithm.h"
+#include "GaudiAlg/GaudiAlgorithm.h"
+
 
 #include "GaudiAlg/ISequencerTimerTool.h"
 #include "PrKernel/IPrDebugTool.h"
@@ -20,21 +19,10 @@
 /** @class PrHybridSeeding PrHybridSeeding.h
  *  
  *
- *  @author Renato Quagliani
+ *  @author renato quagliani
  *  @date   2015-03-11
  */
-//#define TRUTH_MATCH_Histos
-#ifdef TRUTH_MATCH_Histos
-#include "GaudiAlg/GaudiTupleAlg.h"
-#else
-#include "GaudiAlg/GaudiAlgorithm.h"
-#endif
-
-#ifdef TRUTH_MATCH_Histos
-class PrHybridSeeding : public GaudiTupleAlg{
-#else
-  class PrHybridSeeding : public GaudiAlgorithm{
-#endif
+  class PrHybridSeeding : public GaudiAlgorithm {
   public: 
     /// Standard constructor
     PrHybridSeeding( const std::string& name, ISvcLocator* pSvcLocator );
@@ -60,32 +48,39 @@ class PrHybridSeeding : public GaudiTupleAlg{
       m_wantedKey = key;
       return;
     };
+    
+    
     /** @brief Collect Hits in X layers for High momentum tracks
-     * @param part (if 1, y<0 ; if 0 , y>0)
+     *  @param part lower (1, y>0) or upper(0, y<0) half of the detector 
+     *  @param icase 1(T1-1x, T3-2x), 2(T1-2x,T3/2x),3(T3-2x,T3.1x)
      */
-    void findXProjections( unsigned int part, unsigned int iCase);
-    /** @brief Collect hits in the stereo-layers.
+    void findXProjectionsHighMomentum( unsigned int part ,unsigned int icase);
+
+
+    void findXProjectionsHighMomentum2( unsigned int part);
+    
+
+    /** @brief Collect Hits in X layers for Low momentum tracks
+     *  @param part lower (1, y>0) or upper(0, y<0) half of the detector 
+     *  @param icase 1(T1-1x, T3-2x), 2(T1-2x,T3/2x),3(T3-2x,T3.1x)
+     */
+    void findXProjectionsLowMomentum( unsigned int part, unsigned int icase);
+    /** @brief Collect hits in the stereo-layers. 
      *   @param part lower (1) or upper (0) half
      */
     void addStereo( unsigned int part , unsigned int iCase);
-    
-
-    
-    bool LineOK( double chi2low, double chi2high, PrLineFitterY line, PrSeedTrack2& temp);
-    
-    
+   
     /** @brief Remove Clones of produced tracks
      */
-    void removeClonesX(unsigned int maxCommon, unsigned int part, unsigned int iCase , bool xOnly);
+    void removeClonesX(unsigned int maxCommon);
     void removeClones(unsigned int maxCommon);
-    
     /** @brief Set the Chi2 value and Chi2DoF for the track after the X+U-V search
      */
     void setChi2(PrSeedTrack2& track);
    
     /** @brief Flag Hits under conditions at the end of the iCase loop 
      */
-    void flagHits(unsigned int icase, unsigned int part);
+    void flagHits(unsigned int icase);
     /** @bried Flag Hits under conditions (similar to removal of clones ) sort of hybrid
      */
     void flagHits2();
@@ -94,14 +89,14 @@ class PrHybridSeeding : public GaudiTupleAlg{
      *  @param Refit Iteration in the Refitting after removal worst hit
      *  @return bool Success of the XY+XZ Fit
      **/
-    bool fitSimultaneouslyXY( PrSeedTrack2& track ,unsigned int iCase);
+    bool fitSimultaneouslyXY( PrSeedTrack2& track ,int Refit , unsigned int iCase);
     
     /** @brief Fit the track combining the only in the XZ plane
      *  @param track The track to fit
      *  @param Refit Iteration in the Refitting after removal worst hit
      *  @return bool Success of the XZ Fit
      **/
-    bool fitXProjection( PrSeedTrack2 & track ,unsigned int iCase );
+    bool fitXProjection( PrSeedTrack2 & track , int Refit , unsigned int iCase ,bool& doreFit);
 
     /** @brief Fit Y line given a list of UV hits
      *  @param hits List of UV hits from UV layers
@@ -115,13 +110,13 @@ class PrHybridSeeding : public GaudiTupleAlg{
      *  @param track The track to fit
      *  @return bool Success of the fit
      */
-    bool removeWorstAndRefitX( PrSeedTrack2& track , unsigned int iCase );
+    bool removeWorstAndRefitX( PrSeedTrack2& track ,int step , unsigned int iCase ,bool& doRefit);
     
      /** @brief Remove the hit which gives the largest contribution to the chi2 and refit XZ + YZ
       *  @param track The track to fit
      *  @return bool Success of the fit
      */
-    bool removeWorstAndRefit( PrSeedTrack2& track , unsigned int iCase );
+    bool removeWorstAndRefit( PrSeedTrack2& track , int step, unsigned int iCase );
     
      /** @brief Set the chi2 of the track
       *  @param track The track to set the chi2 of 
@@ -190,9 +185,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
     
   private:
     //-------------Names for input container(if forward as input), output container name, HitManager name
-    bool m_removeHighP;
-    bool m_recoverTrack;
-    double m_chi2Recover ;
+    bool m_useImprovedStereo;
     
     std::string        m_inputName;
     std::string        m_outputName;
@@ -208,95 +201,82 @@ class PrHybridSeeding : public GaudiTupleAlg{
     bool               m_useCubic;
     bool               m_removeClones;
     bool               m_removeClonesX;
+    
     bool               m_FlagHits;
     bool               m_removeFlagged;
     //------------X-search parametrisation
     //1st / Last Layer search windows
+    std::vector<double> m_alphaCorrectionHighP;
+    std::vector<double> m_TolHighP;
+
+
+    std::vector<double> m_Case0_ParSeed7;
+    std::vector<double> m_Case0_ParSeed4;
+    std::vector<double> m_Case1_ParSeed7;
+    std::vector<double> m_Case1_ParSeed4;
+    std::vector<double> m_Case2_ParSeed7;
+    std::vector<double> m_Case2_ParSeed4;
     
-    std::vector<double> m_alphaCorrection;
-    std::vector<double> m_TolFirstLast;
+    
+    double          m_hp4_alpha;
+    double          m_hp4_slope;
+    double          m_hp4_tol;
+    double          m_hp7_alpha;
+    double          m_hp7_tol;
     
 
-    //Add of the third hit in middle layers (p and Pt dependent, i.e., case dependent)
-    std::vector<double> m_x0Corr;
-    std::vector<double> m_x0SlopeChange;
-    std::vector<double> m_TolX0SameSign;
-    std::vector<double> m_x0Cut;
-    std::vector<double> m_tolAtX0Cut;
-    
-    std::vector<double> m_tolX0Oppsig;
-    std::vector<double> m_x0SlopeChange2;
-    std::vector<double> m_x0CutOppSig;
-    std::vector<double> m_tolAtx0CutOppSig;
-    
-    //Add of remaining Hits in remaining X Layers
-    std::vector<double> m_tolRemaining;
-    //-----------
+    double          m_alphaCorrection;
+    double          m_TolHp;
     //Add of third hit in T2
+    double           m_x0Corr;
+    double           m_yOff1; //Used
+    double           m_yOff1_Loose;
+    double           m_yOff2;
+    double           m_yOff2_Loose;
     unsigned int m_maxParabolaSeedHits;
     //Look up in remaining X layers
+    double           m_maxDeltaPar;
+    double             m_maxDeltaPar_Loose;
     //Look up in remaining X layers and Track Fitting parameters
-    double           m_dRatio;
+    double           m_dRatio0;
+    double           m_dRatio1;
+    double           m_dRatio2;
     double           m_ConstC;
     //--------_Fit X parametrisation
-    std::vector<double>            m_maxChi2HitsX;
-    std::vector<double>            m_maxChi2DoFX;
-    
-    //--------_Full Fit parametrisation
-    std::vector<double>            m_maxChi2FullFit;
-    std::vector<double>            m_maxChi2HitFullFitHigh;
-    std::vector<double>            m_maxChi2HitFullFitLow;
-    std::vector<double>            m_maxY0Low;
-    std::vector<double>            m_maxYZrefLow;
-    std::vector<double>            m_maxChi2HitLow;
-    
-    std::vector<double>            m_maxChi2HitFull ;
-    
+    double            m_maxChi2_X;
     //Add the parameters for the Chi2 Cut
     unsigned int     m_nSigmaOffX;
     unsigned int     m_X0Max;
     
-    
-    //-----------------UV search parametrisation
+
+     //-----------------UV search parametrisation
     //Added
-    double          m_yMin;
-    double          m_yMin_TrFix;
-    double          m_yMax;
-    double          m_yMax_TrFix;
+    double          m_alphaUV;
     double          m_doAsymmUV;
     //
     double          m_coord;
+    double          m_tolTyOffset;
+    double          m_tolTySlope; 
+    double          m_tolXStereo;
     //Triangle Fix
     bool            m_useFix; 
     bool            m_removeHole;
     bool            m_useFix2ndOrder;
-
-    //LineY 
-    bool m_useLineY;
-    std::vector<double> m_Chi2LowLine;
-    std::vector<double> m_Chi2HighLine;
-    
-    
-    std::vector<double> m_X0ChangeCoord;
-    
-    std::vector<double> m_tolTyOffset;
-    std::vector<double> m_tolTySlope;
-    
-
+    double          m_tolTriangle;
+    double          m_tolYOffset;
     //X+Y fit configure
-    std::vector<double>          m_maxChi2PerDoF;
-    bool            m_corrLeftSide;
-    //Clone removal setting
-    std::vector<unsigned int>              m_nCommonX;
-    unsigned int              m_nCommonUV;
-    bool                      m_ClonesUpDown;
-    unsigned int              m_nCommonUVTriangle;
-    unsigned int              m_nUsed;
-    //Flag Hits Settings
+    double          m_maxChi2HitsX;
+    double          m_maxChi2PerDoF;
     
-    std::vector<double>         m_MaxChi2Flag;
-    std::vector<double>         m_MaxX0Flag;
-    std::vector<unsigned int>   m_SizeFlag;
+    //Clone removal setting
+    unsigned int              m_nCommonX;
+    unsigned int              m_nCommonUV;
+    unsigned int              m_nUsed;
+    
+    //Flag Hits Settings
+    double         m_MaxChi2Flag;
+    double         m_MaxX0Flag;
+    unsigned int  m_SizeFlag;
     
     //dRatio correction to use (temporary)
     bool m_useCorrPos;
@@ -325,50 +305,27 @@ class PrHybridSeeding : public GaudiTupleAlg{
     ISequencerTimerTool* m_timerTool;
     int            m_timeTotal;
     int            m_timeFromForward;
-    
-    int            m_timeXProjeUp[3];
-    int            m_timeStereoUp[3];
-    int            m_timeCloneXUp[3];
-    int            m_timeFlagUp[3];
-    
-    int            m_timeXProjeDo[3];
-    int            m_timeStereoDo[3];
-    int            m_timeCloneXDo[3];
-    int            m_timeFlagDo[3];
-    
-    
-    int            m_timeClone;
-    int            m_timeConvert;
-    
+    int            m_timeXProjection;
+    int            m_timeStereo;
+    int            m_timeFinal;
+
     //-------------------Algorithms Constants
 
     // Stations Zones numbering
-    static const unsigned int s_T1X1 = 0;
-    static const unsigned int s_T1U  = 2;
-    static const unsigned int s_T1V  = 4;
-    static const unsigned int s_T1X2 = 6;
-    static const unsigned int s_T2X1 = 8;
-    static const unsigned int s_T2U  = 10;
-    static const unsigned int s_T2V  = 12;
-    static const unsigned int s_T2X2 = 14;
-    static const unsigned int s_T3X1 = 16;
-    static const unsigned int s_T3U  = 18;
-    static const unsigned int s_T3V  = 20;
-    static const unsigned int s_T3X2 = 22;
-    static const unsigned int s_down = 0;
-    static const unsigned int s_up   = 1;
-
-#ifdef TRUTH_MATCH_Histos
-  public:
-    bool matchKey( PrHit* hit,int key);
-    bool isWanted( LHCb::MCParticle* mcPart);
-    bool AssocTrack(PrSeedTrack2 track,double& efficiency,LHCb::MCParticle*& particle, int& nHits);
-  private:
-    bool m_etaCut;
-    bool m_noElectrons;
-#endif
-
-
+    static const int s_T1X1 = 0;
+    static const int s_T1U  = 2;
+    static const int s_T1V  = 4;
+    static const int s_T1X2 = 6;
+    static const int s_T2X1 = 8;
+    static const int s_T2U  = 10;
+    static const int s_T2V  = 12;
+    static const int s_T2X2 = 14;
+    static const int s_T3X1 = 16;
+    static const int s_T3U  = 18;
+    static const int s_T3V  = 20;
+    static const int s_T3X2 = 22;
+    static const int s_down = 0;
+    static const int s_up   = 1;
   };
   
 #endif // PRHYBRIDSEEDING_H

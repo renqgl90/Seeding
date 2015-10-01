@@ -31,7 +31,7 @@ public:
     m_nbHits(0)
   { };
   
-  void set( PrHits::iterator itBeg, PrHits::iterator itEnd, const bool fill = true){
+  void set( PrHits::const_iterator itBeg, PrHits::const_iterator itEnd, const bool fill = true){
     if(fill){
       m_nbUsed=0;
       m_nbHits=0;
@@ -62,7 +62,7 @@ public:
       m_nbT3_singleHit = 0;
     }
     PrHit *hit = nullptr;
-    for ( PrHits::const_iterator itH = itBeg; itEnd != itH; ++itH) {
+    for( PrHits::const_iterator itH = itBeg; itEnd != itH; ++itH) {
       m_nbHits++;
       hit = (*itH);
       if(hit->isUsed()) m_nbUsed++;
@@ -127,6 +127,8 @@ public:
   int addHit( const PrHit* hit){
     //if(hit->isUsed()) return m_nbFiredLayers;
     unsigned int plane = hit->planeCode();
+    m_nbHits++;
+    
     if( 0 == m_planeList[plane]++){
        m_nbFiredLayers_singleHit ++;
        m_nbFiredLayers ++;
@@ -152,12 +154,13 @@ public:
         if(isT2(hit)){ m_nbT2_singleHit--; }
         if(isT3(hit)){ m_nbT3_singleHit--; }
       }
-    } 
+    }
     return m_nbFiredLayers;
   }
   
   int removeHit( const PrHit* hit){
     //if(hit->isUsed() ) return m_nbFiredLayers;
+    m_nbHits--;
     unsigned int plane = hit->planeCode();
     unsigned int NumberInLayerAfterRemove = m_planeList[plane] -1;
     m_planeList[plane]--;
@@ -189,7 +192,6 @@ public:
     }
     return m_nbFiredLayers;
   }
-  
   unsigned int nbDifferent() const{ return m_nbFiredLayers;}
   unsigned int nbSingle() const{ return m_nbFiredLayers_singleHit;}
   

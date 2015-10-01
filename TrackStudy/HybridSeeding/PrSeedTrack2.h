@@ -74,6 +74,10 @@ public:
     m_ay = ay;
     m_by = by;
   }
+  // void setnDiff( unsigne int i){
+  //   m_nDiff = i;
+  // }
+  
   void setnXnY( unsigned int nx, unsigned int ny){
     m_nx = nx;
     m_ny = ny;
@@ -90,6 +94,23 @@ public:
   void setdRatio( double dRatio )       { m_dRatio = dRatio;}
   double dRatio()                 const{return m_dRatio;}
   //Chi2 & DoF
+  void setChi2LineY( double chi2DoF, int nUV){
+    m_chi2Line = chi2DoF;
+    m_nUVLine = nUV;
+  }
+  double chi2DoFLine() const
+  {
+    if( m_nUVLine>1)
+      return m_chi2Line;
+    return 1e30;
+  }
+  int nUV() const{
+    return m_nUVLine;
+  }
+  
+  
+  
+  
   void setChi2(double chi2, int nDoF) { m_chi2 = chi2;m_nDoF = nDoF; }
   double chi2()                   const { return m_chi2; }
   double chi2PerDoF()         const { return m_chi2 / m_nDoF;}
@@ -158,15 +179,15 @@ public:
   void sortbyz(){
     std::sort(m_hits.begin(),m_hits.end(),[](const PrHit* hit1, const PrHit* hit2)->bool{return hit1->z()<hit2->z();});
   }
-  struct GreaterBySize {
-    bool operator() (const PrSeedTrack2& lhs, const PrSeedTrack2 rhs ) const { 
+  struct GreaterBySize {//there was no & in rhs
+    bool operator() (const PrSeedTrack2& lhs, const PrSeedTrack2& rhs ) const { 
       if( lhs.hits().size() != rhs.hits().size() )
         return lhs.hits().size() < rhs.hits().size(); //< by default
       return lhs.chi2PerDoF() < rhs.chi2PerDoF();
     }
   };
   struct LowerBySize{
-    bool operator() ( const PrSeedTrack2& lhs, const PrSeedTrack2 rhs) const{
+    bool operator() ( const PrSeedTrack2& lhs, const PrSeedTrack2& rhs) const{
       if(lhs.hits().size() == rhs.hits().size()) return lhs.chi2PerDoF() > rhs.chi2PerDoF();
       return lhs.hits().size() > rhs.hits().size();
     }
@@ -219,7 +240,8 @@ private:
     m_case = -1;
     m_nx = 0;
     m_ny = 0;
-    
+    m_nUVLine = 0;
+    m_chi2Line = 1.e30;
     //track params
     m_ax = 0.;
     m_bx = 0.;
@@ -242,6 +264,8 @@ private:
 private:
   unsigned int m_nx;
   unsigned int m_ny;
+  int m_nUVLine;
+  double m_chi2Line;
   
   unsigned int m_zone;
   double       m_zRef;
