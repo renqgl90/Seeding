@@ -11,7 +11,7 @@
 // local
 #include "PrLineFitterY.h"
 #include "PrHybridSeeding.h"
-#include "PrPlaneCounter2.h"
+#include "PrPlaneHybridCounter.h"
 #include "Event/MCTrackInfo.h"
 #include "Event/MCProperty.h"
 #include "Event/LinksByKey.h"
@@ -56,12 +56,14 @@ GaudiTupleAlg(name,pSvcLocator),
   ,m_timerTool(nullptr)
 {
 #ifdef TRUTH_MATCH_Histos
+  
   declareProperty("EtaCut",m_etaCut = true);
   declareProperty("NoEle",m_noElectrons = true);
   // declareProperty("RecoverTrack", m_recoverTrack = false);
   // declareProperty("ChiDoFRecover", m_chi2Recover = 1.0);
   
 #endif
+  declareProperty( "SlopeCorr", m_SlopeCorr = false);
   
   declareProperty( "RecoverTrack", m_recoverTrack = false);
   declareProperty( "ChiDoFRecover", m_chi2Recover = 1.0);
@@ -73,7 +75,7 @@ GaudiTupleAlg(name,pSvcLocator),
   declareProperty( "DecodeData",              m_decodeData= false);
   declareProperty( "XOnly",                       m_xOnly= false);
   declareProperty( "MinXPlanes",                m_minXPlanes = 4);
-  declareProperty( "MaxNHits",                m_maxNHits =13);
+  declareProperty( "MaxNHits",                m_maxNHits =12);
   declareProperty( "NCases" ,                    m_nCases = 3); //Max
   declareProperty( "TimingMeasurement",   m_doTiming= false);
   declareProperty( "PrintSettings",               m_printSettings= true);
@@ -261,6 +263,8 @@ StatusCode PrHybridSeeding::initialize() {
     m_timerTool->increaseIndent(); //+1
     m_timeFromForward = m_timerTool->addTimer( "Time from Forward" );
     m_timerTool->increaseIndent(); //+2
+    
+    //Case 0
     m_timeXProjeUp[0] = m_timerTool->addTimer( "Case 0 : X Projections Up");
     m_timerTool->increaseIndent(); //+3
     m_timeCloneXUp[0] = m_timerTool->addTimer( "Case 0 : Clones X Up");
@@ -268,41 +272,49 @@ StatusCode PrHybridSeeding::initialize() {
     m_timeStereoUp[0] = m_timerTool->addTimer( "Case 0 : AddStereo Up");
     m_timerTool->increaseIndent();//+5
     m_timeFlagUp[0] = m_timerTool->addTimer( " Case 0 : Flag Up");
+    
+    //Case 1
     m_timerTool->decreaseIndent(); // +4
     m_timerTool->decreaseIndent(); // + 3
     m_timerTool->decreaseIndent(); //+ 2
     m_timeXProjeUp[1] = m_timerTool->addTimer( "Case 1 : X Projections Up");
     m_timerTool->increaseIndent(); //+ 3
-    m_timeCloneXUp[1] = m_timerTool->addTimer( "Case 1 : Clones X Up");                                                               
+    m_timeCloneXUp[1] = m_timerTool->addTimer( "Case 1 : Clones X Up");
     m_timerTool->increaseIndent();      //+4                  
-    m_timeStereoUp[1] = m_timerTool->addTimer( "Case 1 : AddStereo Up");                                                                                                                                                    
+    m_timeStereoUp[1] = m_timerTool->addTimer( "Case 1 : AddStereo Up");         
     m_timerTool->increaseIndent();          //+5                                                
     m_timeFlagUp[1] = m_timerTool->addTimer( "Case 1 : Flag Up");
     m_timerTool->decreaseIndent();//+4
     m_timerTool->decreaseIndent();//+3                                                           
     m_timerTool->decreaseIndent();//+2
-    m_timeXProjeUp[2] = m_timerTool->addTimer( "Case 2 : X Projections Up");                                                               
+
+    //Case 2
+    m_timeXProjeUp[2] = m_timerTool->addTimer( "Case 2 : X Projections Up");
     m_timerTool->increaseIndent();//+3
-    m_timeCloneXUp[2] = m_timerTool->addTimer( "Case 2 : Clones X Up");                                                               
+    m_timeCloneXUp[2] = m_timerTool->addTimer( "Case 2 : Clones X Up");     
     m_timerTool->increaseIndent();//+4
-    m_timeStereoUp[2] = m_timerTool->addTimer( "Case 2 : AddStereo Up");                                                             
+    m_timeStereoUp[2] = m_timerTool->addTimer( "Case 2 : AddStereo Up");    
     m_timerTool->increaseIndent();//+5
     m_timeFlagUp[2] = m_timerTool->addTimer( "Case 2 : Flag Up");
     m_timerTool->decreaseIndent();//+4
     m_timerTool->decreaseIndent();//+3
     m_timerTool->decreaseIndent();//+2
     
-    m_timeXProjeDo[0] = m_timerTool->addTimer( "Case 0 : X Projections Down");                                                                 
+    //Case 0 Down
+    m_timeXProjeDo[0] = m_timerTool->addTimer( "Case 0 : X Projections Down");
     m_timerTool->increaseIndent();//+3
-    m_timeCloneXDo[0] = m_timerTool->addTimer( "Case 0 : Clones X Down");                                                                 
+    m_timeCloneXDo[0] = m_timerTool->addTimer( "Case 0 : Clones X Down");     
     m_timerTool->increaseIndent();//+4
-    m_timeStereoDo[0] = m_timerTool->addTimer( "Case 0 : AddStereo Dowm");                                                               
+    m_timeStereoDo[0] = m_timerTool->addTimer( "Case 0 : AddStereo Dowm");    
     m_timerTool->increaseIndent();    //+5                           
     m_timeFlagDo[0] = m_timerTool->addTimer( " Case 0 : Flag Down");
-    m_timerTool->decreaseIndent();        //+4                                                      
+    m_timerTool->decreaseIndent();        //+4                                
     m_timerTool->decreaseIndent();            //+3
     m_timerTool->decreaseIndent();//+2
-    m_timeXProjeDo[1] = m_timerTool->addTimer( "Case 1 : X Projections Down");                                                                 
+
+
+    //Case 1 Down
+    m_timeXProjeDo[1] = m_timerTool->addTimer( "Case 1 : X Projections Down");
     m_timerTool->increaseIndent();    //+3
     m_timeCloneXDo[1] = m_timerTool->addTimer( "Case 1 : Clones X Down");
     m_timerTool->increaseIndent();        //+4
@@ -312,17 +324,18 @@ StatusCode PrHybridSeeding::initialize() {
     m_timerTool->decreaseIndent(); //+4
     m_timerTool->decreaseIndent(); //+3
     m_timerTool->decreaseIndent(); //+2
-    m_timeXProjeUp[2] = m_timerTool->addTimer( "Case 2 : X Projections Up");
+
+    //Case 2 Down
+    m_timeXProjeDo[2] = m_timerTool->addTimer( "Case 2 : X Projections Down");
     m_timerTool->increaseIndent(); //+3
-    m_timeCloneXUp[2] = m_timerTool->addTimer( "Case 2 : Clones X Up");
+    m_timeCloneXDo[2] = m_timerTool->addTimer( "Case 2 : Clones X Down");
     m_timerTool->increaseIndent(); //+4
-    m_timeStereoUp[2] = m_timerTool->addTimer( "Case 2 : AddStereo Up");
+    m_timeStereoDo[2] = m_timerTool->addTimer( "Case 2 : AddStereo Down");
     m_timerTool->increaseIndent(); //+5                                                  
-    m_timeFlagUp[2] = m_timerTool->addTimer( "Case 2 : Flag Up");
+    m_timeFlagDo[2] = m_timerTool->addTimer( "Case 2 : Flag Down");
     m_timerTool->decreaseIndent(); //+4
     m_timerTool->decreaseIndent(); //+3
     m_timerTool->decreaseIndent(); //+2
-    
     m_timerTool->decreaseIndent();//+1
     m_timeClone = m_timerTool->addTimer( "Remove Clones");
     m_timeConvert = m_timerTool->addTimer("Convert Tracks");
@@ -594,7 +607,7 @@ StatusCode PrHybridSeeding::execute() {
           m_timerTool->start(m_timeCloneXDo[icase]);  
         }
       }
-      std::sort(m_xCandidates.begin(), m_xCandidates.end(), PrSeedTrack2::GreaterBySize());
+      std::sort(m_xCandidates.begin(), m_xCandidates.end(), PrHybridSeedTrack::GreaterBySize());
       if(m_removeClonesX) removeClonesX( m_nCommonX[icase] , part, icase, m_xOnly);
 
       if( m_doTiming){
@@ -607,8 +620,6 @@ StatusCode PrHybridSeeding::execute() {
           m_timerTool->start(m_timeStereoDo[icase]);
         }
       }
-      
-      
       //Add The stereo Part
       if(!m_xOnly){
         addStereo( part, icase ); 
@@ -623,7 +634,6 @@ StatusCode PrHybridSeeding::execute() {
           m_timerTool->start( m_timeFlagDo[icase]);
         }
       }
-      
       //Flag found Hits at the end of each single case ( exclude the latest one )
       
       if(m_FlagHits && (icase ==0 || icase ==1) && !m_xOnly){
@@ -639,21 +649,17 @@ StatusCode PrHybridSeeding::execute() {
     if( m_xOnly) m_xCandidates.clear();
   }
   if(m_doTiming) m_timerTool->start( m_timeClone);
-
   // Global Clone Removal
   if(m_removeClones) removeClones(m_nCommonUV);
-  
   if( m_doTiming){ 
     m_timerTool->stop( m_timeClone); 
     m_timerTool->start( m_timeConvert);
   }
-  
   // Convert tracks to LHCb objects
   makeLHCbTracks( result );
   if( m_doTiming){
     m_timerTool->stop(m_timeConvert);
   }
-  
   if( msgLevel(MSG::DEBUG)) debug()<<"Making LHCb Tracks Done"<<endmsg;
   if( m_doTiming){
     m_timerTool->stop( m_timeTotal);
@@ -684,12 +690,12 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     firstZone = 2;
     lastZone = 22;
   }
-  for( PrSeedTrack2s::iterator itT =m_xCandidates.begin();m_xCandidates.end() != itT; ++itT){
+  for( PrHybridSeedTracks::iterator itT =m_xCandidates.begin();m_xCandidates.end() != itT; ++itT){
     if( (*itT).Case() != iCase) continue;
     if( (*itT).zone() != part) continue;
     if( !(*itT).valid()) continue;
     PrHits myStereo;
-    myStereo.reserve(60);
+    myStereo.reserve(200);
 #ifdef TRUTH_MATCH_Histos
     bool AssocX = false;
     LHCb::MCParticle* partic = nullptr;
@@ -700,8 +706,8 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     const unsigned int stepSize = m_useFix ? 1:2;
     for(unsigned int kk = firstZone; lastZone >kk;kk+=stepSize){
       if(m_zones[kk]->isX()) continue;
-      double yMin = -1*std::fabs(m_yMax);
-      double yMax = +1*std::fabs(m_yMax);
+      double yMin = -1*std::fabs(m_yMax); //-2500
+      double yMax = +1*std::fabs(m_yMax); //2500
       double dxDy = m_zones[kk]->dxDy();
       double zPlane = m_zones[kk]->z();
       double xPred = (*itT).x(zPlane);
@@ -742,12 +748,11 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
       }
       PrHits& hits = m_zones[kk]->hits();
       PrHits::iterator itH = std::lower_bound(hits.begin(),hits.end(),xMin, lowerBoundX());
-      // PrHits::iterator itEnd = std::upper_bound(hits.begin(),hits.end(),xMax, upperBoundX());
-      //PrHits::iterator itH = m_zones[kk]->hits().begin();
       for(  ; hits.end()!= itH; ++itH ){
+        //PrHit* hit = *itH;
         if( (*itH)->isUsed() && m_removeFlagged) continue;
         if( (*itH)->x() > xMax) break;
-        double y = ((*itH)->x()-xPred)/dxDy;
+        double y =  ( (*itH)->x()-xPred)/dxDy;
         if(y >yMax) continue;
         if(y <yMin) continue;
 #ifdef TRUTH_MATCH_Histos
@@ -755,6 +760,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
 #endif
         if(m_useFix2ndOrder){
           if(kk%2==1){
+            //Opposite Zones track is Down, and you look Upper //changed
             if( part==0 && (*itH)->yMax()<0.) continue;
             if( part==0 && (*itH)->yMax()>0.){ yMax = 1.0; yMin = -2.0 -std::fabs((*itH)->yMax()); }
             
@@ -772,10 +778,10 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
         if(y<yMin) continue;
         if(y>yMax) continue;
         if(m_removeHole){
-          double radius = std::sqrt( y*y + xPred*xPred);
-          if(  radius < 87.0) continue;
+          double radius =  y*y + xPred*xPred;
+          if(  radius < 87.0*87.0) continue;
         }
-        (*itH)->setCoord(  std::fabs(((*itH)->x() - xPred ) / dxDy  / zPlane  ));
+        (*itH)->setCoord(  std::fabs( ((*itH)->x() - xPred ) / dxDy  / zPlane) );
 #ifdef TRUTH_MATCH_Histos
         // if(partic!=nullptr){
         //   if( AssocX ){
@@ -811,8 +817,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
       }
     }
     std::sort( myStereo.begin(), myStereo.end(), PrHit::LowerByCoord() );
-    
-    PrPlaneCounter2 plCount;
+    PrPlaneHybridCounter plCount;
     //Save position of this x candidate, for later use
     //My Stereo is a collection of Hits in the stereo Layers
     //int minHough  = 5;
@@ -833,13 +838,15 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     if(iCase == 2){
       if((*itT).hits().size() == 6 ){ minUV = 4; minTot = 9;}
       if((*itT).hits().size() == 5 ){ minUV = 4; minTot = 9;}
-      if((*itT).hits().size() == 4 ){ minUV = 5; minTot = 9;} 
+      if((*itT).hits().size() == 4 ){ minUV = 5; minTot = 9;}
     }
     // unsigned int minHough  = 5;
     unsigned int firstSpace = m_trackCandidates.size();
     PrHits::iterator itBeg = myStereo.begin();  //first hit in U-V layer with small Ty
-    PrHits::iterator itEnd = itBeg + minUV-1; //go ahead of minUV hits
-    //Long tracks >5 GeV tolTyOffset = 0.002
+    PrHits::iterator itEnd = itBeg + minUV; //go ahead of minUV hits
+    //Long tracks >5 GeV tolTyOffset = 0.002 is fine
+    //            >2 GeV tolTyOffset = 0.002 looks also good
+    //            >1.5 Gev Much larger! (0.0035)
     //additional hough cluster window based on the backward projection of the x-z plane?
     //Long tracks > 5 GeV:
     // double signSlope = (std::fabs((*itT).X0()) >200.)? +1. :  -1. ;  //true
@@ -847,170 +854,188 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     // double TySlope = m_tolTySlope;
     // //double minTy = 0.;
     // // Case 0 : All P>5GeV TyOffset = 0.002 is OK
-    // // Case 1 : All P TyOffset + Slope 0.0035 ????
+    // // Case 1 : All P TyOffs
     // // Case 2 : All P TyOffset + Slope 0.0035 ????
     // //What do we have to do here?
-    // //Case 0 : useImprovedStereo 0.002 + slope
     PrLineFitterY BestLine(m_geoTool->zReference(), (*itT));
-    while( itEnd < myStereo.end()) {
+    
+    if(msgLevel(MSG::DEBUG)) debug()<<"Size of MyStereo = " << myStereo.size()<<endmsg;
+    
+    while( itEnd < myStereo.end()){ //Until you reach end of myStereo....
+      //Compute tolerance based on the hit having smallest value of |y/z|
       double tolTy = m_tolTyOffset[iCase] + m_tolTySlope[iCase]*std::fabs( (*itBeg)->coord() );
-      if( ( (*(itEnd-1))->coord() - (*itBeg)->coord() )< tolTy){//there was -1
-        while( itEnd+1 < myStereo.end() &&
-               ((*itEnd)->coord() - (*itBeg)->coord() < tolTy) ){ // 
+      //Check that given itBeg and going to look at itEnd-1, there are minUV elements inside tolTy in between itBeg and itEnd
+      //Iterators structure : [1 (itBeg),...,(itEnd-1)minUV,(itEnd)] ]
+      if( ((*(itEnd-1))->coord() - (*itBeg)->coord() )< tolTy){
+        //it element next to the one defining the minUV step, also satisfy the tolerance, extend the cluster.
+        while( itEnd != myStereo.end() &&
+               ((*itEnd)->coord() - (*itBeg)->coord() )< tolTy ){
+          if(msgLevel(MSG::DEBUG)) debug()<<"Extending itEnd"<<endmsg;
           ++itEnd; //extend last hit until you don't reach out of tolerance
         }
+
+        //For each of the selected stuff, check that there are minUV different Planes fired and that there are at least 1 hit per Station.
+        
         plCount.set( itBeg, itEnd );
-        if( (minUV-1) < plCount.nbDifferentUV() && plCount.isOKUV()){ // if inside the hough cluster process you have minUV u-v layers + at least one station with 2 hits you can start building up the track
-          PrSeedTrack2 temp( *itT ) ;//maybe generate it later on?;
-            if(m_useLineY){ //Preselection with line on Y with 1 hit per layer. Avoid due to occupancy to fit tracks with >1 hit per layer
-              //bool fitDone = false;
-              bool fit = false;
-              if( plCount.nbSingleUV() == plCount.nbDifferentUV() && plCount.nbSingleUV() > minUV-1){ //if the case is nUVLayer = nHits
-                fit = BestLine.fit( itBeg,itEnd ); //fit for the line will set the chi2 for BestLine
-                //fitDone = true;
-                if(fit && LineOK( m_Chi2LowLine[iCase] ,m_Chi2HighLine[iCase],  BestLine , temp) ){ //criteria satisfied => add Hits on track
-                  for( PrHits::iterator hit = itBeg; itEnd!= hit; ++hit)
-                    temp.addHit( (*hit));
+        
+        if( plCount.nbDifferentUV()>=minUV && plCount.isOKUV()){ 
+          // if inside the hough cluster process you have minUV u-v layers + at least one station with 2 hits you can start building up the track
+          PrHybridSeedTrack temp( *itT ) ;//maybe generate it later on? It's just a copy of the xProjection i am processing: remember, everything here is done for a 
+          //single x-Projection (outer loop is on xProjection)
+          
+          if(m_useLineY){ //Preselection with line on Y with 1 hit per layer. Avoid due to occupancy to fit tracks with >1 hit per layer
+            //bool fitDone = false;
+            bool fit = false;
+            if( plCount.nbSingleUV() == plCount.nbDifferentUV() && plCount.nbSingleUV() >= minUV){ //if the case is nUVLayer = nHits
+              if(msgLevel(MSG::DEBUG)){
+                debug()<<"Use LineY : single == nbDifferent"<<endmsg;
+                debug()<<"MinUV = "<<minUV<<endmsg;
+                debug()<<"Plane Counter nbDifferentUV = "<<plCount.nbDifferentUV();
+                debug()<<"Plane Counter nbSingleUV = " <<plCount.nbSingleUV();
+                debug()<<"UV Hits"<<endmsg;
+                for(PrHits::iterator itH = itBeg; itEnd!=itH;++itH){
+                  printHit( (*itH));
                 }
               }
-              if( plCount.nbDifferentUV() != plCount.nbSingleUV() && plCount.nbDifferentUV() > minUV-1){ //more than 1 hit per layer
-                std::vector<std::vector<PrHit*> > PlanesMultiple; //Contains all the planes having > 1 layer
-                PlanesMultiple.clear();
-                std::vector<PrHit*> hits1; //hits in layer 1
-                hits1.clear();
-                std::vector<PrHit*> hits2;
-                hits2.clear();
-                std::vector<PrHit*> hits5;
-                hits5.clear();
-                std::vector<PrHit*> hits6;
-                hits6.clear();
-                std::vector<PrHit*> hits9;
-                hits9.clear();
-                std::vector<PrHit*> hits10;
-                hits10.clear();
-                std::vector<PrHit*> PlanesSingle;
-                PlanesSingle.clear();
-                PlanesMultiple.reserve(6);
-                PlanesSingle.reserve(6);
-                //Improve this by doing std::vector< vector<PrHit*>> hits where hits[0] is the vector of his in hits1.
-                for(PrHits::iterator itH = itBeg; itEnd!=itH;++itH){
-                  if(plCount.nbInPlane( (*itH)->planeCode()) ==1 ){//if 1 hit in plane of processed hit push back the hit in the container of PlaneSingle
-                    PlanesSingle.push_back((*itH));
-                    continue;
-                  }
-                  if((*itH)->planeCode()==1 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits1.push_back((*itH));
-                  }
-                  if((*itH)->planeCode()==2 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits2.push_back((*itH));
-                  }
-                  if((*itH)->planeCode()==5 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits5.push_back((*itH));
-                  }
-                  if((*itH)->planeCode()==6 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits6.push_back((*itH));
-                  }
-                  if((*itH)->planeCode()==9 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits9.push_back((*itH));
-                  }
-                  if((*itH)->planeCode()==10 && plCount.nbInPlane((*itH)->planeCode())>1){
-                    hits10.push_back((*itH));
-                  }
+              fit = BestLine.fit( itBeg,itEnd ); //fit for the line will set the chi2 for BestLine
+              if(msgLevel(MSG::DEBUG)) debug()<<"Fit Status Line = "<<fit<<endmsg;
+              if(fit && LineOK( m_Chi2LowLine[iCase] ,m_Chi2HighLine[iCase],  BestLine , temp) ){ //criteria satisfied => add Hits on track
+                if(msgLevel(MSG::DEBUG)) debug()<<"adding hits on temp track"<<endmsg;
+                for( PrHits::iterator hit = itBeg; itEnd!= hit; ++hit){
+                  temp.addHit( (*hit) );
                 }
-                if(hits1.size()!=0) PlanesMultiple.push_back(hits1);
-                if(hits2.size()!=0) PlanesMultiple.push_back(hits2);
-                if(hits5.size()!=0) PlanesMultiple.push_back(hits5);
-                if(hits6.size()!=0) PlanesMultiple.push_back(hits6);
-                if(hits9.size()!=0) PlanesMultiple.push_back(hits9);
-                if(hits10.size()!=0) PlanesMultiple.push_back(hits10);
-                PrSeedTrack2s Tracks; //combinatorical tracks container when >1 hit in at least 1 layer.
-                //PrHit* hit1 = nullptr;
-                for( PrHit* hit1: PlanesMultiple[0]){
-                  if(PlanesMultiple.size()==1){
-                    PrSeedTrack2 tem(*itT);
-                    if(PlanesSingle.size()!=0){
-                      tem.addHits2(PlanesSingle);
-                    }
-                    tem.addHit(hit1);
-                    Tracks.push_back(tem);
-                    continue;
+              }
+              BestLine.reset();
+            }
+            if( plCount.nbDifferentUV() != plCount.nbSingleUV() && plCount.nbDifferentUV() >= minUV){ //more than 1 hit per layer
+              std::vector<std::vector<PrHit*> > PlanesMultiple; //Contains all the planes having > 1 layer
+              PlanesMultiple.clear();
+              std::vector<PrHit*> hits1; //hits in layer 1
+              std::vector<PrHit*> hits2;
+              std::vector<PrHit*> hits5;
+              std::vector<PrHit*> hits6;
+              std::vector<PrHit*> hits9;
+              std::vector<PrHit*> hits10;
+              std::vector<PrHit*> PlanesSingle;
+              PlanesMultiple.reserve(6);
+              PlanesSingle.reserve(6);
+              //Improve this by doing std::vector< vector<PrHit*>> hits where hits[0] is the vector of his in hits1.
+              for(PrHits::iterator itH = itBeg; itEnd!=itH;++itH){
+                if(plCount.nbInPlane( (*itH)->planeCode()) ==1 ){//if 1 hit in plane of processed hit push back the hit in the container of PlaneSingle
+                  PlanesSingle.push_back((*itH));
+                  continue;
+                }
+                if((*itH)->planeCode()==1 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits1.push_back((*itH));
+                }
+                if((*itH)->planeCode()==2 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits2.push_back((*itH));
+                }
+                if((*itH)->planeCode()==5 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits5.push_back((*itH));
+                }
+                if((*itH)->planeCode()==6 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits6.push_back((*itH));
+                }
+                if((*itH)->planeCode()==9 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits9.push_back((*itH));
+                }
+                if((*itH)->planeCode()==10 && plCount.nbInPlane((*itH)->planeCode())>1){
+                  hits10.push_back((*itH));
+                }
+              }
+              if(hits1.size()!=0) PlanesMultiple.push_back(hits1);
+              if(hits2.size()!=0) PlanesMultiple.push_back(hits2);
+              if(hits5.size()!=0) PlanesMultiple.push_back(hits5);
+              if(hits6.size()!=0) PlanesMultiple.push_back(hits6);
+              if(hits9.size()!=0) PlanesMultiple.push_back(hits9);
+              if(hits10.size()!=0) PlanesMultiple.push_back(hits10);
+              PrHybridSeedTracks Tracks; //combinatorical tracks container when >1 hit in at least 1 layer.
+              //PrHit* hit1 = nullptr;
+              for( PrHit* hit1: PlanesMultiple[0]){
+                if(PlanesMultiple.size()==1){
+                  PrHybridSeedTrack tem(*itT);
+                  if(PlanesSingle.size()!=0){
+                    tem.addHits2(PlanesSingle);
                   }
-                  if(PlanesMultiple.size()>1){
-                    for( PrHit* hit2 : PlanesMultiple[1]){
-                      if(PlanesMultiple.size() ==2){
-                        PrSeedTrack2 tem(*itT);
-                        if(PlanesSingle.size()!=0){
-                          tem.addHits2(PlanesSingle);
-                        }
-                        tem.addHit(hit1);
-                        tem.addHit(hit2);
-                        Tracks.push_back(tem);
-                        continue;
+                  tem.addHit(hit1);
+                  Tracks.push_back(tem);
+                  continue;
+                }
+                if(PlanesMultiple.size()>1){
+                  for( PrHit* hit2 : PlanesMultiple[1]){
+                    if(PlanesMultiple.size() ==2){
+                      PrHybridSeedTrack tem(*itT);
+                      if(PlanesSingle.size()!=0){
+                        tem.addHits2(PlanesSingle);
                       }
-                      if(PlanesMultiple.size()>2){
-                        for(PrHit* hit3 : PlanesMultiple[2]){
-                          if(PlanesMultiple.size() == 3){
-                            PrSeedTrack2 tem(*itT);
-                            if(PlanesSingle.size()!=0){
-                              tem.addHits2(PlanesSingle);
-                            }
-                            tem.addHit( hit1);
-                            tem.addHit( hit2);
-                            tem.addHit( hit3);
-                            Tracks.push_back(tem);
-                            continue;
+                      tem.addHit(hit1);
+                      tem.addHit(hit2);
+                      Tracks.push_back(tem);
+                      continue;
+                    }
+                    if(PlanesMultiple.size()>2){
+                      for(PrHit* hit3 : PlanesMultiple[2]){
+                        if(PlanesMultiple.size() == 3){
+                          PrHybridSeedTrack tem(*itT);
+                          if(PlanesSingle.size()!=0){
+                            tem.addHits2(PlanesSingle);
                           }
-                          if(PlanesMultiple.size()>3){
-                            for(PrHit* hit4 : PlanesMultiple[3]){
-                              if(PlanesMultiple.size() == 4){
-                                PrSeedTrack2 tem(*itT);
-                                if(PlanesSingle.size()!=0){
-                                  tem.addHits2(PlanesSingle);
-                                }
+                          tem.addHit( hit1);
+                          tem.addHit( hit2);
+                          tem.addHit( hit3);
+                          Tracks.push_back(tem);
+                          continue;
+                        }
+                        if(PlanesMultiple.size()>3){
+                          for(PrHit* hit4 : PlanesMultiple[3]){
+                            if(PlanesMultiple.size() == 4){
+                              PrHybridSeedTrack tem(*itT);
+                              if(PlanesSingle.size()!=0){
+                                tem.addHits2(PlanesSingle);
+                              }
                               tem.addHit(hit1);
                               tem.addHit(hit2);
                               tem.addHit(hit3);
                               tem.addHit(hit4);
                               Tracks.push_back(tem); 
                               continue;
-                              }
-                              if(PlanesMultiple.size()>4){
-                                for(PrHit* hit5 : PlanesMultiple[4]){
-                                  if(PlanesMultiple.size() == 5){
-                                    PrSeedTrack2 tem(*itT);
-                                    if(PlanesSingle.size()!=0){
-                                      tem.addHits2(PlanesSingle);
-                                    }
-                                    tem.addHit(hit1);
-                                    tem.addHit(hit2);
-                                    tem.addHit(hit3);
-                                    tem.addHit(hit4);
-                                    tem.addHit(hit5);
-                                    Tracks.push_back(tem);
-                                    continue; 
+                            }
+                            if(PlanesMultiple.size()>4){
+                              for(PrHit* hit5 : PlanesMultiple[4]){
+                                if(PlanesMultiple.size() == 5){
+                                  PrHybridSeedTrack tem(*itT);
+                                  if(PlanesSingle.size()!=0){
+                                    tem.addHits2(PlanesSingle);
                                   }
-                                  if(PlanesMultiple.size()>5){
-                                    for(PrHit* hit6: PlanesMultiple[5])
-                                    { 
-                                      if(PlanesMultiple.size()==6)
-                                      {
-                                        PrSeedTrack2 tem(*itT);
-                                        if(PlanesSingle.size()!=0){
-                                          tem.addHits2(PlanesSingle);
-                                        }
-                                        tem.addHit(hit1);
-                                        tem.addHit(hit2);
-                                        tem.addHit(hit3);
-                                        tem.addHit(hit4);
-                                        tem.addHit(hit5);
-                                        tem.addHit(hit6);
-                                        Tracks.push_back(tem);
-                                        continue;
-                                      }//end if planes size 6
-                                    }//end loop hit in multiple 6
-                                  }//end if plane size >5
-                                }//end loop hit in multiple 5
-                              }
+                                  tem.addHit(hit1);
+                                  tem.addHit(hit2);
+                                  tem.addHit(hit3);
+                                  tem.addHit(hit4);
+                                  tem.addHit(hit5);
+                                  Tracks.push_back(tem);
+                                  continue; 
+                                }
+                                if(PlanesMultiple.size()>5){
+                                  for(PrHit* hit6: PlanesMultiple[5])
+                                  { 
+                                    if(PlanesMultiple.size()==6)
+                                    {
+                                      PrHybridSeedTrack tem(*itT);
+                                      if(PlanesSingle.size()!=0){
+                                        tem.addHits2(PlanesSingle);
+                                      }
+                                      tem.addHit(hit1);
+                                      tem.addHit(hit2);
+                                      tem.addHit(hit3);
+                                      tem.addHit(hit4);
+                                      tem.addHit(hit5);
+                                      tem.addHit(hit6);
+                                      Tracks.push_back(tem);
+                                    }//end if planes size 6
+                                  }//end loop hit in multiple 6
+                                }//end if plane size >5
+                              }//end loop hit in multiple 5
                             }
                           }
                         }
@@ -1018,144 +1043,90 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                     }
                   }
                 }
-                if(msgLevel(MSG::DEBUG)){
-                  always()<<"UVSegments candidates"<<Tracks.size()<<endmsg;
-                  always()<<"XZ segment start"<<endmsg; printTrack( (*itT));
-                }
+              }
+              if(msgLevel(MSG::DEBUG)){
+                always()<<"UVSegments candidates"<<Tracks.size()<<endmsg;
+                always()<<"XZ segment start"<<endmsg; printTrack( (*itT));
+              }
               // Tracks contains the Tracks with 1 hit per layer
-                bool fit = false;
-                for(PrSeedTrack2s::iterator tr = Tracks.begin(); Tracks.end()!=tr; ++tr){ //for each combinatorics (1 hit in 1 layer), choose the best one based on the LineChi2DoF + XZProjectionChi2DoF
-                  fit = BestLine.fit( (*tr).hits().begin(), (*tr).hits().end() );
-                  if(fit)
-                    (*tr).setChi2LineY( BestLine.Chi2DoF() , BestLine.nHitsLine());
-                  BestLine.reset();
+              bool fit = false;
+              for(PrHybridSeedTracks::iterator tr = Tracks.begin(); Tracks.end()!=tr; ++tr){ //for each combinatorics (1 hit in 1 layer), choose the best one based on the LineChi2DoF + XZProjectionChi2DoF
+                fit = BestLine.fit( (*tr).hits().begin(), (*tr).hits().end() );
+                if(fit)
+                  (*tr).setChi2LineY( BestLine.Chi2DoF() , BestLine.nHitsLine());
+                BestLine.reset();
+              }
+              std::sort( Tracks.begin(), Tracks.end() , [temp]( const PrHybridSeedTrack& track1, const PrHybridSeedTrack& track2)->bool{
+                  return( (track1.chi2DoFLine() + temp.chi2PerDoF()) < (track2.chi2DoFLine() + temp.chi2PerDoF()));
+                });
+              //sort the vector based on the chi2 and get the first element (best chi2)
+              if(( Tracks.front().chi2PerDoF() + Tracks.front().chi2DoFLine() < m_Chi2HighLine[iCase] 
+                   && Tracks.front().hits().size()>10) 
+                 ||( Tracks.front().chi2PerDoF() + Tracks.front().chi2DoFLine() < m_Chi2LowLine[iCase] 
+                     && Tracks.front().hits().size()<11)){
+                for( PrHits::iterator it = Tracks.front().hits().begin(); Tracks.front().hits().end() != it; ++it){
+                  if( (*it)->isX()) continue;
+                  temp.addHit( (*it));
                 }
-                std::sort( Tracks.begin(), Tracks.end() , [temp]( const PrSeedTrack2& track1, const PrSeedTrack2& track2)->bool{
-                    return( (track1.chi2DoFLine() + temp.chi2PerDoF()) < (track2.chi2DoFLine() + temp.chi2PerDoF()));
-                  });
-                //sort the vector based on the chi2 and get the first element (best chi2)
-                if(( Tracks.front().chi2PerDoF() + Tracks.front().chi2DoFLine() < m_Chi2HighLine[iCase] 
-                     && Tracks.front().hits().size()>10) 
-                   ||( Tracks.front().chi2PerDoF() + Tracks.front().chi2DoFLine() < m_Chi2LowLine[iCase] 
-                       && Tracks.front().hits().size()<11)){
-                  for( PrHits::iterator it = Tracks.front().hits().begin(); Tracks.front().hits().end() != it; ++it){
-                    if( (*it)->isX()) continue;
-                    temp.addHit( (*it));
-                  }
-                }
-                Tracks.clear();
-                hits1.clear();
-                hits2.clear();
-                hits5.clear();
-                hits6.clear();
-                hits9.clear();
-                hits10.clear();
-              }
-              BestLine.reset();
-              if(msgLevel(MSG::DEBUG)){
-                temp.sortbyz();
-                always()<<"temp track with the best line added"<<endmsg; printTrack(temp);
-              }
-              if(msgLevel(MSG::DEBUG)){
-                always()<<"Will Fit the following track with N Hits = "<<temp.hits().size()<<endmsg;
-                temp.sortbyz();
-                
-                printTrack(temp);
-              }
-              //for all hit added minCoord and so on and cut on that 
-            }//end Use Liney
-            if(!m_useLineY){
-              for(PrHits::iterator itH = itBeg; itEnd!= itH;++itH){ 
-                temp.addHit((*itH));
-              }
+              }//criteria to add hits on track
+              Tracks.clear();
+              hits1.clear();
+              hits2.clear();
+              hits5.clear();
+              hits6.clear();
+              hits9.clear();
+              hits10.clear();
             }
-            bool ok = false;
-            if(temp.hits().size()>12 && m_useLineY){
-              always()<<"Error on number of hits  = "<<temp.hits().size()<<endmsg; printTrack(temp);
+            BestLine.reset();
+            if(msgLevel(MSG::DEBUG)){
+              //temp.sortbyz();
+              always()<<"temp track with the best line added"<<endmsg; printTrack(temp);
             }
-            if(temp.hits().size()>=minTot){
-              ok = fitSimultaneouslyXY(temp,iCase); 
+            if(msgLevel(MSG::DEBUG)){
+              always()<<"Will Fit the following track with N Hits = "<<temp.hits().size()<<endmsg;
+              //temp.sortbyz();
+              
+              printTrack(temp);
             }
-            if(temp.hits().size()>m_maxNHits){
-              ok = false; //Max N hits is 13 here
+          }//end Use Liney
+          
+          if(!m_useLineY){
+            for(PrHits::iterator itH = itBeg; itEnd!= itH;++itH){ 
+              temp.addHit((*itH));
             }
-            while ( !ok && temp.hits().size() > minTot){
-              if( msgLevel(MSG::DEBUG) ) always()<<"RemoveWorst and Refit UV"<<endmsg;
-              ok = removeWorstAndRefit( temp   , iCase);
-              //step++
-              if(temp.hits().size()>m_maxNHits) ok = false;
+          }
+          bool ok = false;
+          if(temp.hits().size()>12 && m_useLineY){
+            always()<<"Error on number of hits  = "<<temp.hits().size()<<endmsg; printTrack(temp);
+          }
+          if(temp.hits().size()>=minTot){
+            ok = fitSimultaneouslyXY(temp,iCase); 
+          }
+          if(temp.hits().size()>m_maxNHits){
+            ok = false; //Max N hits is 13 here
+          }
+          while ( !ok && temp.hits().size() > minTot){
+            if( msgLevel(MSG::DEBUG) ) always()<<"RemoveWorst and Refit UV"<<endmsg;
+            ok = removeWorstAndRefit( temp   , iCase);
+            if(temp.hits().size()>m_maxNHits) ok = false;
+          }
+          if( ok  && temp.hits().size()>=minTot){
+            setChi2(temp);
+            double maxChi2 = m_maxChi2PerDoF[iCase];
+            //number of hits hard coded??? More than in PatSeeding?
+            if( temp.hits().size() >= minTot &&
+                temp.chi2PerDoF() < maxChi2 ){
+              temp.setCase(iCase); 
+              if(m_removeClones) std::sort(temp.hits().begin(), temp.hits().end(), compLHCbID());
+              if(msgLevel(MSG::DEBUG)) debug()<<"Storing Track"<<endmsg;
+              m_trackCandidates.push_back( temp );
             }
-            // #ifdef TRUTH_MATCH_Histos
-            //           if( temp.hits().size() > 6){
-            //             int nHitsAssociated = 0;
-            //             LHCb::MCParticle *mcPart = nullptr;
-            //             double effic = -1.;
-            //             bool wanted = false;
-            //             bool Assoc = AssocTrack(temp, effic, mcPart, nHitsAssociated);
-            //             Tuple nTupleAfterFit = nTuple("Seeding/AddStereo/TupleafterFit","AfterFitBeforeChi2");
-            //             if(Assoc){
-            //               wanted = isWanted(mcPart);
-            //             }
-            //             PrPlaneCounter2 counterTuple;
-            //             PrLineFitterY liner(m_geoTool->zReference(),temp);
-            //             liner.set( temp.hits());
-            //             counterTuple.set(temp.hits().begin(), temp.hits().end());
-            //             nTupleAfterFit->column("Line_minCoord",liner.minCoord());
-            //             nTupleAfterFit->column("Line_maxCoor",liner.maxCoord());
-            //             nTupleAfterFit->column("Full_nXSingle", counterTuple.nbSingleX());
-            //             nTupleAfterFit->column("Full_nUVSingle", counterTuple.nbSingleUV());
-            //             nTupleAfterFit->column("Full_nUVDiff",counterTuple.nbDifferentUV());
-            //             nTupleAfterFit->column("Full_isOKUV",counterTuple.isOKUV());
-            //             nTupleAfterFit->column("Full_isOKX",counterTuple.isOKX());
-            //             nTupleAfterFit->column("Full_isOK",counterTuple.isOK());
-            //             nTupleAfterFit->column("Full_total",(int) temp.hits().size());
-            //             if(ok){
-            //               setChi2(temp);
-            //             }
-            //             nTupleAfterFit->column("Full_Chi2DoF", temp.chi2PerDoF());
-            //             nTupleAfterFit->column("MaxChi2", temp.MaxChi2());
-            //             nTupleAfterFit->column("Full_Chi2",temp.chi2());
-            //             nTupleAfterFit->column("Full_ay",temp.ay());
-            //             nTupleAfterFit->column("Full_by",temp.by());
-            //             nTupleAfterFit->column("Full_X0",temp.X0());
-            //             nTupleAfterFit->column("Full_Case",iCase);
-            //             nTupleAfterFit->column("Full_nIter",step);
-            //             nTupleAfterFit->column("Full_OK",ok);
-            //             nTupleAfterFit->column("Full_Assoc", Assoc);
-            //             if(Assoc){
-            //               nTupleAfterFit->column("P",mcPart->p());
-            //               nTupleAfterFit->column("isWanted",isWanted(mcPart));
-            //             }
-            //             if(!Assoc){
-            //               nTupleAfterFit->column("P",-1000.);
-            //               nTupleAfterFit->column("isWanted",isWanted(mcPart));
-            //             }
-            //             nTupleAfterFit->column("Eff",effic);
-            //             nTupleAfterFit->column("nAss",nHitsAssociated);
-            //             nTupleAfterFit->column("xSlope_9000",temp.xSlope(9000.));
-            //             nTupleAfterFit->column("Ass_100",nHitsAssociated == temp.hits().size());
-            //             nTupleAfterFit->column("Ass_OneOff",nHitsAssociated ==( temp.hits().size()-1)) ;
-            //             nTupleAfterFit->write();
-            //           }        
-            //           setChi2(temp);
-            // #endif
-            if( ok  && temp.hits().size()>=minTot){
-              setChi2(temp);
-              double maxChi2 = m_maxChi2PerDoF[iCase];
-              //number of hits hard coded??? More than in PatSeeding?
-              if( temp.hits().size() >= minTot &&
-                  temp.chi2PerDoF() < maxChi2 ){
-                temp.setCase(iCase); 
-                if(m_removeClones) std::sort(temp.hits().begin(), temp.hits().end(), compLHCbID());
-                m_trackCandidates.push_back( temp );
-              }
-              itBeg += minUV=1 ;//-1 because 
-              //itBeg += minUV-2;// was always 4
-            }
+            itBeg += minUV-1 ;//-1 because 
+          }
         }//nUV check
       }//not in tolerance
       ++itBeg; // Move Forward the itBeg
-      itEnd = itBeg + minUV-1 ; //was always 5
+      itEnd = itBeg + minUV; //was always 5
     }
     //=== Remove bad candidates: Keep the best one for this input track
     // FirstSpace is the number of track candidates before the finding of the UV Hits
@@ -1182,10 +1153,9 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
   }//end loop xProjections
   m_xCandidates.clear(); //At the end of each case delete it or you
 }
-bool PrHybridSeeding::LineOK( double minChi2Low, double minChi2High, PrLineFitterY line, PrSeedTrack2& xProje){
+bool PrHybridSeeding::LineOK( double minChi2Low, double minChi2High, PrLineFitterY line, PrHybridSeedTrack& xProje){
   const int nHits = line.nHitsLine() + xProje.hits().size();
   const double Chi2DoFLineXProj = xProje.chi2PerDoF() + line.Chi2DoF();
-  
   if( nHits > 10 && Chi2DoFLineXProj < minChi2High) return true;
   if( nHits < 11 && Chi2DoFLineXProj < minChi2Low) return true;
   return false;
@@ -1194,10 +1164,10 @@ bool PrHybridSeeding::LineOK( double minChi2Low, double minChi2High, PrLineFitte
 
 void PrHybridSeeding::removeClonesX(unsigned int maxCommon, unsigned int part, unsigned int icase, bool xOnly)
 {
-  for( PrSeedTrack2s::iterator itT1 = m_xCandidates.begin(); m_xCandidates.end() !=itT1; ++itT1 ){
+  for( PrHybridSeedTracks::iterator itT1 = m_xCandidates.begin(); m_xCandidates.end() !=itT1; ++itT1 ){
     if((*itT1).zone() != part) continue;
     if(!(*itT1).valid()) continue;
-    for( PrSeedTrack2s::iterator itT2 = itT1 + 1; m_xCandidates.end() !=itT2; ++itT2 ){
+    for( PrHybridSeedTracks::iterator itT2 = itT1 + 1; m_xCandidates.end() !=itT2; ++itT2 ){
       if( !m_removeClonesX && xOnly)break;
       if( (*itT2).zone() != part) continue;
       if (!(*itT2).valid()) continue;
@@ -1260,10 +1230,10 @@ void PrHybridSeeding::removeClonesX(unsigned int maxCommon, unsigned int part, u
 }
 
 void PrHybridSeeding::removeClones(unsigned int maxCommon){
-  std::sort(m_trackCandidates.begin(), m_trackCandidates.end(),PrSeedTrack2::GreaterBySize());
-  for ( PrSeedTrack2s::iterator itT1 = m_trackCandidates.begin(); m_trackCandidates.end() !=itT1; ++itT1 ){
+  std::sort(m_trackCandidates.begin(), m_trackCandidates.end(),PrHybridSeedTrack::GreaterBySize());
+  for ( PrHybridSeedTracks::iterator itT1 = m_trackCandidates.begin(); m_trackCandidates.end() !=itT1; ++itT1 ){
     if( !(*itT1).valid()) continue;
-    for ( PrSeedTrack2s::iterator itT2 = itT1 + 1; m_trackCandidates.end() !=itT2; ++itT2 ) {
+    for ( PrHybridSeedTracks::iterator itT2 = itT1 + 1; m_trackCandidates.end() !=itT2; ++itT2 ) {
       if ( !(*itT2).valid()) continue;      
       bool oppositeZone = (*itT2).zone() != (*itT1).zone();
       if( oppositeZone && !m_ClonesUpDown) continue;
@@ -1309,15 +1279,15 @@ void PrHybridSeeding::removeClones(unsigned int maxCommon){
 
 void PrHybridSeeding::flagHits(unsigned int icase, unsigned int part)
 {
-  std::sort( m_trackCandidates.begin() , m_trackCandidates.end() , PrSeedTrack2::LowerBySize()); //bigger size is in front
-  for(PrSeedTrack2s::iterator track = m_trackCandidates.begin(); m_trackCandidates.end()!=track ; ++track){
-    if( (*track).hits().size() < m_SizeFlag[icase]) break; // Important the sorting of before
-    if( (*track).Case() != icase || (*track).zone()!=part) continue;
+  std::sort( m_trackCandidates.begin() , m_trackCandidates.end() , PrHybridSeedTrack::LowerBySize()); //bigger size is in front
+  for(PrHybridSeedTracks::iterator track = m_trackCandidates.begin(); m_trackCandidates.end()!=track ; ++track){
+    if( (*track).hits().size() < m_SizeFlag[icase] ) break; // Important the sorting of before
+    if( (*track).Case() != icase || (*track).zone()!=part ) continue;
 #ifdef TRUTH_MATCH_Histos
-    //PrPlaneCounter2 plCount;
+    //PrPlaneHybridCounter plCount;
     //plCount.set(track);
     // if(!track.valid()) continue;
-    // PrPlaneCounter2 plCount;
+    // PrPlaneHybridCounter plCount;
     // plCount.set(track.hits().begin(), track.hits().end());
     // Tuple tupleHitFlag = nTuple("Seeding/FlagHits/Hits","Flagging");
     // tupleHitFlag->column("nHits",track.hits().size());
@@ -1370,12 +1340,10 @@ void PrHybridSeeding::flagHits(unsigned int icase, unsigned int part)
 //  Convert to LHCb tracks
 //=========================================================================
 void PrHybridSeeding::makeLHCbTracks ( LHCb::Tracks* result ) {
-  for ( PrSeedTrack2s::iterator itT = m_trackCandidates.begin();m_trackCandidates.end() != itT; ++itT ) {
-
-
+  for( PrHybridSeedTracks::iterator itT = m_trackCandidates.begin();m_trackCandidates.end() != itT; ++itT ){
 #ifdef TRUTH_MATCH_Histos
     Tuple tupleFinalTrack = nTuple("Seeding/UVFit/StoreTrack","UVEvents");
-    PrPlaneCounter2 plcont;
+    PrPlaneHybridCounter plcont;
     plcont.set( (*itT).hits().begin(),(*itT).hits().end());
     if( plcont.nbSingleX() <4 || plcont.nbSingleUV()<4)
     {
@@ -1412,8 +1380,7 @@ void PrHybridSeeding::makeLHCbTracks ( LHCb::Tracks* result ) {
     tupleFinalTrack->column("isWanted",isWanted(partic));
     tupleFinalTrack->column("Case",(*itT).Case());
     tupleFinalTrack->write();
-#endif
-    
+#endif    
     if( m_recoverTrack && ((*itT).nx()>5 || (*itT).ny()>5)){
       if((*itT).chi2PerDoF() < m_chi2Recover ) (*itT).setValid(true);
     }
@@ -1437,6 +1404,7 @@ void PrHybridSeeding::makeLHCbTracks ( LHCb::Tracks* result ) {
     }
     tmp->setChi2PerDoF( (*itT).chi2PerDoF() );
     tmp->setNDoF(       (*itT).nDoF() );
+    if(msgLevel(MSG::DEBUG)) debug()<<"Inserting a track in container"<<endmsg;
     result->insert( tmp );
   }
 }
@@ -1502,7 +1470,7 @@ void PrHybridSeeding::solveParabola2(const PrHit* hit1,const PrHit* hit2,const P
 //=========================================================================
 //  Fit the track, return OK if fit sucecssfull
 //=========================================================================
-bool PrHybridSeeding::fitSimultaneouslyXY( PrSeedTrack2& track , unsigned int iCase){
+bool PrHybridSeeding::fitSimultaneouslyXY( PrHybridSeedTrack& track , unsigned int iCase){
   double mat[15];
   double rhs[5];
   unsigned int nHitsX = 0;
@@ -1531,8 +1499,14 @@ bool PrHybridSeeding::fitSimultaneouslyXY( PrSeedTrack2& track , unsigned int iC
         nHitsX++;
       }else{
         nHitsStereo++;
-      }  
-      const double w = (*itH)->w();
+      }
+      double w = (*itH)->w();
+      if( m_SlopeCorr && loop >0){
+        const double Corr = std::cos(track.xSlope( (*itH)->z()) );
+        track.setSlopeCorr( true);
+        w = w/(Corr*Corr);
+      }
+      
       const double dxdy = (*itH)->dxDy();
       // const double dz = ((*itH)->z()-zRef)*0.001;
       const double yOnTrack = track.yOnTrack( (*itH) ) ;
@@ -1689,7 +1663,7 @@ bool PrHybridSeeding::fitSimultaneouslyXY( PrSeedTrack2& track , unsigned int iC
 //Fit Only X Projection
 //=======================================
 
-bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
+bool PrHybridSeeding::fitXProjection(PrHybridSeedTrack& track, unsigned int iCase ){
   if (msgLevel(MSG::DEBUG)) debug()<<"Fitting"<<endmsg;
   if(track.hits().size()<m_minXPlanes) return false;  
   double mat[6];
@@ -1701,7 +1675,13 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
     std::fill(rhs,rhs+3,0.);
     for( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH ){
       const double dRatio = track.dRatio();
-      const double w = (*itH)->w();//squared
+      double w = (*itH)->w();//squared
+      if(m_SlopeCorr){
+        track.setSlopeCorr( true);
+        double Corr = std::cos( track.xSlope( (*itH)->z()));
+        if(loop ==0) Corr = 1.;
+        w = w/(Corr*Corr);
+      }
       const double dz= 0.001*((*itH)->z() - m_geoTool->zReference());
       const double deta = dz*dz*(1. + dRatio*dz);
       const double dist = track.distance( *itH );
@@ -1724,8 +1704,8 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
     if (msgLevel(MSG::DEBUG)) debug()<<"Loop \t"<<loop<<"\n a = \t"<<rhs[0]<<"\n b = \t"<<rhs[1]<<"\n c = \t"<<rhs[2]<<endmsg;
     // protect against unreasonable track parameter corrections
     // (check that out)
-    if(std::abs(rhs[0]) > 1.e4 || std::abs(rhs[1]) > 5. ||
-       std::abs(rhs[2]) > 1.e-3 ) return false;
+    if(std::fabs(rhs[0]) > 1.e4 || std::fabs(rhs[1]) > 5. ||
+       std::fabs(rhs[2]) > 1.e-3 ) return false;
     //Small corrections
     track.updateParameters(rhs[0],rhs[1],rhs[2],0.,0.);
     if(loop==0 && m_useCubic){
@@ -1740,7 +1720,7 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
   //Compute some values on the track
   double chi2_track = 0.;
   double maxChi2 = 0.;
-  for ( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH )  //Loop over all hits in PrSeedTrack2
+  for ( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH )  //Loop over all hits in PrHybridSeedTrack
   {
     double chi2_onHit = track.chi2( *itH );
     chi2_track += track.chi2( *itH );
@@ -1753,7 +1733,7 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
   track.setMaxChi2(maxChi2);
   
 #ifdef TRUTH_MATCH_Histos
-  PrPlaneCounter2 counter;
+  PrPlaneHybridCounter counter;
   counter.set(track.hits().begin(),track.hits().end());
   if(track.hits().size()!=counter.nbSingleX()) printTrack(track);
   //if(maxChi2<20.){
@@ -1780,7 +1760,7 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
   tupleTrackXZFit->column("bx",track.bx());
   tupleTrackXZFit->column("cx",track.cx());
   tupleTrackXZFit->column("X0Back",X0);
-  track.sortbyz();
+  //track.sortbyz();
   double slope = (track.hits().back()->x() - track.hits().front()->x())/(track.hits().back()->z()-track.hits().front()->z());
   double x0 = track.hits().front()->x()-track.hits().front()->z()*slope;
   tupleTrackXZFit->column("X0_Mid",x0);
@@ -1806,7 +1786,7 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
   // double m_maxX0Offset = 80.;
   // double m_Cut = 200.;
   // if( std::fabs(x0) > 300. && iCase >0) return false;
-  if(maxChi2 < m_maxChi2HitsX[iCase]) return true;
+  return (maxChi2 < m_maxChi2HitsX[iCase]) ;
   // if( track.hits().size() == 6  && maxChi2 < 8. ) return true;
   // if( maxChi2 < 1.5 && track.hits().size() < 6. ) return true;
   // if(  ( maxChi2-m_maxChi2Offset)*(std::fabs(X0)-m_maxX0Offset)<m_Cut
@@ -1828,13 +1808,13 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
 
 
 
-bool PrHybridSeeding::removeWorstAndRefit(PrSeedTrack2& track, unsigned int iCase)
+bool PrHybridSeeding::removeWorstAndRefit(PrHybridSeedTrack& track, unsigned int iCase)
 {
   bool removeX = false;
   bool removeUV = false;
   if( track.nx() == 4) removeUV = true;
   if( track.ny() == 4) removeX = true;
-  if(msgLevel(MSG::DEBUG)) always()<<"Removing Worst UV layer"<<endmsg;
+  if(msgLevel(MSG::DEBUG)) debug()<<"Removing Worst UV layer"<<endmsg;
   PrHits::iterator worst= track.hits().begin();
   // PrHits::iterator worstUV = track.hits().begin();
   // PrHits::iterator worstDupl = track.hits().begin();
@@ -1856,7 +1836,7 @@ bool PrHybridSeeding::removeWorstAndRefit(PrSeedTrack2& track, unsigned int iCas
 //=========================================================================
 //  Remove the worst hit and refit.
 //=========================================================================
-bool PrHybridSeeding::removeWorstAndRefitX ( PrSeedTrack2& track , unsigned int iCase)
+bool PrHybridSeeding::removeWorstAndRefitX ( PrHybridSeedTrack& track , unsigned int iCase)
 {
   if(track.hits().size()<=m_minXPlanes) return false;
   if (msgLevel(MSG::DEBUG)) debug()<<"Removing Worst and Refitting"<<endmsg;
@@ -1875,7 +1855,7 @@ bool PrHybridSeeding::removeWorstAndRefitX ( PrSeedTrack2& track , unsigned int 
   return OK;
 }
 
-void PrHybridSeeding::setChi2 ( PrSeedTrack2& track )
+void PrHybridSeeding::setChi2 ( PrHybridSeedTrack& track )
 {
   float chi2 = 0.;
   int   nDoF = -3;
@@ -1883,11 +1863,13 @@ void PrHybridSeeding::setChi2 ( PrSeedTrack2& track )
   bool hasStereo = false;
   //for ( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH )
   for (PrHit* hit : track.hits()){
-    const double d = track.distance( hit );
+    //const double d = track.distance( hit );
     if ( hit->dxDy() != 0 ) hasStereo = true;
     //hasStereo = hasStereo || (hit->dxDy() != 0);
-    const double w = hit->w();
-    chi2 += w * d * d;
+    //const double w = hit->w();
+    
+    //chi2 += w * d * d;
+    chi2 +=  track.chi2( hit);
     nDoF += 1;
   }
   if (hasStereo) {
@@ -1901,16 +1883,18 @@ void PrHybridSeeding::setChi2 ( PrSeedTrack2& track )
 //=========================================================================
 //  Set the chi2 of the track
 //=========================================================================
-void PrHybridSeeding::setChi2X ( PrSeedTrack2& track ) {
+void PrHybridSeeding::setChi2X ( PrHybridSeedTrack& track ) {
   double chi2 = 0.;
   int   nDoF = -3;  // Fitted a parabola
   //bool hasStereo = false;
   //for ( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH ) {
   for (PrHit* hit : track.hits()) {
     if(hit->dxDy() !=0 && msgLevel(MSG::DEBUG)) debug()<<"You were picking up Stereo Layers!!!"<<endmsg;
-    const double d = track.distance( hit );
-    const double w = hit->w();
-    chi2 += w * d * d;
+    const double Chi2Hit = track.chi2( hit);
+    // const double d = track.distance( hit );
+    // const double w = hit->w();
+    //chi2 += w * d * d;
+    chi2+=  Chi2Hit;
     nDoF += 1;
   }
   if (msgLevel(MSG::DEBUG)) debug()<<"Chi2 Set for track = \t"<<chi2<<endmsg;
@@ -1921,7 +1905,7 @@ void PrHybridSeeding::setChi2X ( PrSeedTrack2& track ) {
 //===============================================
 //  Print the whole track
 //=========================================================================
-void PrHybridSeeding::printTrack ( PrSeedTrack2& track ) {
+void PrHybridSeeding::printTrack ( PrHybridSeedTrack& track ) {
   for ( PrHits::iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH ) {
     info() << format( "dist %7.3f dy %7.2f chi2 %7.2f ", track.distance( *itH ), track.deltaY( *itH ), track.chi2( *itH ) );
     printHit( *itH );
@@ -2561,7 +2545,7 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
         if(xHitsLists.size() == 0){
           continue;
         }
-        if(xHitsLists.size() > 2){
+        if(xHitsLists.size() > 1){
           //---Remove Duplicates in the HitsList
           std::stable_sort( xHitsLists.begin(), xHitsLists.end());
           xHitsLists.erase( std::unique(xHitsLists.begin(), xHitsLists.end()), xHitsLists.end());
@@ -2571,7 +2555,7 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
         for(PrHits& xHits : xHitsLists){
           if(msgLevel(MSG::DEBUG)) debug()<<"Fit Track"<<endmsg;
           //Create the track
-          PrSeedTrack2 temp_track( part , m_geoTool->zReference() , xHits); //Create the track
+          PrHybridSeedTrack temp_track( part , m_geoTool->zReference() , xHits); //Create the track
           //Setters for it: usefull later to parametrise
           //I load in the track these info which are then plotted
           // if(m_useCubic){
@@ -2604,7 +2588,7 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
           }
 #ifdef TRUTH_MATCH_Histos
           Tuple nTupleXZ = nTuple("Seeding/FitXZProjection/HighMomentum2/BeforeStoringXCand","BeforeStoringXCandHighP2");
-          PrPlaneCounter2 counter;
+          PrPlaneHybridCounter counter;
           counter.set(temp_track.hits().begin(),temp_track.hits().end());
           LHCb::MCParticle* partic = nullptr;
           double efficiency = -1;
@@ -2675,7 +2659,7 @@ bool PrHybridSeeding::isWanted(LHCb::MCParticle* mcPart){
 
 
 
-bool PrHybridSeeding::AssocTrack(PrSeedTrack2 track, double& efficiency,LHCb::MCParticle*& particle, int& nHits){
+bool PrHybridSeeding::AssocTrack(PrHybridSeedTrack track, double& efficiency,LHCb::MCParticle*& particle, int& nHits){
   std::map<int,int> Counter; //map key and number of associated
   std::map<LHCb::MCParticle*,int> CounterParticle;
   Counter.clear();

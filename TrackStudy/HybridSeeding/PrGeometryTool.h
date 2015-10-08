@@ -6,7 +6,7 @@
 #include "GaudiAlg/GaudiTool.h"
 #include "Kernel/ILHCbMagnetSvc.h"
 #include "PrSeedTrack.h"
-#include "PrSeedTrack2.h"
+#include "PrHybridSeedTrack.h"
 #include "PrForwardTrack.h"
 
 static const InterfaceID IID_PrGeometryTool ( "PrGeometryTool", 1, 0 );
@@ -42,7 +42,7 @@ public:
   float qOverP( const PrForwardTrack& track );       ///< Momentum estimate for long tracks
 
   float qOverP( const PrSeedTrack& track );          ///< Momentum estimate for seed
-  float qOverP( const PrSeedTrack2& track );
+  float qOverP( const PrHybridSeedTrack& track );    ///< Momentum estimate for seed from HyrbidSeeding
 
   float zMagnet( const PrForwardTrack& track );      ///< Initial value for the z at centre of magnet
 

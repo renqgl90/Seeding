@@ -5,13 +5,13 @@ import os,sys
 
 #Number of Events to process
 nEvts = 1000
-Eta25Cut = True
+Eta25Cut =True
 
 # Activate the profiler
 CallGrind= False
 
 Plotta = True #Produce all the Efficiency plots
-ConfigureManager = True
+ConfigureManager = False
 fracPos = 0.125
 #managerPlots = False
 FixedSize = 3
@@ -96,9 +96,9 @@ def doIt():
    from Configurables import IdealStateCreator
 
    if (Plotta):
-      prChecker.WriteTTrackHistos = 2
+      #prChecker.WriteTTrackHistos = 2
       prChecker.Eta25Cut = Eta25Cut
-      prChecker.UseElectrons = False
+      prChecker.UseElectrons =False
       prChecker.TriggerNumbers = True
    GaudiSequencer("CheckPatSeq").Members +=[prChecker]
    from Configurables import MCParticle2MCHitAlg, IdealStateCreator, PrPlotFTHits
@@ -136,7 +136,13 @@ def doIt():
    GaudiSequencer("MCLinksUnpackSeq").Members =[]
    GaudiSequencer("RecoTrSeq").Members += [ seedingSeq ]
    from Configurables import PrHybridSeeding
+   
+
+   
    seeding = PrHybridSeeding()
+
+   #seeding.Stereo2 = False
+   seeding.TimingMeasurement = False
    #seeding.OutputLevel = DEBUG #Uncomment this line for debug      
    seeding.InputName ="" #Standalone seeding Put "Forward to get forward imput"
    seeding.MaxNHits = 12 #Force algorithm to find 12 Hits track when > 12
@@ -155,11 +161,11 @@ def doIt():
    
    #Flag Hits
    seeding.FlagHits = True
-   seeding.SizeToFlag = 12 # >=size
+   seeding.SizeToFlag = [ 12, 11, 10] # >=size
    seeding.RemoveFlagged = True # Case 1 and 2 will not use flagged Hits
    #If Flag Size = 11
-   seeding.Flag_MaxChi2 = 0.3 # track.chi2(hit) = 0.3
-   seeding.Flag_MaxX0  = 200  # <200
+   seeding.Flag_MaxChi2DoF_11Hits = [1.0 ,1.0, 1.0] # track.chi2(hit) = 0.3
+   seeding.Flag_MaxX0_11Hits  = [8000., 8000., 200.]  # <200
    #dRatio Business
    seeding.UseCubicCorrection = True # dRatio correction in the fit
    seeding.dRatio = -0.000262
@@ -176,18 +182,18 @@ def doIt():
    seeding.L0_AlphaCorr = [120.64, 510.64, 730.64 ]
    seeding.L0_tolHp     = [280.0 , 540.0 , 1080.0 ]
    # ParabolaSeedHits
-   seeding.x0Corr        =     [0.002152, 0.001534, 0.001534]
+   seeding.x0Corr        =     [0.002152, 0.001534, 0.001834]
    
-   seeding.X0SlopeChange =     [500.    ,    500. ,    500. ]
-   seeding.x0Cut        =      [4000.   ,    4000.,   4000. ]
-   seeding.TolAtX0Cut   =      [12.0    ,     8.0 ,    8.0  ]
+   seeding.X0SlopeChange =     [400.    ,    500. ,    500. ]
+   seeding.x0Cut        =      [1500.   ,    4000.,   6000. ]
+   seeding.TolAtX0Cut   =      [4.5    ,     8.0 ,    14.0  ]
    seeding.ToleranceX0Up =     [ 0.75   ,     0.75,    0.75 ]
 
-   seeding.X0SlopeChangeDown = [ 1500.  ,    2000.,    1500. ]
-   seeding.TolAtX0CutOpp     = [3.0     ,      2.0,     2.0  ]
+   seeding.X0SlopeChangeDown = [ 1500.  ,    2000.,    2000. ]
+   seeding.TolAtX0CutOpp     = [ 1.5    ,      2.0,     7.0  ]
    seeding.ToleranceX0Down   = [ 0.75   ,      0.75,    0.75 ]
    
-   seeding.TolXRemaining     = [1.0     ,      1.0 ,     1.0]
+   seeding.TolXRemaining     = [ 1.0    ,      1.0 ,   1.0    ]
    seeding.maxParabolaSeedHits = 12 # Hits are sorted by the distance from
    #  x0 = first-last projection to z=0 ; then hits sorted by xParabola - (x0+tx_1stLast*z_PlaneParabola + x0Corr*x0)  and we keep the first maxParabolaSeedHits list
    seeding.maxChi2HitsX     = [5.5      , 5.5     , 5.5   ]
@@ -205,7 +211,7 @@ def doIt():
    #Hough Cluster Size settings Hits are sorted by y/z where y is computed from the XZ-segment processed
    seeding.TolTyOffset = [ 0.002  , 0.002 , 0.0035  ]
    seeding.TolTySlope  = [ 0.0    , 0.0   , 0.015   ]
-
+   
    #Once you find The UV hits you check the Line Y ?
    seeding.UseLineY = True
    
@@ -216,7 +222,7 @@ def doIt():
    seeding.maxYatzRefLow =         [500., 500.  , 500. ]
    #11 and 12 Hits
    seeding.Chi2HighLine =          [30.0, 50.0 , 80.0] #Chi2PerDoF when 11 or 12 hits Using LineChi2DoF + XZChi2DoF
-   seeding.maxChi2Hits_11and12Hit =[ 5.5, 5.5, 5.5    ] 
+   seeding.maxChi2Hits_11and12Hit =[ 5.5, 5.5, 5.5 ]
    
    #Make the Full Fit
    seeding.maxChi2PerDoF          = [4.0, 6.0, 7.0]
@@ -240,21 +246,20 @@ NTupleSvc().Output = ["FILE1 DATAFILE='SciFi-Tuple-"+Options+".root' TYP='ROOT' 
 #---------------------------------
 # Callgrind configuration
 #---------------------------------
-
-from Configurables import CallgrindProfile
+from Configurables import Brunel, GaudiSequencer, CallgrindProfile
 def addProfile():
-      p = CallgrindProfile()
-      p.StartFromEventN = 20
-      p.StopAtEventN = 80
-      p.DumpAtEventN= 80
-      p.DumpName = "PRTEST"
-      GaudiSequencer("InitBrunelSeq").Members.insert(0,p )
-
-
+#   gaudirun.py --profilerName=valgrindcallgrind --profilerExtraOptions="__instr-atstart=no -v __smc-check=all-non-file __dump-instr=yes __trace-jump=yes __log-file=Brunel-v48r1-2012.vlog __callgrind-out-file=Brunel-v48r1-2012.callgrind.out" youroptionfiles.py
+   prof = CallgrindProfile('CallgrindProfile')
+   prof.StartFromEventN = 50
+   prof.StopAtEventN = 100
+   prof.DumpAtEventN= 100
+   prof.DumpName = "PRHybridTest" #Brunel().DatasetName + '-prof'
+   GaudiSequencer("PhysicsSeq").Members.insert(0, prof)
+   
 
 # Now add the profiling algorithm to the sequence
-# to run it gaudirun.py -T --profilerName=valgrindcachegrind --profilerExtraOptions="__instr-atstart=no -v __smc-check=all-non-file __dump-instr=yes __trace-jump=yes" BrunelStep_DevelopSeeding.py`
-# kcachegrind valgrindcallgrind.output.log`
+# to run it gaudirun.py -T --profilerName=valgrindcachegrind --profilerExtraOptions="__instr-atstart=no -v __smc-check=all-non-file __dump-instr=yes __trace-jump=yes" BrunelStep_DevelopSeeding.py
+#Open the file with  kcachegrind valgrindcallgrind.output.log`
 # 
 
 if (CallGrind):

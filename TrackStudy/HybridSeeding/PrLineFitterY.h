@@ -4,7 +4,7 @@
 // Include files
 #include "Math/CholeskyDecomp.h"
 #include "PrKernel/PrHit.h"
-#include "PrSeedTrack2.h"
+#include "PrHybridSeedTrack.h"
 #include "PrKernel/PrHitManager.h"
 /** @class PrLineFitterY PrLineFitterY.h
  *  
@@ -15,13 +15,14 @@
 class PrLineFitterY {
 public: 
   /// Standard constructor
-  PrLineFitterY(double zRef , PrSeedTrack2 track):
+  PrLineFitterY(double zRef , PrHybridSeedTrack track):
     m_zRef(zRef),
     m_nHitsUV(0),
     m_ax(track.ax()),
     m_bx(track.bx()),
     m_cx(track.cx()),
-    m_dRatio(track.dRatio())
+    m_dRatio(track.dRatio()),
+    m_SlopeCorr(track.slopeCorr())
   {
     m_done = false;
     m_minCoord = 1.;
@@ -83,22 +84,33 @@ public:
     // }
   //}
   
+  double xSlope( const double z) const{
+    const double dz = z-m_zRef;
+    return m_bx + 2*m_cx*dz + 3*m_cx*m_dRatio*dz*dz;
+  }
+  
   double x(const double z) const{
     const double dz = z - m_zRef;
     return ( m_ax + m_bx*dz + m_cx*dz*dz*(1.+m_dRatio*dz));
   }
   double distance( PrHit *hit) const{
     const double z = hit->z();
-    return ( hit->x() - x( z ))/hit->dxDy() - y( z );
+    return ( hit->x(0.) - x( z ) )/hit->dxDy() - y( z );
   }
   
   double chi2( PrHit* hit) const{
-    const double erry = hit->w()*std::pow(hit->dxDy(),2);
+    double erry = hit->w()*std::pow(hit->dxDy(),2);
     const double dist = distance( hit);
+    if(m_SlopeCorr){
+      double z = hit->z();
+      double xSlopeVal = xSlope( z ) ;
+      double cos = std::cos( xSlopeVal );
+      erry = erry/(cos*cos);
+    }
     return dist*dist*erry;
   }
   double yOnTrack( PrHit *hit) const{ return hit->yOnTrack( m_ay - m_zRef*m_by , m_by);}
-  double y( double z) const{ return  m_ay + m_by*(z-m_zRef) ; }
+  double y( double z) const{ return  m_ay + m_by*(z-m_zRef);}
   bool fit(PrHits::const_iterator itBeg, PrHits::const_iterator itEnd){
     m_ay = 0.;
     m_by = 0.;
@@ -109,7 +121,11 @@ public:
         if( (*hit)->isX()) continue;
         const double dz = (*hit)->z()-m_zRef;
         const double dist = distance( (*hit));
-        const double w = (*hit)->w();
+        double w = (*hit)->w();
+        if(m_SlopeCorr){
+          double cos = std::cos( xSlope( (double)(*hit)->z()));
+          w = w/(cos*cos);
+        }
         m_mat[0]+=w;
         m_mat[1]+=w*dz;
         m_mat[2]+=w*dz*dz;
@@ -168,7 +184,7 @@ private:
   double m_cx;
   double m_dRatio;
   bool m_done;
-  
-  //PrSeedTrack2 m_track;
+  bool m_SlopeCorr;
+  //PrHybridSeedTrack m_track;
 };
 #endif // PRLINEFITTERY_H

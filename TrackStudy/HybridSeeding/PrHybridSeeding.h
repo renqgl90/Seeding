@@ -5,7 +5,7 @@
 
 // Include files 
 // from Gaudi
-#include "PrSeedTrack2.h"
+#include "PrHybridSeedTrack.h"
 
 //uncomment this line if you want to do truth matching and do plots
 //#include "GaudiAlg/GaudiAlgorithm.h"
@@ -48,7 +48,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
       if ( m_debugTool ) return m_debugTool->matchKey( hit->id(), m_wantedKey );
       return false;
     };
-    bool matchKey( const PrSeedTrack2& track ) {
+    bool matchKey( const PrHybridSeedTrack& track ) {
       if ( !m_debugTool ) return false;
     for ( PrHits::const_iterator itH = track.hits().begin(); track.hits().end() != itH; ++itH ) {
       if ( m_debugTool->matchKey( (*itH)->id(), m_wantedKey ) ) return true;
@@ -71,7 +71,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
     
 
     
-    bool LineOK( double chi2low, double chi2high, PrLineFitterY line, PrSeedTrack2& temp);
+    bool LineOK( double chi2low, double chi2high, PrLineFitterY line, PrHybridSeedTrack& temp);
     
     
     /** @brief Remove Clones of produced tracks
@@ -81,7 +81,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
     
     /** @brief Set the Chi2 value and Chi2DoF for the track after the X+U-V search
      */
-    void setChi2(PrSeedTrack2& track);
+    void setChi2(PrHybridSeedTrack& track);
    
     /** @brief Flag Hits under conditions at the end of the iCase loop 
      */
@@ -94,14 +94,14 @@ class PrHybridSeeding : public GaudiTupleAlg{
      *  @param Refit Iteration in the Refitting after removal worst hit
      *  @return bool Success of the XY+XZ Fit
      **/
-    bool fitSimultaneouslyXY( PrSeedTrack2& track ,unsigned int iCase);
+    bool fitSimultaneouslyXY( PrHybridSeedTrack& track ,unsigned int iCase);
     
     /** @brief Fit the track combining the only in the XZ plane
      *  @param track The track to fit
      *  @param Refit Iteration in the Refitting after removal worst hit
      *  @return bool Success of the XZ Fit
      **/
-    bool fitXProjection( PrSeedTrack2 & track ,unsigned int iCase );
+    bool fitXProjection( PrHybridSeedTrack & track ,unsigned int iCase );
 
     /** @brief Fit Y line given a list of UV hits
      *  @param hits List of UV hits from UV layers
@@ -115,18 +115,18 @@ class PrHybridSeeding : public GaudiTupleAlg{
      *  @param track The track to fit
      *  @return bool Success of the fit
      */
-    bool removeWorstAndRefitX( PrSeedTrack2& track , unsigned int iCase );
+    bool removeWorstAndRefitX( PrHybridSeedTrack& track , unsigned int iCase );
     
      /** @brief Remove the hit which gives the largest contribution to the chi2 and refit XZ + YZ
       *  @param track The track to fit
      *  @return bool Success of the fit
      */
-    bool removeWorstAndRefit( PrSeedTrack2& track , unsigned int iCase );
+    bool removeWorstAndRefit( PrHybridSeedTrack& track , unsigned int iCase );
     
      /** @brief Set the chi2 of the track
       *  @param track The track to set the chi2 of 
       */
-    void setChi2X( PrSeedTrack2& track );
+    void setChi2X( PrHybridSeedTrack& track );
     /** @brief Transform the tracks from the internal representation into LHCb::Tracks
      *  @param tracks The tracks to transform
      */
@@ -141,7 +141,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
     /** @brief Print some information of the track in question
      *  @param hit The track whose information should be printed
      */
-    void printTrack( PrSeedTrack2& track );
+    void printTrack( PrHybridSeedTrack& track );
     
     /** @brief Internal method to construct parabolic parametrisation out of three hits, using Cramer's rule.
    *  @param hit1 First hit
@@ -193,6 +193,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
     bool m_removeHighP;
     bool m_recoverTrack;
     double m_chi2Recover ;
+    bool m_SlopeCorr;
     
     std::string        m_inputName;
     std::string        m_outputName;
@@ -319,8 +320,8 @@ class PrHybridSeeding : public GaudiTupleAlg{
     
     
     //-------------------Containers
-    std::vector<PrSeedTrack2>       m_trackCandidates;
-    std::vector<PrSeedTrack2>       m_xCandidates;
+    std::vector<PrHybridSeedTrack>       m_trackCandidates;
+    std::vector<PrHybridSeedTrack>       m_xCandidates;
     std::vector<PrHitZone*>        m_zones;
     ISequencerTimerTool* m_timerTool;
     int            m_timeTotal;
@@ -362,7 +363,7 @@ class PrHybridSeeding : public GaudiTupleAlg{
   public:
     bool matchKey( PrHit* hit,int key);
     bool isWanted( LHCb::MCParticle* mcPart);
-    bool AssocTrack(PrSeedTrack2 track,double& efficiency,LHCb::MCParticle*& particle, int& nHits);
+    bool AssocTrack(PrHybridSeedTrack track,double& efficiency,LHCb::MCParticle*& particle, int& nHits);
   private:
     bool m_etaCut;
     bool m_noElectrons;

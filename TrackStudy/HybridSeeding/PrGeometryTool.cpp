@@ -216,7 +216,7 @@ float PrGeometryTool::qOverP ( const PrSeedTrack& track) {
   }
   return qop ;
 }
-float PrGeometryTool::qOverP ( const PrSeedTrack2& track) {
+float PrGeometryTool::qOverP ( const PrHybridSeedTrack& track) {
   float qop(1.0/Gaudi::Units::GeV) ;
   float magscalefactor = m_magFieldSvc->signedRelativeCurrent() ;
   if( std::abs(magscalefactor) > 1e-6 ) {

@@ -1,18 +1,18 @@
-#ifndef PRPLANECOUNTER2_H 
-#define PRPLANECOUNTER2_H 1
+#ifndef PRPLANEHYBRIDCOUNTER_H 
+#define PRPLANEHYBRIDCOUNTER_H 1
 
 // Include files
 
-/** @class PrPlaneCounter2 PrPlaneCounter2.h
- *  Small Class to count how many different planes are in a List and how many planes with a single hit 
+/** @class PrPlaneHybridCounter PrPlaneHybridCounter.h
+ *  Class to count how many different planes are in a List and how many planes with a single hit fired. It also check if the content of hits is distributed in the SciFi in a proper way 1 hit per station X ( and UV ).
  *
  *  @author renato quagliani
  *  @date   2015-07-13
  */
-class PrPlaneCounter2 {
+class PrPlaneHybridCounter {
 public: 
   /// Standard constructor
-  PrPlaneCounter2( ):
+  PrPlaneHybridCounter( ):
     m_nbFiredLayers(0),
     m_nbFiredLayers_singleHit(0),
     m_planeList({{0,0,0,0,0,0,0,0,0,0,0,0}}),
@@ -31,6 +31,12 @@ public:
     m_nbHits(0)
   { };
   
+  /** Set values: given a range of iterators it fills the information for the hit content
+   *  @brief Set values for a given range of iterators
+   *  @param itBeg First iterator, begin of range
+   *  @param itEnd Last iterator, end of range
+   *  @param fill Should the values be reset?
+   */
   void set( PrHits::const_iterator itBeg, PrHits::const_iterator itEnd, const bool fill = true){
     if(fill){
       m_nbUsed=0;
@@ -56,7 +62,6 @@ public:
       //UV Layer T3
       m_nbT3UV=0;
       m_nbT3UV_singleHit=0;
-      
       m_nbT1_singleHit = 0;
       m_nbT2_singleHit = 0;
       m_nbT3_singleHit = 0;
@@ -231,6 +236,7 @@ public:
     }
     return false;
   }
+  
   bool isT3(const PrHit *hit)const{
     if( hit->planeCode() >7 && hit->planeCode() < 12){
       return true;
@@ -238,7 +244,7 @@ public:
     return false;
   }
 
-  virtual ~PrPlaneCounter2( ) {} ///< Destructor
+  virtual ~PrPlaneHybridCounter( ) {} ///< Destructor
 protected:
   
 private:
@@ -277,4 +283,4 @@ private:
   unsigned int m_nbHits;
   
 };
-#endif // PRPLANECOUNTER2_H
+#endif // PRPLANEHYBRIDCOUNTER_H

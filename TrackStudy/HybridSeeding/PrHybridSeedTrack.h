@@ -1,32 +1,33 @@
-#ifndef PRSEEDTRACK2_H 
-#define PRSEEDTRACK2_H 1
+#ifndef PRHYBRIDSEEDTRACK_H 
+#define PRHYBRIDSEEDTRACK_H 1
 
 // Include files
 #include "Event/Track.h"
 #include "PrKernel/PrHit.h"
-/** @class PrSeedTrack2 PrSeedTrack2.h
+
+/** @class PrHybridSeedTrack PrHybridSeedTrack.h
  *  This is the working class inside the T station pattern
  *
  *  @author Renato Quagliani
  *  @date   2015-05-13
  */
 //Comment it if you don't want to do truth matching
-class PrSeedTrack2 {
+class PrHybridSeedTrack {
 public: 
   /// Constructor with the z reference
-  PrSeedTrack2( unsigned int zone, double zRef ) 
+  PrHybridSeedTrack( unsigned int zone, double zRef ) 
     : m_zone( zone ), m_zRef( zRef )
   {
     init();
   };
   
-  PrSeedTrack2( unsigned int zone, double zRef, PrHits& hits )
+  PrHybridSeedTrack( unsigned int zone, double zRef, PrHits& hits )
     : m_zone( zone ), m_zRef( zRef ), m_hits( hits ) 
   {
     init();
   }; 
   
-  virtual ~PrSeedTrack2( ) {}; ///< Destructor
+  virtual ~PrHybridSeedTrack( ) {}; ///< Destructor
   //Handling the hits on the track
   PrHits& hits()                   { return m_hits; }
   const PrHits& hits()       const{ return m_hits;  }
@@ -162,14 +163,28 @@ public:
   
   //distance from Hit of the track
   double distance( PrHit* hit ) const{ 
-    double yTra = yOnTrack( hit );
-    return hit->x(yTra) - x( hit->z(yTra) );
+    double yTra = yOnTrack(hit);
+    return hit->x( yTra ) - x( hit->z(yTra) );
   }
   
   //Chi2 contribution from a single Hit
   double chi2( PrHit* hit )           const{ 
-    double d = distance( hit );
-    return d * d * hit->w(); }
+    const double d = distance( hit );
+    double w = hit->w();
+    if(m_slopeCorr){
+      double yTra = yOnTrack(hit);
+      const double Corr = std::cos(xSlope( (double) hit->z(yTra) ));
+      w = hit->w()/(Corr*Corr);
+    }
+    return d * d * w;
+  }
+  
+  void setSlopeCorr( bool corr){
+    m_slopeCorr = corr;
+  }
+  bool slopeCorr() const{
+    return m_slopeCorr;
+  }
   
   //DeltaY
   double deltaY( PrHit* hit )        const{
@@ -180,14 +195,14 @@ public:
     std::sort(m_hits.begin(),m_hits.end(),[](const PrHit* hit1, const PrHit* hit2)->bool{return hit1->z()<hit2->z();});
   }
   struct GreaterBySize {//there was no & in rhs
-    bool operator() (const PrSeedTrack2& lhs, const PrSeedTrack2& rhs ) const { 
+    bool operator() (const PrHybridSeedTrack& lhs, const PrHybridSeedTrack& rhs ) const { 
       if( lhs.hits().size() != rhs.hits().size() )
         return lhs.hits().size() < rhs.hits().size(); //< by default
       return lhs.chi2PerDoF() < rhs.chi2PerDoF();
     }
   };
   struct LowerBySize{
-    bool operator() ( const PrSeedTrack2& lhs, const PrSeedTrack2& rhs) const{
+    bool operator() ( const PrHybridSeedTrack& lhs, const PrHybridSeedTrack& rhs) const{
       if(lhs.hits().size() == rhs.hits().size()) return lhs.chi2PerDoF() > rhs.chi2PerDoF();
       return lhs.hits().size() > rhs.hits().size();
     }
@@ -196,7 +211,7 @@ public:
   
     
   // struct LowerBySize{
-  //   bool operator() ( const PrSeedTrack2& lhs, const PrSeedTrack2 rhs) const { return lhs.hits().size() < rhs.hits().size(); }
+  //   bool operator() ( const PrHybridSeedTrack& lhs, const PrHybridSeedTrack rhs) const { return lhs.hits().size() < rhs.hits().size(); }
   // }
 
 
@@ -235,6 +250,7 @@ protected:
 private:
 
   void init(){
+    m_slopeCorr = false;
     m_valid = true;
     m_hits.reserve( 32 );
     m_case = -1;
@@ -262,6 +278,7 @@ private:
   }
   //Global Private variables
 private:
+  bool m_slopeCorr;
   unsigned int m_nx;
   unsigned int m_ny;
   int m_nUVLine;
@@ -290,6 +307,6 @@ private:
   unsigned int m_case;
 };
 
-typedef std::vector<PrSeedTrack2> PrSeedTrack2s;
+typedef std::vector<PrHybridSeedTrack> PrHybridSeedTracks;
 
 #endif // PRSEEDTRACK2_H
