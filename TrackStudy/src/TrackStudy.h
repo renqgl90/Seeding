@@ -288,6 +288,7 @@ class TrackStudy : public TSelector {
    virtual void    SlaveTerminate();
    virtual void    Terminate();
    Bool_t          fitXProjection(PrSeedTrack & track,Bool_t debug);
+   Bool_t          fitXProjectionCubic(PrSeedTrack & track, Bool_t debug);
    void  solveParabola2(  const PatHit hit1,const PatHit hit2,const PatHit hit3,double& a1, double& b1,double& c1 );
    bool FitSimultaneouslyXY(PrSeedTrack & Track,PrSeedTrack & UVSegment,Bool_t debug);
    bool FitLine(PrSeedTrack & UVSegment, Bool_t debug, Int_t Case);
@@ -298,7 +299,9 @@ class TrackStudy : public TSelector {
    bool XZStudyCase1(PrSeedTrack& xProj, PrSeedTrack& UVSegment, Bool_t debug);
    bool XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment, Bool_t debug);
    void StereoSearch(PrSeedTrack xProj, PrSeedTrack UVSegment, Bool_t debug);
+   void Remaining(PrSeedTrack& xProj, Bool_t debug, Int_t Case);
 private:
+   
 
    double m_dRatio0;
    Float_t m_zReference;

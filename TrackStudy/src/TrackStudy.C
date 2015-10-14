@@ -63,6 +63,17 @@ Double_t bx_cub;
 Double_t cx_cub;
 Double_t dx_cub;
 
+Int_t worstPlane;
+
+Double_t Z_T3;
+Double_t Z_T1;
+Double_t X_T3;
+Double_t X_T1;
+Double_t Coord_T3;
+Double_t Coord_T1;
+
+Double_t Y_T3 ;
+Double_t Y_T1 ;
 //----------- Line Y
 Double_t Chi2_LineY;
 Double_t ay_line;
@@ -132,6 +143,10 @@ TH2D * DeltaYT1vsyT1 = new TH2D("DeltaYT1vsyT1","DeltaYT1vsyT1",400,-3000,3000,1
 TH1D * DeltaXCombinedT1 = new TH1D("DeltaXCombinedT1","DeltaXCombinedT1",100,-20,20);
 
 
+TH1D * DeltaRemaining_Case0 = new TH1D("DeltaRemaing_Case0","DeltaRemaining_Case0",200,-5,5);
+
+
+
 Double_t DeltaXBestCombT1;
 Double_t DeltaXBestCombCorrSlopeY;
 Double_t TyPairT1;
@@ -148,14 +163,36 @@ Bool_t Case2Accepted;
 
 Double_t Chi2X_Case2;
 
+Int_t nRemSeed1_Case0;
+Int_t nRemSeed2_Case0;
+Int_t nRemSeed1_Case1;
+Int_t nRemSeed2_Case1;
+Int_t nRemSeed1_Case2;
+Int_t nRemSeed2_Case2;
+//XATZ STUDY
 
+Double_t DeltaSeed1_Case0[3];
+Double_t DeltaSeed2_Case0[3];
+Double_t DeltaSeed1_Case1[3];
+Double_t DeltaSeed2_Case1[3];
+Double_t DeltaSeed1_Case2[3];
+Double_t DeltaSeed2_Case2[3];
+
+                       
 
 
 //Case 0
 Bool_t Case0Accepted;
 Double_t Chi2X_Case0;
+Double_t Chi2X_Case0Cub;
+
 int NX_Case0;
 int NUV_Case0;
+Double_t ax_FitHitCase0_Cub;
+Double_t bx_FitHitCase0_Cub;
+Double_t cx_FitHitCase0_Cub;
+Double_t dx_FitHitCase0_Cub;
+
 Double_t ax_FitHitCase0;
 Double_t bx_FitHitCase0;
 Double_t cx_FitHitCase0;
@@ -197,14 +234,15 @@ Double_t FitLineY_by_case1;
 Double_t FitLineY_Chi2_case1;
 Double_t FitLineY_Chi2DoF_case1;
 Double_t FitParY_Chi2_case1;
-Double_t FitParY_Chi2DoF_case1;  
+Double_t FitParY_Chi2DoF_case1;
 Double_t FitLineY_ay_case2;
 Double_t FitLineY_by_case2;
 Double_t FitLineY_Chi2_case2;
 Double_t FitLineY_Chi2DoF_case2;
 Double_t FitParY_Chi2_case2;
-Double_t FitParY_Chi2DoF_case2;  
-
+Double_t FitParY_Chi2DoF_case2;
+Int_t WorstPlane;
+Int_t nbHitsInWorst;
 //Case 1
 Bool_t Case1Accepted;
 Double_t Chi2X_Case1;
@@ -282,13 +320,13 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("FitLineY_ay_case1",& FitLineY_ay_case1,"FitLineY_ay_case1/D");
    t1->Branch("FitLineY_by_case1",& FitLineY_by_case1,"FitLineY_by_case1/D");
    t1->Branch("FitLineY_Chi2_case1",& FitLineY_Chi2_case1,"FitLineY_Chi2_case1/D");
-   t1->Branch("FitLineY_Chi2DoF_case1",& FitLineY_Chi2DoF_case1,"FitLineY_Chi2DoF_case1/D"); 
+   t1->Branch("FitLineY_Chi2DoF_case1",& FitLineY_Chi2DoF_case1,"FitLineY_Chi2DoF_case1/D");
    t1->Branch("BestUV_NHits_case1",& NUV_Case1, "BestUV_NHits_case1/I");
 
    t1->Branch("FitLineY_ay_case2",& FitLineY_ay_case2,"FitLineY_ay_case2/D");
    t1->Branch("FitLineY_by_case2",& FitLineY_by_case2,"FitLineY_by_case2/D");
    t1->Branch("FitLineY_Chi2_case2",& FitLineY_Chi2_case2,"FitLineY_Chi2_case2/D");
-   t1->Branch("FitLineY_Chi2DoF_case2",& FitLineY_Chi2DoF_case2,"FitLineY_Chi2DoF_case2/D");  
+   t1->Branch("FitLineY_Chi2DoF_case2",& FitLineY_Chi2DoF_case2,"FitLineY_Chi2DoF_case2/D");
    t1->Branch("BestUV_NHits_case2",& NUV_Case2, "BestUV_NHits_case2/I");
 
    //Full fit case 0
@@ -327,6 +365,11 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("y0_fullFitCase2",&y0_fullFitCase2,"y0_fullFitCase2/D");
 
    // Fit XZ Case 0 ,1 ,2
+   t1->Branch("ax_FitHitCase0_Cub",&ax_FitHitCase0_Cub,"ax_FitHitCase0_Cub/D");
+   t1->Branch("bx_FitHitCase0_Cub",&bx_FitHitCase0_Cub,"bx_FitHitCase0_Cub/D");
+   t1->Branch("cx_FitHitCase0_Cub",&cx_FitHitCase0_Cub,"cx_FitHitCase0_Cub/D");
+   t1->Branch("dx_FitHitCase0_Cub",&dx_FitHitCase0_Cub,"dx_FitHitCase0_Cub/D");
+
    t1->Branch("ax_FitHitCase0",&ax_FitHitCase0,"ax_FitHitCase0/D");
    t1->Branch("bx_FitHitCase0",&bx_FitHitCase0,"bx_FitHitCase0/D");
    t1->Branch("cx_FitHitCase0",&cx_FitHitCase0,"cx_FitHitCase0/D");
@@ -348,7 +391,8 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("bx_Case0_Seed2",&bx_Case0_Seed2,"bx_Case0_Seed2/D");
    t1->Branch("cx_Case0_Seed2",&cx_Case0_Seed2,"cx_Case0_Seed2/D");
 
-
+   t1->Branch("WorstPlane",&WorstPlane,"WorstPlane/I");
+   t1->Branch("NbHitsInWorst",&nbHitsInWorst,"NbHitsInWorst/I");
    t1->Branch("ax_Case1_Seed1",&ax_Case1_Seed1,"ax_Case1_Seed1/D");
    t1->Branch("bx_Case1_Seed1",&bx_Case1_Seed1,"bx_Case1_Seed1/D");
    t1->Branch("cx_Case1_Seed1",&cx_Case1_Seed1,"cx_Case1_Seed1/D");
@@ -364,6 +408,9 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("cx_Case2_Seed2",&cx_Case2_Seed2,"cx_Case2_Seed2/D");
 
    t1->Branch("Chi2X_Case0",&Chi2X_Case0,"Chi2X_Case0/D");
+   //t1->Branch("Chi2X_Case0Cub",&Chi2X_Case0Cub,"Chi2X_Case0Cub/D");
+
+   
    t1->Branch("Chi2X_Case1",&Chi2X_Case1,"Chi2X_Case1/D");
    t1->Branch("Chi2X_Case2",&Chi2X_Case2,"Chi2X_Case2/D");
    t1->Branch("tx_inf_Case0",&tx_inf_Case0,"tx_inf_Case0Case0/D");
@@ -394,13 +441,13 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("NX_Case2",&NX_Case2,"NX_Case2/I");
 
 
-   t1->Branch("Case0Accepted",&Case0Accepted,"Case0Accepted/B");
-   t1->Branch("Case1Accepted",&Case1Accepted,"Case1Accepted/B");
-   t1->Branch("Case2Accepted",&Case2Accepted,"Case2Accepted/B");
-   t1->Branch("PhysicsInterest",&PhysicsInterest,"PhysicsInterest/B");
-   t1->Branch("isDown",&ISDOWN,"isDown/B");
+   t1->Branch("Case0Accepted",&Case0Accepted,"Case0Accepted/O");
+   t1->Branch("Case1Accepted",&Case1Accepted,"Case1Accepted/O");
+   t1->Branch("Case2Accepted",&Case2Accepted,"Case2Accepted/O");
+   t1->Branch("PhysicsInterest",&PhysicsInterest,"PhysicsInterest/O");
+   t1->Branch("isDown",&ISDOWN,"isDown/O");
    t1->Branch("X0Back",&X0Back,"X0Back/D");
-   t1->Branch("ISLONG",&ISLONG,"ISLONG/B");
+   t1->Branch("ISLONG",&ISLONG,"ISLONG/O");
    t1->Branch("OVTX_Z",&OVTX_Z,"OVTX_Z/D");
    t1->Branch("minCoord",&minCoord,"minCoord/D");
    t1->Branch("maxCoord",&maxCoord,"maxCoord/D");
@@ -443,6 +490,13 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("bx_cubXZ",&bx_cub,"bx_cubXZ/D");
    t1->Branch("cx_cubXZ",&cx_cub,"cx_cubXZ/D");
    t1->Branch("dx_cubXZ",&dx_cub,"dx_cubXZ/D");
+   t1->Branch("Y_T3",&Y_T3,"Y_T3/D");
+   t1->Branch("Y_T1",&Y_T1,"Y_T1/D");
+   t1->Branch("X_T3",&X_T3,"X_T3/D");
+   t1->Branch("X_T1",&X_T1,"X_T1/D");
+   t1->Branch("Coord_T3",&Coord_T3,"Coord_T3/D");
+   t1->Branch("Coord_T1",&Coord_T1,"Coord_T1/D");
+   
    t1->Branch("Chi2_LineY",&Chi2_LineY,"Chi2_LineY/D");
    t1->Branch("ay_line",&ay_line,"ay_line/D");
    t1->Branch("by_line",&by_line,"by_line/D");
@@ -457,10 +511,25 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("Track_Pt",&Track_Pt,"Track_Pt/D");
    t1->Branch("Track_Phi",&Track_Phi,"Track_Phi/D");
    t1->Branch("nPV",&nPV,"nPV/I");
-   t1->Branch("isElectron",&IsElectron,"isElectron/B");
+   t1->Branch("isElectron",&IsElectron,"isElectron/O");
    t1->Branch("MCParticleID",&MCParticleiD,"MCParticleID/I");
 
 
+   //Remaining XATZ
+   t1->Branch("nSeed1Case0Rem",&nRemSeed1_Case0,"nSeed1Case0Rem/I");
+   t1->Branch("nSeed2Case0Rem",&nRemSeed2_Case0,"nSeed2Case0Rem/I");
+   t1->Branch("DelSeed1_Case0Rem", &DeltaSeed1_Case0,"DelSeed1_Case0Rem[3]/D");
+   t1->Branch("DelSeed2_Case0Rem", &DeltaSeed2_Case0,"DelSeed2_Case0Rem[3]/D");
+   
+   t1->Branch("nSeed1Case1Rem",&nRemSeed1_Case1,"nSeed1Case1Rem/I");
+   t1->Branch("nSeed2Case1Rem",&nRemSeed2_Case1,"nSeed2Case1Rem/I");
+   t1->Branch("DelSeed1_Case1Rem", &DeltaSeed1_Case1,"DelSeed1_Case1Rem[3]/D");
+   t1->Branch("DelSeed2_Case1Rem", &DeltaSeed2_Case1,"DelSeed2_Case1Rem[3]/D");
+   
+   t1->Branch("nSeed1Case2Rem",&nRemSeed1_Case2,"nSeed1Case2Rem/I");
+   t1->Branch("nSeed2Case2Rem",&nRemSeed2_Case2,"nSeed2Case2Rem/I");
+   t1->Branch("DelSeed1_Case2Rem", &DeltaSeed1_Case2,"DelSeed1_Case2Rem[3]/D");
+   t1->Branch("DelSeed2_Case2Rem", &DeltaSeed2_Case2,"DelSeed2_Case2Rem[3]/D");
    TString option = GetOption();
    m_dRatio0 = -0.000262;
    //Counters For Efficiencies on Long tracks
@@ -616,6 +685,63 @@ void TrackStudy::solveParabola2(const PatHit hit1,const PatHit hit2,const PatHit
    c1 = det3/det;
 }
 
+
+Bool_t TrackStudy::fitXProjectionCubic(PrSeedTrack & track, Bool_t debug)
+{
+float mat[10];
+float rhs[4];
+std::vector<PatHit> Hits = track.hits();
+track.setParameters2(0,0,0,0,0,0);
+for(int loop =0; 3>loop; ++loop){
+      std::fill(mat,mat+10,0.);
+      std::fill(rhs,rhs+4,0.);
+      for( int i=0;i<Hits.size();i++){
+         const float w = Hits[i].w2();
+         if(debug) std::cout<<"Hit w2"<<Hits[i].w2()<<std::endl;
+         const float dz = Hits[i].z(0.)-m_zReference;
+         //float deta = dz*dz*(1.+m_dRatio0*dz);
+         //if(m_usedRatio){
+         //deta = dz*dz*(1-dRatio*dz);
+         //}
+         float dist = track.distance2(Hits[i]);
+         if(debug) std::cout<<"i"<<setw(20)<<i<<setw(20)<<"Hit X"<<setw(20)<<Hits[i].x(0)<<setw(20)<<"Track x"<<setw(20)<<track.x(Hits[i].z(0.))<<setw(20)<<"Distance"<< track.distance2(Hits[i])<<std::endl;
+         mat[0]+= w     ;
+         mat[1]+= w * dz;
+         mat[2]+= w * dz * dz;
+         mat[3]+= w * dz * dz;
+         mat[4]+= w * dz * dz * dz;
+         mat[5]+= w * dz * dz * dz * dz ;
+         mat[6]+= w * dz * dz * dz;
+         mat[7]+= w * dz * dz * dz * dz ;
+         mat[8]+= w * dz * dz * dz * dz * dz;
+         mat[9]+= w * dz * dz * dz * dz * dz * dz;
+         //right hand side
+         rhs[0]+= w * dist;
+         rhs[1]+= w * dist * dz;
+         rhs[2]+= w * dist * dz*dz;
+         rhs[3]+= w * dist * dz*dz*dz;
+      }
+
+      ROOT::Math::CholeskyDecomp<float,4> decomp(mat);
+      if(!decomp){
+      std::cout<<"Failed to decompose matrix"<<std::endl;
+      return false;
+      }
+      decomp.Solve(rhs);
+      track.updateParameters2(rhs[0],rhs[1],rhs[2],0.,0.,rhs[3]);
+   }
+   Float_t chi2 = track.Chi2();
+   //std::cout<<"Chi2 Cubic = "<<chi2<<std::endl;
+   //std::cout<<"ax"<<setw(20)<<"bx"<<setw(20)<<"cx"<<setw(20)<<"dx"<<setw(20)<<std::endl;
+   //std::cout<<track.ax_cub()<<setw(20)<<track.bx_cub()<<setw(20)<<track.cx_cub()<<setw(12)<<track.dx_cub()<<std::endl;
+   //std::cout<<"DRATIO =  "<<track.dx_cub()/track.cx_cub();
+   return true;
+
+}
+
+
+
+
 Bool_t TrackStudy::fitXProjection(PrSeedTrack & track, Bool_t debug)
 {
    float mat[6];
@@ -715,9 +841,9 @@ void TrackStudy::Terminate()
    std::cout<<"Physical Tracks (Case2 intrinsic) >=4 duplicates  "<<setw(20)<<m_physicalCase2IntrinsicWithduplicatesMore4<<std::endl;
    std::cout<<"Physical Tracks (Case2 intrinsic) >=5=            "<<setw(20)<<m_physicalCase2IntrinsicMore5<<std::endl;
    std::cout<<"Physical Tracks (Case2 intrinsic) duplicates      "<<setw(20)<<m_physicalCase2IntrinsicWithduplicatesMore5<<std::endl;
-   std::cout<<"NbTrackClones X                                   "<<setw(20)<<m_nbTrackCloneX<<std::endl;
-   std::cout<<"NbTrackClones UV                                  "<<setw(20)<<m_nbTrackCloneUV<<std::endl;
-   std::cout<<"NbTrackClones X and UV                            "<<setw(20)<<m_nbTrackCloneUVandX<<std::endl;
+   std::cout<<"NbTrack with Splitted Cluster on X layer                            "<<setw(20)<<m_nbTrackCloneX<<std::endl;
+   std::cout<<"NbTrack with Splitted Cluster on UV layer                          "<<setw(20)<<m_nbTrackCloneUV<<std::endl;
+   std::cout<<"NbTrack with Splitted Cluster X and UV                            "<<setw(20)<<m_nbTrackCloneUVandX<<std::endl;
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
@@ -1024,6 +1150,7 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    bx_Case0_Seed2 = -99.;
    cx_Case0_Seed2 = -99.;
    Chi2X_Case0 = -99.;
+   Chi2X_Case0Cub = -99.;
    NX_Case0 = -1;
    tx_inf_Case0 = -99.;
    x0_Case0 = -99.;
@@ -1038,6 +1165,13 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    bx_FitHitCase0 = -99.;
    cx_FitHitCase0 = -99.;
 
+   ax_FitHitCase0_Cub = -99.;
+   bx_FitHitCase0_Cub = -99.;
+   cx_FitHitCase0_Cub = -99.;
+   dx_FitHitCase0_Cub = -99;
+
+   WorstPlane = -99;
+   nbHitsInWorst = -99;
    ax_fullFitCase0 = -9999.;
    bx_fullFitCase0= -99.;
    cx_fullFitCase0 = -99.;
@@ -1047,15 +1181,19 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    MaxChi2_fullFitCase0 = -99.;
    NHits_fullFitCase0= -1;
    y0_fullFitCase0 = -9999.;
-
-
+   Y_T1 = -999999.;
+   Y_T3 = +999999.;
+   X_T1 = -999999.;
+   X_T3 = +999999.;
+   Coord_T1 = -999999.;
+   Coord_T3 = +999999.;
    FitLineY_ay_case0 = -999;
    FitLineY_by_case0 = -999;
    FitLineY_Chi2_case0= -999;
    FitLineY_Chi2DoF_case0= -999;
    FitParY_Chi2_case0= -999;
    FitParY_Chi2DoF_case0= -999;
-   
+
 
    // if(debug) std::cout<<"Start XZ study"<<std::endl;
    //extract the T1X hit
@@ -1163,7 +1301,7 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    if(Case0First.size()!=0 && Case0Last.size()!=0 && (ParabolaSeedHits1.size()!=0 || ParabolaSeedHits2.size()!=0)) PrelimSele_Case0 = true;
 
 
-
+   
    //std::vector<double> DeltaZ;
    if(PrelimSele_Case0)
    {
@@ -1176,171 +1314,193 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          if(debug) std::cout<<"Loop first Layer"<<std::endl;
          for(int j = 0;j<Case0Last.size();j++)
          {
-            for(int k=0; k< ParabolaSeedHits1.size();k ++)
-            {
-               if(debug) std::cout<<"Parabola Seed Hit 1"<<std::endl;
-               //ParabolaSeedHits1[k].PrintHit();
-               if(debug) std::cout<<"Loop ParabolaSeed 1"<<std::endl;
-               //PrSeedTrack1 xProjection();
-               PrSeedTrack xProjection = PrSeedTrack(0,m_zReference);
-               xProjection.addHit(ParabolaSeedHits1[k]);
-               xProjection.addHit(Case0First[i]);
-               xProjection.addHit(Case0Last[j]);
-               //xProjection.PrintTrack();
-               double a=0.;
-               double b=0.;
-               double c=0.;
-               solveParabola2(Case0First[i],ParabolaSeedHits1[k],Case0Last[j],a,b,c );
-               ax_Case0_Seed1 = a;
-               bx_Case0_Seed1 = b;
-               cx_Case0_Seed1 = c;
-               if(debug) std::cout<<"a"<<setw(20)<<a<<std::endl;
-               if(debug) std::cout<<"b"<<setw(20)<<b<<std::endl;
-               if(debug) std::cout<<"c"<<setw(20)<<c<<std::endl;
+           for(int k=0; k< ParabolaSeedHits1.size();k ++)
+           {
+             if(debug) std::cout<<"Parabola Seed Hit 1"<<std::endl;
+             //ParabolaSeedHits1[k].PrintHit();
+             if(debug) std::cout<<"Loop ParabolaSeed 1"<<std::endl;
+             //PrSeedTrack1 xProjection();
+             PrSeedTrack xProjection = PrSeedTrack(0,m_zReference);
+             xProjection.addHit(ParabolaSeedHits1[k]);
+             xProjection.addHit(Case0First[i]);
+             xProjection.addHit(Case0Last[j]);
+             //xProjection.PrintTrack();
+             double a=0.;
+             double b=0.;
+             double c=0.;
+             solveParabola2(Case0First[i],ParabolaSeedHits1[k],Case0Last[j],a,b,c );
+             ax_Case0_Seed1 = a;
+             bx_Case0_Seed1 = b;
+             cx_Case0_Seed1 = c;
+             if(debug) std::cout<<"a"<<setw(20)<<a<<std::endl;
+             if(debug) std::cout<<"b"<<setw(20)<<b<<std::endl;
+             if(debug) std::cout<<"c"<<setw(20)<<c<<std::endl;
                //std::vector<PatHit> bestRemaining(3);
-               int best1_kk;
-               int best2_kk;
-               int best3_kk;
-               // PatHit hit1_1;
-               // PatHit hit2_1;
-               // PatHit hit3_1;
-               std::vector<double> minVal(3);
-               minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
-               for(int kk =0;kk<remainingCase0Seed1N[0] ; kk++){
-                  if(debug) std::cout<<"Remaining Seed 1 -1 "<<std::endl;
-                  //RemainingCase0Seed1[kk].PrintHit();
-                  double dz = RemainingCase0Seed1[kk].z() -m_zReference;
-                  double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
-                  double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"delta Remaining 1 -1 "<<setw(20)<<delta<<std::endl;
-                  if(std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ)<minVal[0]){
-                     minVal[0]=std::fabs(delta);
-                     best1_kk=kk;
-                     //hit1_1 = RemainingCase0Seed1[kk];
-                  }
+             int best1_kk;
+             int best2_kk;
+             int best3_kk;
+             // PatHit hit1_1;
+             // PatHit hit2_1;
+             // PatHit hit3_1;
+             std::vector<double> minVal(3);
+             minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
+             std::vector<double> xAtz;
+             
+             for(int kk =0;kk<remainingCase0Seed1N[0] ; kk++){
+               if(debug) std::cout<<"Remaining Seed 1 -1 "<<std::endl;
+               //RemainingCase0Seed1[kk].PrintHit();
+               double dz = RemainingCase0Seed1[kk].z() -m_zReference;
+               double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
+               double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"delta Remaining 1 -1 "<<setw(20)<<delta<<std::endl;
+               xAtz.push_back(xAtZ);
+               if(std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ)<minVal[0]){
+                 minVal[0]=std::fabs(delta);
+                    best1_kk=kk;
+                    //hit1_1 = RemainingCase0Seed1[kk];
                }
-               if(minVal[0]<999){
-                  xProjection.addHit(RemainingCase0Seed1[best1_kk]);
-               }
-               for(int kk =remainingCase0Seed1N[0];kk< ( remainingCase0Seed1N[0]+remainingCase0Seed1N[1]) ; kk++){
-                  double dz = RemainingCase0Seed1[kk].z() - m_zReference;
-                  double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
-                  double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"delta Remaining 1 -2 "<<setw(20)<<delta<<std::endl;
-
+             }
+             if(minVal[0]<999){
+               xProjection.addHit(RemainingCase0Seed1[best1_kk]);
+               DeltaRemaining_Case0->Fill(RemainingCase0Seed1[best1_kk].x(0.)-xAtz[best1_kk]);
+               // DeltaRestantiCase0_Seed1.push_back( RemainingCase0Seed1[best1_kk].x(0.)-xAtz[best1_kk]); 
+             }
+             xAtz.clear();
+             for(int kk =remainingCase0Seed1N[0];kk< ( remainingCase0Seed1N[0]+remainingCase0Seed1N[1]) ; kk++){
+               double dz = RemainingCase0Seed1[kk].z() - m_zReference;
+               double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
+               xAtz.push_back(xAtZ);
+               double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"delta Remaining 1 -2 "<<setw(20)<<delta<<std::endl;
+                  DeltaRemaining_Case0->Fill(RemainingCase0Seed1[kk].x(0.)-xAtZ);
+                  
                   if(std::fabs(delta)<minVal[1]){
-                     minVal[1]=std::fabs(delta);
-                     best2_kk=kk;
-                     //hit2_1 = RemainingCase0Seed1[kk];
+                    minVal[1]=std::fabs(delta);
+                    best2_kk=kk;
+                    //hit2_1 = RemainingCase0Seed1[kk];
                   }
+             }
+             if(minVal[1]<999){
+               xProjection.addHit(RemainingCase0Seed1[best2_kk]);
+               DeltaRemaining_Case0->Fill(RemainingCase0Seed1[best2_kk].x(0.)-xAtz[best2_kk]);
+               // DeltaRestantiCase0_Seed1.push_back( RemainingCase0Seed1[best2_kk].x(0.)-xAtz[best2_kk]);
                }
-               if(minVal[1]<999){
-                  xProjection.addHit(RemainingCase0Seed1[best2_kk]);
+             xAtz.clear();
+             for( int kk= (remainingCase0Seed1N[0]+remainingCase0Seed1N[1]);kk<( remainingCase0Seed1N[0]+remainingCase0Seed1N[1]+remainingCase0Seed1N[2] ); kk++){
+               double dz = RemainingCase0Seed1[kk].z() -m_zReference;
+               double xAtZ = a*dz*dz *(1.+m_dRatio0*dz)+ b*dz +c;
+               xAtz.push_back(xAtZ);
+               double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"delta Remaining 1 -3"<<setw(20)<<delta<<std::endl;
+               
+               if(std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ)<minVal[2]){
+                 minVal[2]=std::fabs(delta);
+                 best3_kk=kk;
+                 DeltaRemaining_Case0->Fill(RemainingCase0Seed1[kk].x(0.)-xAtZ);
+                 //hit3_1 = RemainingCase0Seed1[kk];
                }
-               for( int kk= (remainingCase0Seed1N[0]+remainingCase0Seed1N[1]);kk<( remainingCase0Seed1N[0]+remainingCase0Seed1N[1]+remainingCase0Seed1N[2] ); kk++){
-                  double dz = RemainingCase0Seed1[kk].z() -m_zReference;
-                  double xAtZ = a*dz*dz *(1.+m_dRatio0*dz)+ b*dz +c;
-                  double delta = std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"delta Remaining 1 -3"<<setw(20)<<delta<<std::endl;
-
-                  if(std::fabs(RemainingCase0Seed1[kk].x(0)-xAtZ)<minVal[2]){
-                     minVal[2]=std::fabs(delta);
-                     best3_kk=kk;
-                     //hit3_1 = RemainingCase0Seed1[kk];
-                  }
-               }
-               if(minVal[2]<999){
-                  xProjection.addHit(RemainingCase0Seed1[best3_kk]);
-               }
-               if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
-               //xProjection.PrintHits();
-               if(debug) std::cout<<"Case Seed 1"<<std::endl;
-
-               xProjections.push_back(xProjection);
-               //T2
-            }
-            for(int k=0; k< ParabolaSeedHits2.size();k ++)
-            {
-               if(debug) std::cout<<"Parabola Seed Hit 1"<<std::endl;
-               //ParabolaSeedHits2[k].PrintHit();
-               //PrSeedTrack1 xProjection();
-               PrSeedTrack xProjection = PrSeedTrack(0,m_zReference);
-               xProjection.addHit(Case0First[i]);
-               xProjection.addHit(ParabolaSeedHits2[k]);
-               xProjection.addHit(Case0Last[j]);
-
-               double a=0;
-               double b=0;
-               double c=0;
-               solveParabola2(Case0First[i],ParabolaSeedHits2[k],Case0Last[j],a,b,c );
-               ax_Case0_Seed2 = a;
-               bx_Case0_Seed2 = b;
-               cx_Case0_Seed2 = c;
-
-               if(debug) std::cout<<"a "<<setw(20)<<a<<std::endl;
-               if(debug) std::cout<<"b "<<setw(20)<<b<<std::endl;
-               if(debug) std::cout<<"c "<<setw(20)<<c<<std::endl;
-               int best1_kk;
-               int best2_kk;
-               int best3_kk;
-               // PatHit hit1_1;
-               // PatHit hit2_1;
+             }
+             if(minVal[2]<999){
+               xProjection.addHit(RemainingCase0Seed1[best3_kk]);
+               DeltaRemaining_Case0->Fill(RemainingCase0Seed1[best3_kk].x(0.)-xAtz[best3_kk]);
+               // DeltaRestantiCase0_Seed1.push_back( RemainingCase0Seed1[best3_kk].x(0.)-xAtz[best1_kk]);
+             }
+             if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
+             //xProjection.PrintHits();
+             if(debug) std::cout<<"Case Seed 1"<<std::endl;
+             
+             xProjections.push_back(xProjection);
+             //T2
+           }
+           for(int k=0; k< ParabolaSeedHits2.size();k ++)
+           {
+             if(debug) std::cout<<"Parabola Seed Hit 1"<<std::endl;
+             //ParabolaSeedHits2[k].PrintHit();
+             //PrSeedTrack1 xProjection();
+             PrSeedTrack xProjection = PrSeedTrack(0,m_zReference);
+             xProjection.addHit(Case0First[i]);
+             xProjection.addHit(ParabolaSeedHits2[k]);
+             xProjection.addHit(Case0Last[j]);
+             
+             double a=0;
+             double b=0;
+             double c=0;
+             solveParabola2(Case0First[i],ParabolaSeedHits2[k],Case0Last[j],a,b,c );
+             ax_Case0_Seed2 = a;
+             bx_Case0_Seed2 = b;
+             cx_Case0_Seed2 = c;
+             
+             if(debug) std::cout<<"a "<<setw(20)<<a<<std::endl;
+             if(debug) std::cout<<"b "<<setw(20)<<b<<std::endl;
+             if(debug) std::cout<<"c "<<setw(20)<<c<<std::endl;
+             int best1_kk;
+             int best2_kk;
+             int best3_kk;
+             // PatHit hit1_1;
+             // PatHit hit2_1;
                // PatHit hit3_1;
-               std::vector<double> minVal(3);
-               minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
-               for(int kk =0;kk<remainingCase0Seed2N[0] ; kk++){
-                  double dz = RemainingCase0Seed2[kk].z() -m_zReference;
-                  //double m_dRatio0 = -0.000246;
-                  double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
-                  double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"delta 2-1 "<<delta<<std::endl;
-                  if(std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ)<minVal[0]){
-                     minVal[0]=std::fabs(delta);
-                     best1_kk = kk;
-                     //hit1_1 = RemainingCase0Seed2[kk];
-                  }
+             std::vector<double> minVal(3);
+             // std::vector<double> DeltaRestantiCase0_Seed2;
+             // DeltaRestantiCase0_Seed2.reserve(3);
+             minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
+             for(int kk =0;kk<remainingCase0Seed2N[0] ; kk++){
+               double dz = RemainingCase0Seed2[kk].z() -m_zReference;
+               //double m_dRatio0 = -0.000246;
+               double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
+               double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"delta 2-1 "<<delta<<std::endl;
+               if(std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ)<minVal[0]){
+                 minVal[0]=std::fabs(delta);
+                 best1_kk = kk;
+                 //hit1_1 = RemainingCase0Seed2[kk];
                }
-               if(minVal[0]<999){
-                  xProjection.addHit(RemainingCase0Seed2[best1_kk]);
+             }
+             if(minVal[0]<999){
+               xProjection.addHit(RemainingCase0Seed2[best1_kk]);
+               // DeltaRestantiCase0_Seed2.push_back( RemainingCase0Seed2[best1_kk].x(0.)-xAtZ[best1_kk]);
+             }
+             for(int kk =remainingCase0Seed2N[0];kk<(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]) ; kk++){
+               double dz = RemainingCase0Seed1[kk].z() -m_zReference;
+               double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
+               double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"Delta 2-2 "<<setw(20)<<delta<<std::endl;
+               if(std::fabs(delta)<minVal[1]){
+                 minVal[1]=std::fabs(delta);
+                 best2_kk=kk;
+                 // hit2_1 = RemainingCase0Seed2[kk];
                }
-               for(int kk =remainingCase0Seed2N[0];kk<(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]) ; kk++){
-                  double dz = RemainingCase0Seed1[kk].z() -m_zReference;
-                  double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
-                  double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"Delta 2-2 "<<setw(20)<<delta<<std::endl;
-                  if(std::fabs(delta)<minVal[1]){
-                     minVal[1]=std::fabs(delta);
-                     best2_kk=kk;
-                     // hit2_1 = RemainingCase0Seed2[kk];
-                  }
-               }
-               if(minVal[1]<999){
-                  xProjection.addHit(RemainingCase0Seed2[best2_kk]);
-               }
-               for(int  kk=(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]) ;kk<(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]+remainingCase0Seed2N[2]); kk++){
-                  double dz = RemainingCase0Seed2[kk].z() -m_zReference;
-                  // double m_dRatio0 = -0.000246;
-                  double xAtZ = a*dz*dz *(1.+m_dRatio0*dz) + b*dz +c;
+             }
+             if(minVal[1]<999){
+               xProjection.addHit(RemainingCase0Seed2[best2_kk]);
+               // DeltaRestantiCase0_Seed2.push_back( RemainingCase0Seed2[best2_kk].x(0.)-xAtZ[best2_kk]);
+             }
+             for(int  kk=(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]) ;kk<(remainingCase0Seed2N[0]+remainingCase0Seed2N[1]+remainingCase0Seed2N[2]); kk++){
+               double dz = RemainingCase0Seed2[kk].z() -m_zReference;
+               // double m_dRatio0 = -0.000246;
+               double xAtZ = a*dz*dz *(1.+m_dRatio0*dz) + b*dz +c;
 
-                  double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"Delta 2-3"<<setw(20)<<delta<<std::endl;
-
-                  if(std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ)<minVal[2]){
-                     minVal[2]=std::fabs(delta);
-                     best3_kk=kk;
-                     //hit3_1 = RemainingCase0Seed2[kk];
-                  }
+               double delta = std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ);
+               if(debug) std::cout<<"Delta 2-3"<<setw(20)<<delta<<std::endl;
+               
+               if(std::fabs(RemainingCase0Seed2[kk].x(0)-xAtZ)<minVal[2]){
+                 minVal[2]=std::fabs(delta);
+                 best3_kk=kk;
+                 //hit3_1 = RemainingCase0Seed2[kk];
                }
-               if(minVal[2]<999){
-                  xProjection.addHit(RemainingCase0Seed2[best3_kk]);
-               }
-               if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
-               //xProjection.PrintHits();
-               if(debug) std::cout<<"Case Seed 1"<<std::endl;
-
-               xProjections.push_back(xProjection);
-            }
-
+             }
+             if(minVal[2]<999){
+               xProjection.addHit(RemainingCase0Seed2[best3_kk]);
+               // DeltaRestantiCase0_Seed2.push_back( RemainingCase0Seed2[best3_kk].x(0.)-xAtZ[best3_kk]);
+               //                  DeltaRemaining_Case0->Fill(RemainingCase0Seed1[kk].x(0.)-xAtZ);
+               
+             }
+             if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
+             //xProjection.PrintHits();
+             if(debug) std::cout<<"Case Seed 1"<<std::endl;
+             
+             xProjections.push_back(xProjection);
+           }
+           
          }
       }
       if(debug) std::cout<<"I found xCandidates"<<xProjections.size()<<std::endl;
@@ -1351,16 +1511,16 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          if(debug) std::cout<<"Number of XZ Projections before erase"<<xProjections.size()<<std::endl;
          if(xProjections.size()>1)
          {
-            xProjections.erase(std::unique(xProjections.begin(),xProjections.end(),[](PrSeedTrack a, PrSeedTrack b)->bool{
-               if(a.hits().size() != b.hits().size()) return false;
-               a.sortbyZ();
-               b.sortbyZ();
-               bool flag = true;
-               for(int i =0;i<a.hits().size();i++){
-                  if( (a.hits()[i].x() != b.hits()[i].x()) && a.hits()[i].z()!=a.hits()[i].z()) {  flag = false; break;}
-               }
-               return flag;
-            }),xProjections.end());
+           xProjections.erase(std::unique(xProjections.begin(),xProjections.end(),[](PrSeedTrack a, PrSeedTrack b)->bool{
+                 if(a.hits().size() != b.hits().size()) return false;
+                 a.sortbyZ();
+                 b.sortbyZ();
+                 bool flag = true;
+                 for(int i =0;i<a.hits().size();i++){
+                   if( (a.hits()[i].x() != b.hits()[i].x()) && a.hits()[i].z()!=a.hits()[i].z()) {  flag = false; break;}
+                 }
+                 return flag;
+               }),xProjections.end());
          }
       }
       if(xProjections.size()==0){std::cout<<"I didn't find any xProjection, error case 0"<<std::endl; xProj.PrintHits();}
@@ -1383,13 +1543,23 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       }
       PrSeedTrack bestXZ = xProjections[0];
       bool OK = false;
+      bool OK2 = false;
       OK = fitXProjection(bestXZ,debug);
-
-
-      ax_FitHitCase0 = bestXZ.ax();
-      bx_FitHitCase0 = bestXZ.bx();
-      cx_FitHitCase0 = bestXZ.cx();
-
+      OK2 = fitXProjectionCubic(bestXZ,debug);
+      if( OK != OK2){
+        std::cout<<"OK Parabola = "<<OK<<"\n OK2 Cubic = "<<OK<<std::endl;
+      }
+      if(OK){
+        ax_FitHitCase0 = bestXZ.ax();
+        bx_FitHitCase0 = bestXZ.bx();
+        cx_FitHitCase0 = bestXZ.cx();
+      }
+      if(OK2){
+        ax_FitHitCase0_Cub = bestXZ.ax_cub();
+        bx_FitHitCase0_Cub = bestXZ.bx_cub();
+        cx_FitHitCase0_Cub = bestXZ.cx_cub();
+        dx_FitHitCase0_Cub = bestXZ.dx_cub();
+      }
       if(!OK){
          bestXZ.PrintHits();
          std::cout<<"Case 0:  Chi2 ="<<setw(20)<<bestXZ.chi2X()<<std::endl;
@@ -1424,12 +1594,19 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          DelxProjectedSeed1_Case0 = parSeed1.x(0.)-xProectedSeed1;
       }
       if(bestXZ.hasHitInPlane(7)){
-         PatHit parSeed2 =  bestXZ.hitInPlane(7);
-         Double_t xProectedSeed2 =
-         first.x(0.)+tx_pickedcombination_Case0*(parSeed2.z()-first.z(0.));
-         DelxProjectedSeed2_Case0 = parSeed2.x(0.)-xProectedSeed2;
+        PatHit parSeed2 =  bestXZ.hitInPlane(7);
+        Double_t xProectedSeed2 = first.x(0.)+tx_pickedcombination_Case0*(parSeed2.z()-first.z(0.));
+        DelxProjectedSeed2_Case0 = parSeed2.x(0.)-xProectedSeed2;
       }
-
+      
+      int Case = 0;
+      Remaining(bestXZ,debug, Case);
+      // PatHit parSeed1 = bestXZ.hitInPlane(4);
+      // PatHit parSeed2 = bestXZ.hitInPlane(7);
+      // std::vector<PatHit> RemainingSeed1;
+      // std::vector<PatHit> RemainingSeed2;
+      //PatHit parSeed;
+      
       for(int i = 0; i<PrHit; i++){
          PatHit hit = PatHit();
          hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
@@ -1438,7 +1615,6 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          hit.SetCluster(cluster);
          if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
          if(!hit.isX())bestXZ.addHit(hit);
-
       }
       bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
 
@@ -1560,7 +1736,7 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       BestUVSegment.setParameters( ax_FitHitCase0, bx_FitHitCase0, cx_FitHitCase0 ,0,0);
       FitLine(BestUVSegment,debug, 0);
       NUV_Case0 = (int)BestUVSegment.hits().size();
-
+      
       //std::cout<<"ax = "<<bestXZ.ax();
       ax_fullFitCase0 = (Double_t )bestXZ.ax();
       bx_fullFitCase0= (Double_t )bestXZ.bx();
@@ -1572,11 +1748,177 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       NHits_fullFitCase0= (int)bestXZ.hits().size();
       y0_fullFitCase0 =  (Double_t )bestXZ.y(0.);
       if(debug) std::cout<<"Number of XZ Projections after erase"<<xProjections.size()<<std::endl;
+      bestXZ.sortbyZ();
+      
+      WorstPlane = bestXZ.worstPlane();
+      nbHitsInWorst = 0;
+      for(int i = 0;i<PrHit;i++){
+        if(PrHit_planeCode[i]==WorstPlane) nbHitsInWorst++;
+      }
+      if(nbHitsInWorst>1){
+        bestXZ.PrintHits();
+        std::cout<<"Nb Hits in worst Plane is"<<setw(20)<<nbHitsInWorst<<setw(20)<<" and worst plane = "<<WorstPlane<<std::endl;
+      }
+      
+      if(bestXZ.hasHitInPlane(1)){
+        PatHit FirstY = bestXZ.hitInPlane(1);
+        X_T1 = FirstY.x(0.);
+        Y_T1 = FirstY.coord()*FirstY.z(0.);
+        Coord_T1 = FirstY.coord();
+        Z_T1 = FirstY.z();
+        //std::cout<<FirstY.coord()<<std::endl;
+      }
+      if(!bestXZ.hasHitInPlane(1)&& bestXZ.hasHitInPlane(2)){
+        PatHit FirstY = bestXZ.hitInPlane(2);
+        X_T1 = FirstY.x(0.);
+        Y_T1 = FirstY.coord()*FirstY.z(0.);
+        Coord_T1 = FirstY.coord();
+        Z_T1 = FirstY.z();
+      }
+      if(bestXZ.hasHitInPlane(10)){
+        PatHit LastY = bestXZ.hitInPlane(10);
+        X_T3 = LastY.x(0.);
+        Y_T3 =LastY.coord()*LastY.z(0.);
+        Coord_T3 = LastY.coord();
+        Z_T3 = LastY.z(0.);
+      }
+      if(!bestXZ.hasHitInPlane(10) && bestXZ.hasHitInPlane(9)){
+        PatHit LastY = bestXZ.hitInPlane(9);
+        Y_T3 = LastY.coord()*LastY.z(0.);
+        Coord_T3 = LastY.coord();
+        Z_T3 = LastY.z(0.);
+        X_T3 = LastY.x(0.);
+      }
+      //BestUVSegment.sortbyZ();
+      //BestUVSegment.PrintHits();
    }
    //End Case 0 Prelim Sele
    return PrelimSele_Case0;
 }
 
+void TrackStudy::Remaining(PrSeedTrack & bestXZ, Bool_t debug, int Case){
+  int firstplane = -99;
+  int lastplane = -99;
+  int seed_1 = 4;
+  int seed_2 = 7;
+  if(Case ==0){
+    firstplane = 0;
+    lastplane = 11;
+  }
+  if(Case==1){
+    firstplane = 3;
+    lastplane = 11;
+  }
+  if(Case==2){
+    firstplane = 0;
+    lastplane = 8;
+  }
+  PatHit first = bestXZ.hitInPlane(firstplane);
+  if( first.planeCode() == -1){
+    std::cout<<" No Hit in First Plane "<<std::endl;
+  }
+  PatHit last = bestXZ.hitInPlane(lastplane);
+  if( last.planeCode() == -1){
+    std::cout<<"No Hit in Last Plane"<<std::endl;
+  }
+  PatHit seed1 = bestXZ.hitInPlane(seed_1);
+  PatHit seed2 = bestXZ.hitInPlane(seed_2);
+  std::vector<PatHit> remainingSeed1;
+  std::vector<PatHit> remainingSeed2;
+  bool hasSeed1 = true;
+  bool hasSeed2 = true;
+  if( seed1.planeCode() == -1){
+    hasSeed1 = false;
+    //std::cout<<"No Hit in Plane 4"<<std::endl;
+  }
+  if( seed2.planeCode() == -1){
+    hasSeed2 = false;
+  }
+  for( int i = 0; i<bestXZ.hits().size(); i++){
+    PatHit hit = bestXZ.hits()[i];
+    if( hit.planeCode() != firstplane &&
+        hit.planeCode() != lastplane &&
+        hit.planeCode() != seed_1){
+      if(hasSeed1){ // You have an hit in plane seed 1
+        remainingSeed1.push_back(hit);
+      }
+    }
+    if( hit.planeCode() != firstplane &&
+        hit.planeCode() != lastplane &&
+        hit.planeCode() != seed_2){
+      if(hasSeed2){
+        remainingSeed2.push_back(hit);
+      }
+    }
+  }
+  double a_1 = 0; double a_2 = 0;
+  double b_1 = 0; double b_2 = 0;
+  double c_1 = 0; double c_2 = 0;
+  std::vector<double> DeltaSeed1;
+  std::vector<double> DeltaSeed2;
+  if(Case ==0){
+    nRemSeed1_Case0 = 0;
+    DeltaSeed1_Case0[0] =-99.;
+    DeltaSeed1_Case0[1] =-99.;
+    DeltaSeed1_Case0[2] =-99.;
+    DeltaSeed2_Case0[0] =-99.;
+    DeltaSeed2_Case0[1] =-99.;
+    DeltaSeed2_Case0[2] =-99.;
+  }
+  if(Case ==1){
+    nRemSeed1_Case1= 0;
+    DeltaSeed1_Case1[0] =-99.;
+    DeltaSeed1_Case1[1] =-99.;
+    DeltaSeed1_Case1[2] =-99.;
+    DeltaSeed2_Case1[0] =-99.;
+    DeltaSeed2_Case1[1] =-99.;
+    DeltaSeed2_Case1[2] =-99.;
+  }
+  if(Case ==2){
+    nRemSeed1_Case2 = 0;
+    DeltaSeed1_Case2[0] = -99.;
+    DeltaSeed1_Case2[1] = -99.;
+    DeltaSeed1_Case2[2] = -99.;
+    DeltaSeed2_Case2[0] =-99.;
+    DeltaSeed2_Case2[1] =-99.;
+    DeltaSeed2_Case2[2] =-99.;
+  }
+  
+  if(hasSeed1){
+    if(Case ==0) nRemSeed1_Case0 = (Int_t)remainingSeed1.size();
+    if(Case ==1) nRemSeed1_Case1 = (Int_t)remainingSeed1.size();
+    if(Case ==2) nRemSeed1_Case2 = (Int_t)remainingSeed1.size();
+
+    solveParabola2( first, seed1 , last, a_1 , b_1, c_1);
+    for( int i =0 ; i< remainingSeed1.size();i++){
+      //remainingSeed1[i].PrintHit();
+      double dz = remainingSeed1[i].z(0.)-m_zReference;
+      double xatz = a_1*dz*dz* (1.+m_dRatio0*dz) + b_1*dz + c_1;
+      double delta = remainingSeed1[i].x(0.)-xatz;
+      //DeltaSeed1.push_back(delta);
+      if(Case ==0) DeltaSeed1_Case0[i] = delta;
+      if(Case ==1) DeltaSeed1_Case1[i] = delta;
+      if(Case ==2) DeltaSeed1_Case2[i] = delta;
+    }
+  }
+  if(Case==0) nRemSeed2_Case0 = 0;
+  if(hasSeed2){
+    if(Case ==0) nRemSeed2_Case0 = (Int_t)remainingSeed2.size();
+    if(Case ==1) nRemSeed2_Case1 = (Int_t)remainingSeed2.size();
+    if(Case ==2) nRemSeed2_Case2 = (Int_t)remainingSeed2.size();
+
+    solveParabola2( first,seed2, last, a_2,b_2,c_2);
+    for( int i =0; i<remainingSeed2.size(); i++){
+      double dz = remainingSeed2[i].z(0.)-m_zReference;
+      double xatz = a_2*dz*dz*(1.+m_dRatio0*dz) + b_2*dz + c_2;
+      double delta = remainingSeed2[i].x(0.)-xatz;
+      //DeltaSeed2.push_back(delta);
+      if(Case==0) DeltaSeed2_Case0[i] = delta;
+      if(Case==1) DeltaSeed2_Case1[i] = delta;
+      if(Case==2) DeltaSeed2_Case2[i] = delta;
+    }
+  }
+}
 bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool_t debug){
   NUV_Case1 = -10;
   ax_Case1_Seed1 = -99.;
@@ -1585,7 +1927,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
   ax_Case1_Seed1 = -99.;
   bx_Case1_Seed1 = -99.;
   cx_Case1_Seed1 = -99.;
-  
+
    Chi2X_Case1 = -99.;
    NX_Case1 = -1;
    tx_inf_Case1 = -99.;
@@ -1712,6 +2054,10 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                // PatHit hit2_1;
                // PatHit hit3_1;
                std::vector<double> minVal(3);
+               // std::vector<double> DeltaRestantiCase1_Seed1;
+               // std::vector<double> DeltaRestantiCase1_Seed2;
+               // DeltaRestantiCase1_Seed1.reserve(3);
+               // DeltaRestantiCase1_Seed2.reserve(3);
                minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
                for(int kk =0;kk<remainingCase1Seed1N[0] ; kk++){
                   if(debug) std::cout<<"Remaining Seed 1 -1 "<<std::endl;
@@ -1728,6 +2074,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                }
                if(minVal[0]<999){
                   xProjection.addHit(RemainingCase1Seed1[best1_kk]);
+                  // DeltaRestantiCase1_Seed1.push_back( RemainingCase1Seed1[best1_kk].x(0.)-xAtz[best1_kk]);
                }
                for(int kk =remainingCase1Seed1N[0];kk< ( remainingCase1Seed1N[0]+remainingCase1Seed1N[1]) ; kk++){
                   double dz = RemainingCase1Seed1[kk].z() - m_zReference;
@@ -1738,6 +2085,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                   if(std::fabs(delta)<minVal[1]){
                      minVal[1]=std::fabs(delta);
                      best2_kk=kk;
+                     // DeltaRestantiCase1_Seed1.push_back( RemainingCase1Seed1[best2_kk].x(0.)-xAtz[best2_kk]);
                      //hit2_1 = RemainingCase1Seed1[kk];
                   }
                }
@@ -1758,6 +2106,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                }
                if(minVal[2]<999){
                   xProjection.addHit(RemainingCase1Seed1[best3_kk]);
+                  // DeltaRestantiCase1_Seed1.push_back( RemainingCase1Seed1[best3_kk].x(0.)-xAtz[best3_kk]); 
                }
                if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
                //xProjection.PrintHits();
@@ -1795,16 +2144,16 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                std::vector<double> minVal(3);
                minVal[0]=1000; minVal[1]=1000; minVal[2]=1000;
                for(int kk =0;kk<remainingCase1Seed2N[0] ; kk++){
-                  double dz = RemainingCase1Seed2[kk].z() -m_zReference;
-                  //double m_dRatio0 = -0.000246;
-                  double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
-                  double delta = std::fabs(RemainingCase1Seed2[kk].x(0)-xAtZ);
-                  if(debug) std::cout<<"delta 2-1 "<<delta<<std::endl;
-                  if(std::fabs(RemainingCase1Seed2[kk].x(0)-xAtZ)<minVal[0]){
-                     minVal[0]=std::fabs(delta);
-                     best1_kk = kk;
-                     //hit1_1 = RemainingCase1Seed2[kk];
-                  }
+                 double dz = RemainingCase1Seed2[kk].z() -m_zReference;
+                 //double m_dRatio0 = -0.000246;
+                 double xAtZ = a*dz*dz*(1.+m_dRatio0*dz) + b*dz +c;
+                 double delta = std::fabs(RemainingCase1Seed2[kk].x(0)-xAtZ);
+                 if(debug) std::cout<<"delta 2-1 "<<delta<<std::endl;
+                 if(std::fabs(RemainingCase1Seed2[kk].x(0)-xAtZ)<minVal[0]){
+                   minVal[0]=std::fabs(delta);
+                   best1_kk = kk;
+                   //hit1_1 = RemainingCase1Seed2[kk];
+                 }
                }
                if(minVal[0]<999){
                   xProjection.addHit(RemainingCase1Seed2[best1_kk]);
@@ -1839,6 +2188,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
                }
                if(minVal[2]<999){
                   xProjection.addHit(RemainingCase1Seed2[best3_kk]);
+                  // DeltaRemaining_Case0
                }
                if(debug) std::cout<<"Pushing Back track Case Seed 1"<<std::endl;
                //xProjection.PrintHits();
@@ -1857,16 +2207,16 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
          if(debug) std::cout<<"Number of XZ Projections before erase"<<xProjections.size()<<std::endl;
          if(xProjections.size()>1)
          {
-            xProjections.erase(std::unique(xProjections.begin(),xProjections.end(),[](PrSeedTrack a, PrSeedTrack b)->bool{
-               if(a.hits().size() != b.hits().size()) return false;
-               a.sortbyZ();
-               b.sortbyZ();
-               bool flag = true;
-               for(int i =0;i<a.hits().size();i++){
-                  if( (a.hits()[i].x() != b.hits()[i].x()) && a.hits()[i].z()!=a.hits()[i].z()) {  flag = false; break;}
-               }
-               return flag;
-            }),xProjections.end());
+           xProjections.erase(std::unique(xProjections.begin(),xProjections.end(),[](PrSeedTrack a, PrSeedTrack b)->bool{
+                 if(a.hits().size() != b.hits().size()) return false;
+                 a.sortbyZ();
+                 b.sortbyZ();
+                 bool flag = true;
+                 for(int i =0;i<a.hits().size();i++){
+                   if( (a.hits()[i].x() != b.hits()[i].x()) && a.hits()[i].z()!=a.hits()[i].z()) {  flag = false; break;}
+                 }
+                 return flag;
+               }),xProjections.end());
          }
       }
       if(xProjections.size()==0){std::cout<<"I didn't find any xProjection, error case 1"<<std::endl; xProj.PrintHits();}
@@ -1921,25 +2271,29 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
       Chi2X_Case1 =bestXZ.chi2X();
       MaxChi2Hit_Case1 = bestXZ.maxChi2Hit();
       tx_inf_Case1 =first.x(0.)/first.z(0.);
+      // last_case1 = last.x(0.);
+      // first_case1 = first.x(0.);
+
       tx_pickedcombination_Case1 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
       x_inf_Case1 = first.x(0.)+ tx_inf_Case1 * ( last.z(0.) - first.z(0.));
       Del_x_inf_Case1 = last.x(0.)-x_inf_Case1;
       tx_pickedcombination_Case1 = (last.x(0.) - first.x(0.))/(last.z(0.)-first.z(0.));
-      x0_Case1 = first.x(0) - tx_pickedcombination_Case1 *(first.z(0.) );
+      x0_Case1 = first.x(0.) - tx_pickedcombination_Case1 *(first.z(0.) );
       if(bestXZ.hasHitInPlane(4)){
          PatHit parSeed1 = bestXZ.hitInPlane(4);
-         Double_t xProectedSeed1 = first.x(0.)+tx_pickedcombination_Case1*(parSeed1.z()-first.z(0.));
+         Double_t xProectedSeed1 = first.x(0.)+tx_pickedcombination_Case1*( parSeed1.z(0.)-first.z(0.) );
          DelxProjectedSeed1_Case1 = parSeed1.x(0.)-xProectedSeed1;
       }
       if(bestXZ.hasHitInPlane(7)){
          PatHit parSeed2 =  bestXZ.hitInPlane(7);
-         Double_t xProectedSeed2 =
-         first.x(0.)+tx_pickedcombination_Case1*(parSeed2.z()-first.z(0.));
+         Double_t xProectedSeed2 = first.x(0.)+tx_pickedcombination_Case1*(parSeed2.z()-first.z(0.));
          DelxProjectedSeed2_Case1 = parSeed2.x(0.)-xProectedSeed2;
       }
 
 
-
+      int Case = 1;
+      Remaining(bestXZ,debug,Case);
+      
       for(int i = 0; i<PrHit; i++){
          PatHit hit = PatHit();
          hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
@@ -2056,8 +2410,9 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
       }
       PrSeedTrack BestUVSegment = PrSeedTrack(bestXZ.zone(), m_zReference);
       for(int i =0; i<bestXZ.hits().size(); i++){
+        //add only UVHits to bestXZ
          if( !bestXZ.hits()[i].isX()){
-            BestUVSegment.addHit(bestXZ.hits()[i]);
+           BestUVSegment.addHit(bestXZ.hits()[i]);
          }
       }
       if(debug){
@@ -2067,7 +2422,6 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
       BestUVSegment.setParameters(ax_FitHitCase1,bx_FitHitCase1,cx_FitHitCase1,0,0);
       FitLine(BestUVSegment,debug,1);
       NUV_Case1 = (int)BestUVSegment.hits().size();
-
       //std::cout<<"ax = "<<bestXZ.ax();
       ax_fullFitCase1 = (Double_t )bestXZ.ax();
       bx_fullFitCase1= (Double_t )bestXZ.bx();
@@ -2104,12 +2458,12 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
   DelxProjectedSeed2_Case2 = -99.;
   DelxProjectedSeed1_Case2 = -99.;
   MaxChi2Hit_Case2 = -99;
-  
-  
+
+
   ax_FitHitCase2 = -99.;
   bx_FitHitCase2 = -99.;
   cx_FitHitCase2 = -99.;
-  
+
   ax_fullFitCase2 = -9999.;
   bx_fullFitCase2= -99.;
   cx_fullFitCase2 = -99.;
@@ -2119,9 +2473,9 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
   MaxChi2_fullFitCase2 = -99.;
   NHits_fullFitCase2 = -1;
   y0_fullFitCase2 = -9999.;
-  
-  
-  
+
+
+
   std::vector<PatHit> Case2First ;
    Case2First.reserve(10);
    std::vector<PatHit> Case2Last  ;
@@ -2444,6 +2798,10 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
          Double_t xProectedSeed2 = first.x(0.)+tx_pickedcombination_Case2*(parSeed2.z()-first.z(0.));
          DelxProjectedSeed2_Case2 = parSeed2.x(0.)-xProectedSeed2;
       }
+      
+      int Case = 2;
+      Remaining(bestXZ,debug,Case);
+      
       for(int i = 0; i<PrHit; i++){
          PatHit hit = PatHit();
          hit.setHit(PrHit_Xat0[i],PrHit_Zat0[i],PrHit_dxDy[i],PrHit_dzDy[i],std::sqrt(PrHit_w2[i]),PrHit_yMin[i],PrHit_yMax[i],PrHit_zone[i],PrHit_planeCode[i],PrHit_isX[i],PrHit_LHCbID[i]);
@@ -2527,6 +2885,7 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
                      if(bestXZ.Chi2()< minChi2){
                         minChi2 = bestXZ.Chi2();
                         BestCombination = bestXZ;
+                        //BestCombination
                      }
                   }
                }
@@ -2759,7 +3118,7 @@ void TrackStudy::StereoSearch(PrSeedTrack xProj,PrSeedTrack UVSegment,Bool_t deb
        minY=y;}
      if(y>maxY){
        maxY=y;}
-       
+
       if(AllUV[i].coord() < minCoord) minCoord = AllUV[i].coord();
       if(AllUV[i].coord() > maxCoord) maxCoord = AllUV[i].coord();
       avgCoord+=AllUV[i].coord()/AllUV.size();
@@ -2840,7 +3199,7 @@ bool TrackStudy::FitLine( PrSeedTrack &UVSegment, Bool_t debug , Int_t Case ){
      FitLineY_Chi2DoF_case0 = Chi2_LineBestUVSegm/(UVSegment.hits().size()- 2. );
      FitParY_Chi2_case0 = Chi2_ParY;
      FitParY_Chi2DoF_case0 = Chi2_ParY/(UVSegment.hits().size()-3. );
-     
+
    }
    if(Case ==1 ){
      FitLineY_ay_case1 = solution_yz_line[0]-m_zReference*solution_yz_line[1];
@@ -2859,7 +3218,7 @@ bool TrackStudy::FitLine( PrSeedTrack &UVSegment, Bool_t debug , Int_t Case ){
      FitParY_Chi2_case2 = Chi2_ParY;
      FitParY_Chi2DoF_case2 = Chi2_ParY/(UVSegment.hits().size()-3. );
    }
-   
+
    return true;
 }
 bool TrackStudy::FitSimultaneouslyXY(PrSeedTrack& track,PrSeedTrack& UVSegment,Bool_t debug)
@@ -2880,7 +3239,7 @@ bool TrackStudy::FitSimultaneouslyXY(PrSeedTrack& track,PrSeedTrack& UVSegment,B
    float m_dRatio = -2.622e-4;
    track.setdRatio(m_dRatio);
    float zRef = m_zReference;
-   for(int loop = 0; 3 > loop ; ++loop ){
+   for(int loop = 0; 10> loop ; ++loop ){
       //std::cout<<"Loop\t"<<loop<<std::endl;
       if(loop ==1 ){
          float RadiusPosition = std::sqrt( (track.ax()*track.ax()*std::fabs(track.ax())/2000.) +
@@ -2899,16 +3258,18 @@ bool TrackStudy::FitSimultaneouslyXY(PrSeedTrack& track,PrSeedTrack& UVSegment,B
          PatHit hit = track.hits()[i];
          if(hit.isX())
          {
-            nHitsX++;
+           nHitsX++;
          }else{  nHitsStereo++;}
+         float yOnTrack = 0.;
+         if(loop >0) yOnTrack = hit.yOnTrack(track.y(0.), track.by());
          float w = hit.w2();
          float dxdy = hit.dxDy();
          //      if(debug)std::cout<<" dxDy "<<dxdy<<std::endl;
-         float dz =(hit.z(0.) - m_zReference);
+         float dz =(hit.z(yOnTrack) - m_zReference);
          //  float deta = 0.;
-
+         float dRatio = m_dRatio;
+         if(loop >0) dRatio = track.dRatio();
          float deta = dz*dz*(1+m_dRatio*dz);
-
          float wdz = w * dz;
          float eta = dz * dz * (1. + dz * m_dRatio);
          float weta = w * deta;
