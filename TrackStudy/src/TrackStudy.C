@@ -48,7 +48,7 @@ TTree * t1 = new TTree("treee","Track_Fit");
 //Parabolic XZ
 //Track n Hits
 
-
+Int_t Track_Zone;
 
 //------------------------------------------Track Fit Business with MCHits
 //------------ Parabolic XZ
@@ -311,7 +311,8 @@ void TrackStudy::Begin(TTree * /*tree*/)
 {
    //Y segment fit with XZ fit
   //case 0
-   t1->Branch("FitLineY_ay_case0",& FitLineY_ay_case0,"FitLineY_ay_case0/D");
+  t1->Branch("Track_Zone",&Track_Zone,"Track_Zone/I");
+  t1->Branch("FitLineY_ay_case0",& FitLineY_ay_case0,"FitLineY_ay_case0/D");
    t1->Branch("FitLineY_by_case0",& FitLineY_by_case0,"FitLineY_by_case0/D");
    t1->Branch("FitLineY_Chi2_case0",& FitLineY_Chi2_case0,"FitLineY_Chi2_case0/D");
    t1->Branch("FitLineY_Chi2DoF_case0",& FitLineY_Chi2DoF_case0,"FitLineY_Chi2DoF_case0/D");
@@ -1572,8 +1573,10 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
       // first.PrintHit();
       PatHit last = bestXZ.hitInPlane(11);
       //last.PrintHit();
+      Track_Zone = first.zone();
       if(first.zone() != last.zone()) {
          std::cout<<"Killed Track because Up->Down or vice versa"<<std::endl;
+         Track_Zone = -99;
          PrelimSele_Case0 = false;
       }
       tx_inf_Case0 = first.x(0.)/first.z(0.);
@@ -1613,7 +1616,7 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          FTCluster cluster;
          cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
          hit.SetCluster(cluster);
-         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX()) hit.setCoord( -(hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
          if(!hit.isX())bestXZ.addHit(hit);
       }
       bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
@@ -1716,7 +1719,7 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
          // beforeFindBest.PrintTrack();
          // std::cout<<"\n \n ===========================Best Combination=====================\n\n"<<std::endl;
          // BestCombination.PrintHits();
-         // BestCombination.PrintTrack();
+         BestCombination.PrintTrack();
          // std::cout<<"\n \n"<<std::endl;
          // for(layer1){
          bestXZ=BestCombination;
@@ -2261,9 +2264,11 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
       // first.PrintHit();
       PatHit last = bestXZ.hitInPlane(11);
       //last.PrintHit();
+      Track_Zone = first.zone();
       if(first.zone() != last.zone()) {
          std::cout<<"Killed Track because Up->Down or vice versa"<<std::endl;
          PrelimSele_Case1 = false;
+         Track_Zone =-99;
       }
       tx_inf_Case1 = first.x(0.)/first.z(0.);
       NX_Case1= bestXZ.hits().size();
@@ -2300,7 +2305,7 @@ bool TrackStudy::XZStudyCase1( PrSeedTrack& xProj, PrSeedTrack& UVSegment , Bool
          FTCluster cluster;
          cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
          hit.SetCluster(cluster);
-         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX()) hit.setCoord( -(hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
          if(!hit.isX())bestXZ.addHit(hit);
       }
       bool ok =  FitSimultaneouslyXY(bestXZ, UVSegment,debug);
@@ -2773,9 +2778,11 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
       // first.PrintHit();
       PatHit last = bestXZ.hitInPlane(8);
       //last.PrintHit();
+      Track_Zone =first.zone();
       if(first.zone() != last.zone()) {
-         std::cout<<"Killed Track because Up->Down or vice versa"<<std::endl;
-         PrelimSele_Case2 = false;
+        std::cout<<"Killed Track because Up->Down or vice versa"<<std::endl;
+        Track_Zone = -99;
+        PrelimSele_Case2 = false;
       }
       tx_inf_Case2 = first.x(0.)/first.z(0.);
       NX_Case2= bestXZ.hits().size();
@@ -2808,7 +2815,7 @@ bool TrackStudy::XZStudyCase2(PrSeedTrack& xProj, PrSeedTrack& UVSegment ,Bool_t
          FTCluster cluster;
          cluster.setCluster(ChID_Fraction[i],PrHit_Size[i],ChID_Charge[i],ChID_SipmID[i],ChID_SipmCell[i],ChID_Module[i],ChID_Layer[i],ChID_Mat[i],ChID_Quarter[i]);
          hit.SetCluster(cluster);
-         if(!hit.isX()) hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+         if(!hit.isX()) hit.setCoord(- (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
          if(!hit.isX())bestXZ.addHit(hit);
 
       }
@@ -2958,7 +2965,7 @@ void TrackStudy::StereoSearch(PrSeedTrack xProj,PrSeedTrack UVSegment,Bool_t deb
    std::vector<PatHit> AllUV;
    for(int i = 0 ; i< UVSegment.hits().size();i++) {
       PatHit hit = UVSegment.hits()[i];
-      hit.setCoord( (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
+      hit.setCoord(- (hit.x(0.)-xProj.x(hit.z(0.)))/(hit.dxDy() * hit.z(0)));
       AllUV.push_back(hit);
       if(!hit.isX()){
          if(hit.planeCode() <4){
