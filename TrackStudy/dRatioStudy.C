@@ -31,11 +31,16 @@ void dRatioStudy(){
   Bool_t isElectron;
   Int_t ID;
   t1->SetBranchAddress("Track_P",&P);
+  
   t1->SetBranchAddress("ax_cubXZ",&ax);
   t1->SetBranchAddress("ay_line",&ay);
   t1->SetBranchAddress("cx_cubXZ",&cx);
   t1->SetBranchAddress("dx_cubXZ",&dx);
-  t1->SetBranchAddress("Track_eta",&eta);
+  // t1->SetBranchAddress("ax_FitHitCase0_Cub",&ax);
+  // t1->SetBranchAddress("ay_fullFitCase0",&ay);
+  // t1->SetBranchAddress("cx_FitHitCase0_Cub",&cx);
+  // t1->SetBranchAddress("dx_cu",&dx);
+  t1->SetBranchAddress("Track_eta",&eta);x
   t1->SetBranchAddress("bx_cubXZ",&bx);
   t1->SetBranchAddress("by_line",&by);
   t1->SetBranchAddress("Ovtx_Z",&Ovtx_Z);
@@ -46,11 +51,11 @@ void dRatioStudy(){
   // Double_t BinningX[nBinX] = {0.,20.,30.,40.,50.,60.,70.,80.,90.,100.,120.,140.,160.,180.,200.,220.,240.,260.,280.,300.,340.,380.,420.,480.,520.,560.,600.,640.,700.,800.,1000.,1100.,1300.,1500.,1700.,2000.,2300.,3000.,4000.};
   const Int_t nBinY = 38;
   Int_t NBINS=100;
-  TH2D *histogramOld = new TH2D("dRatio","dRatio",NBINS,-3000,3000,NBINS,-2400,2400);
-  TH2D *histogramCount = new TH2D("dRatioCount","dRatioCount",NBINS,-3000,3000,NBINS,-2400,2400);
+  TH2D *histogramOld = new TH2D("dRatio","dRatio",NBINS,-3000,3000,NBINS,-2700,2700);
+  TH2D *histogramCount = new TH2D("dRatioCount","dRatioCount",NBINS,-3000,3000,NBINS,-2700,2700);
 
-  TH2D *dRatiobxby = new TH2D("dRatiobxby","dRatiobxby;by;bx",NBINS,-0.3,0.3,NBINS,-0.8,0.8);
-  TH2D *dRatiobxbyCount = new TH2D("dRatiobxbyCount","dRatiobxbyCount",NBINS,-0.3,0.3,NBINS,-0.8,0.8);
+  TH2D *dRatiobxby = new TH2D("dRatiobxby","dRatiobxby;by;bx",NBINS,-0.4,0.4,NBINS,-0.8,0.8);
+  TH2D *dRatiobxbyCount = new TH2D("dRatiobxbyCount","dRatiobxbyCount",NBINS,-0.4,0.4,NBINS,-0.8,0.8);
 
 
 
@@ -94,9 +99,8 @@ void dRatioStudy(){
     //i have the dRatio Value the ax value and the ay value;
     //for (j=0;j<38;j++)
     /*-0.000001*/
-    if(dRatio>-0.001 && dRatio<0  && P>5000 && Ovtx_Z<2000  && eta>2 && eta<5 ){
-    //if(dRatio<0 && P>2000 && eta<5 && eta>2){
-
+    if(dRatio>-0.001&&  dRatio<-0.000001  && P>2000 ){
+      //if(dRatio<0 && P>2000 && eta<5 && eta>2){
       dRatiobxby->Fill(by,bx,-dRatio);
       dRatiobxbyCount->Fill(by,bx);
       Double_t Radius = std::sqrt( abs(ax*ax*abs(ax)/(axis_X) + ay*ay*abs(ay)/(axis_Y)));
@@ -190,5 +194,8 @@ void dRatioStudy(){
   histogramRadiusSlope->Draw();
   //c1->cd(2);
   //dRatioH->Draw();
+  TCanvas *c4 = new TCanvas();
+  h2pol->Draw("Colz l");
+  //  dRatioH->Draw(""
 
 }

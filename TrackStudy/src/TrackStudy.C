@@ -65,13 +65,12 @@ Double_t dx_cub;
 
 Int_t worstPlane;
 
-Double_t Z_T3;
-Double_t Z_T1;
 Double_t X_T3;
 Double_t X_T1;
 Double_t Coord_T3;
 Double_t Coord_T1;
-
+Double_t Z_T3;
+Double_t Z_T1;
 Double_t Y_T3 ;
 Double_t Y_T1 ;
 //----------- Line Y
@@ -491,6 +490,8 @@ void TrackStudy::Begin(TTree * /*tree*/)
    t1->Branch("bx_cubXZ",&bx_cub,"bx_cubXZ/D");
    t1->Branch("cx_cubXZ",&cx_cub,"cx_cubXZ/D");
    t1->Branch("dx_cubXZ",&dx_cub,"dx_cubXZ/D");
+   t1->Branch("Z_T3",&Z_T3,"Z_T3/D");
+   t1->Branch("Z_T1",&Z_T1,"Z_T1/D");    
    t1->Branch("Y_T3",&Y_T3,"Y_T3/D");
    t1->Branch("Y_T1",&Y_T1,"Y_T1/D");
    t1->Branch("X_T3",&X_T3,"X_T3/D");
@@ -1186,6 +1187,8 @@ bool TrackStudy::XZStudyCase0(PrSeedTrack& xProj, PrSeedTrack& UVSegment,Bool_t 
    Y_T3 = +999999.;
    X_T1 = -999999.;
    X_T3 = +999999.;
+   Z_T1 = -999999.;
+   Z_T3 = -999999.;
    Coord_T1 = -999999.;
    Coord_T3 = +999999.;
    FitLineY_ay_case0 = -999;

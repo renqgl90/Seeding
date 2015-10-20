@@ -31,6 +31,7 @@ int main() {
   perfectSeeding1->Init( (TTree*)  &ch2);
   perfectSeeding1->Begin( (TTree*) &ch2);
   Int_t nEntries1 = ch2.GetEntries();
+  //  nEntries1 = 10000;;
   //nEntries1 =
   Bool_t debug = false;
   std::cout<<"==========Will Process   "<<nEntries1<<"   Tracks"<<"==========="<<std::endl;

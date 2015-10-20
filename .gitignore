@@ -12,3 +12,7 @@ Data/*
 Data
 Documentation
 Internal_Note
+*.~
+*/*~
+*/*/*~
+*/*/*~
