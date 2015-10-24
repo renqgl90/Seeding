@@ -678,6 +678,9 @@ StatusCode PrHybridSeeding::finalize() {
 //==================
 void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
 {
+  // use the named IDs of zones (should be useless considering the following consideration):
+  // firstZone = part + s_T1U
+  // lastZone  = part + s_T3V
   unsigned int firstZone = part+2; //1st station U Layers
   unsigned int lastZone = part+22;
   if(m_useFix){
@@ -685,6 +688,8 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     lastZone = 22;
   }
   for( PrSeedTrack2s::iterator itT =m_xCandidates.begin();m_xCandidates.end() != itT; ++itT){
+
+    // (*itT).Case() can and must be written itT->Case()  (easier to read)
     if( (*itT).Case() != iCase) continue;
     if( (*itT).zone() != part) continue;
     if( !(*itT).valid()) continue;
@@ -698,8 +703,35 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     AssocX = AssocTrack( (*itT), efficiency, partic, nAssocHits);
 #endif
     const unsigned int stepSize = m_useFix ? 1:2;
+
+    // It is possible to consider to store UV zones exactly like in findXProjection
+    // ex:
+
+    // std::vector<PrHitZone*> uvZones;
+    // uvZones.reserve(6);
+    // for (unsigned int uvZoneId : {s_T1U, s_T1V, s_T2U, s_T2V, s_T3U, s_T3V}){
+    //   uvZones.push_back(m_zones[uvZoneId|part]);
+    // }
+    //
+    // for (PrHitZone* zone : uvZones) {
+
+
+
+    // With the trick, it could be something like that:
+
+    // std::vector<PrHitZone*> uvZones;
+    // uvZones.reserve(12);
+    // for (unsigned int detector_part : { 0, 1 }) {
+    //   for (unsigned int uvZoneId : {s_T1U, s_T1V, s_T2U, s_T2V, s_T3U, s_T3V}) {
+    //     uvZones.push_back(m_zones[uvZoneId|detector_part]);
+    //   }
+    // }
+    //
+    // for (PrHitZone* zone : uvZones) {
+
+
     for(unsigned int kk = firstZone; lastZone >kk;kk+=stepSize){
-      if(m_zones[kk]->isX()) continue;
+      if(m_zones[kk]->isX()) continue; // can be avoid with the previous trick
       double yMin = -1*std::fabs(m_yMax);
       double yMax = +1*std::fabs(m_yMax);
       double dxDy = m_zones[kk]->dxDy();
@@ -712,6 +744,9 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
       }
       if(yMax <yMin) always()<<"Stereo Problem"<<std::endl;
       if(m_doAsymmUV){
+
+        // It is probably better to merge the two parts
+        // the inner condition can written like this: (kk % 2 != part && m_useFix)
         if(part==0){ //Low
           //yMax = 1.0; //[-2700, 1.0]
           yMax = -m_yMin;
@@ -745,6 +780,12 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
       // PrHits::iterator itEnd = std::upper_bound(hits.begin(),hits.end(),xMax, upperBoundX());
       //PrHits::iterator itH = m_zones[kk]->hits().begin();
       for(  ; hits.end()!= itH; ++itH ){
+
+        // It is possible to avoid (*itH)-> syntax defining the following variable:
+        // PrHit* hit = *itH
+        //
+        // Then (*itH)-> is replaced by hit->
+
         if( (*itH)->isUsed() && m_removeFlagged) continue;
         if( (*itH)->x() > xMax) break;
         double y = ((*itH)->x()-xPred)/dxDy;
@@ -772,6 +813,10 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
         if(y<yMin) continue;
         if(y>yMax) continue;
         if(m_removeHole){
+          // It is better to avoid the square root computation like this:
+          // double radius2 = y*y + xPred8xPred;
+          // if (radius2 < 87.0*87.0) continue;
+
           double radius = std::sqrt( y*y + xPred*xPred);
           if(  radius < 87.0) continue;
         }
@@ -838,6 +883,8 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     // unsigned int minHough  = 5;
     unsigned int firstSpace = m_trackCandidates.size();
     PrHits::iterator itBeg = myStereo.begin();  //first hit in U-V layer with small Ty
+
+    // itEnd seems to be one element earlier than expected
     PrHits::iterator itEnd = itBeg + minUV-1; //go ahead of minUV hits
     //Long tracks >5 GeV tolTyOffset = 0.002
     //additional hough cluster window based on the backward projection of the x-z plane?
@@ -869,6 +916,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                 fit = BestLine.fit( itBeg,itEnd ); //fit for the line will set the chi2 for BestLine
                 //fitDone = true;
                 if(fit && LineOK( m_Chi2LowLine[iCase] ,m_Chi2HighLine[iCase],  BestLine , temp) ){ //criteria satisfied => add Hits on track
+                  // curly brackets
                   for( PrHits::iterator hit = itBeg; itEnd!= hit; ++hit)
                     temp.addHit( (*hit));
                 }
@@ -876,8 +924,13 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
               if( plCount.nbDifferentUV() != plCount.nbSingleUV() && plCount.nbDifferentUV() > minUV-1){ //more than 1 hit per layer
                 std::vector<std::vector<PrHit*> > PlanesMultiple; //Contains all the planes having > 1 layer
                 PlanesMultiple.clear();
+
+                // it is possible to consider a loop on layers instead of copying multiple times
+                // the computation on every layer
+
+                // hitsT1U or hits1U ?
                 std::vector<PrHit*> hits1; //hits in layer 1
-                hits1.clear();
+                hits1.clear(); // it is useless to clear an array just after its declaration
                 std::vector<PrHit*> hits2;
                 hits2.clear();
                 std::vector<PrHit*> hits5;
@@ -925,8 +978,12 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                 if(hits10.size()!=0) PlanesMultiple.push_back(hits10);
                 PrSeedTrack2s Tracks; //combinatorical tracks container when >1 hit in at least 1 layer.
                 //PrHit* hit1 = nullptr;
+
+                // Is it really necessary to have 6 nested loops? (maybe it is...)
                 for( PrHit* hit1: PlanesMultiple[0]){
                   if(PlanesMultiple.size()==1){
+
+                    // tem doesn't seem to be an explicit name
                     PrSeedTrack2 tem(*itT);
                     if(PlanesSingle.size()!=0){
                       tem.addHits2(PlanesSingle);
@@ -1005,7 +1062,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                                         tem.addHit(hit5);
                                         tem.addHit(hit6);
                                         Tracks.push_back(tem);
-                                        continue;
+                                        continue; // useless continue
                                       }//end if planes size 6
                                     }//end loop hit in multiple 6
                                   }//end if plane size >5
@@ -1030,6 +1087,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                     (*tr).setChi2LineY( BestLine.Chi2DoF() , BestLine.nHitsLine());
                   BestLine.reset();
                 }
+                // stable_sort?
                 std::sort( Tracks.begin(), Tracks.end() , [temp]( const PrSeedTrack2& track1, const PrSeedTrack2& track2)->bool{
                     return( (track1.chi2DoFLine() + temp.chi2PerDoF()) < (track2.chi2DoFLine() + temp.chi2PerDoF()));
                   });
@@ -1054,6 +1112,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
               BestLine.reset();
               if(msgLevel(MSG::DEBUG)){
                 temp.sortbyz();
+                // debug()?
                 always()<<"temp track with the best line added"<<endmsg; printTrack(temp);
               }
               if(msgLevel(MSG::DEBUG)){
@@ -1080,6 +1139,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
               ok = false; //Max N hits is 13 here
             }
             while ( !ok && temp.hits().size() > minTot){
+              //debug()?
               if( msgLevel(MSG::DEBUG) ) always()<<"RemoveWorst and Refit UV"<<endmsg;
               ok = removeWorstAndRefit( temp   , iCase);
               //step++
@@ -1149,6 +1209,10 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
                 if(m_removeClones) std::sort(temp.hits().begin(), temp.hits().end(), compLHCbID());
                 m_trackCandidates.push_back( temp );
               }
+              // PROBABLE BUG:
+              // the following line is equivalent to
+              // minUV = 1;
+              // itBeg++;
               itBeg += minUV=1 ;//-1 because 
               //itBeg += minUV-2;// was always 4
             }
@@ -1161,6 +1225,7 @@ void PrHybridSeeding::addStereo(unsigned int part, unsigned int iCase)
     // FirstSpace is the number of track candidates before the finding of the UV Hits
     if( msgLevel(MSG::DEBUG)) always()<<"track Candidates Size"<<m_trackCandidates.size()<<"firstSpace"<<firstSpace<<endmsg;
     if( m_trackCandidates.size() > firstSpace+1 ){
+      // it is better to avoid unsigned int loops
       for( unsigned int kk = firstSpace; m_trackCandidates.size() > kk -1 ; ++kk ){ 
         //maybe just use where you find more UV? it's automatic because you start from one X-Z candidate
         if(!m_trackCandidates[kk].valid()) continue;
@@ -1202,6 +1267,8 @@ void PrHybridSeeding::removeClonesX(unsigned int maxCommon, unsigned int part, u
       if( (*itT2).zone() != part) continue;
       if (!(*itT2).valid()) continue;
       if( (*itT2).Case() != (*itT1).Case() ) continue;
+
+      // looks weird, but does work
       int Compare = (*itT1).hits().size()*(*itT2).hits().size();
       switch(Compare){
       case 36: //6 vs 6
@@ -1232,6 +1299,8 @@ void PrHybridSeeding::removeClonesX(unsigned int maxCommon, unsigned int part, u
       while( itH1 != itEnd1 && itH2 != itEnd2 ){
         if ( (*itH1)->id() == (*itH2)->id() ){
           ++nCommon;
+
+          // trailing spaces
           ++itH1;                                                                 
           ++itH2; 
         }
@@ -1254,6 +1323,7 @@ void PrHybridSeeding::removeClonesX(unsigned int maxCommon, unsigned int part, u
         }
       }
     }
+    // curly brackets
     if(xOnly && (*itT1).valid() && (*itT1).zone() == part && icase==(m_nCases-1) )
       m_trackCandidates.push_back(*itT1);
   }
@@ -1484,6 +1554,10 @@ void PrHybridSeeding::solveParabola2(const PrHit* hit1,const PrHit* hit2,const P
   const double corrZ1 = 1.+m_dRatio*z1;
   const double corrZ2 = 1.+m_dRatio*z2;
   const double corrZ3 = 1.+m_dRatio*z3;
+
+  // As you never use corrZ* alone,
+  // You can help the compiler by defining the following product:
+  // double zzcorrZ* = z* * z* * corrZ*;
   const double det = (z1*z1)*corrZ1*z2 + z1*(z3*z3)*corrZ3 + (z2*z2)*corrZ2*z3 - z2*(z3*z3)*corrZ3 - z1*(z2*z2)*corrZ2 - z3*(z1*z1)*corrZ1;
   if( std::fabs(det) < 1e-8 )
   {
@@ -1510,10 +1584,13 @@ bool PrHybridSeeding::fitSimultaneouslyXY( PrSeedTrack2& track , unsigned int iC
   const double zRef = m_geoTool->zReference();
   for ( int loop = 0; 3 > loop ; ++loop ){
     if(loop ==1 && m_useCubic && (m_useCorrSlopes || m_useCorrPos)){
+      // it could be interesting to keep in memory the squared radius for further computation
       double RadiusPosition = std::sqrt( (track.ax()*track.ax()*std::fabs(track.ax())/2000.) +
                                          (track.y(zRef)*track.y(zRef)*std::fabs(track.y(zRef))/1000.));
       double RadiusSlopes = std::sqrt( track.bx()*track.bx()*std::fabs(track.bx())/0.3 +
                                        track.by()*track.by()*std::fabs(track.by())/0.1);
+
+      // Magic Numbers !
       double dRatioPos = -1.*(2.622e-4 +1.943e-8*RadiusPosition + 1.08e-11*RadiusPosition*RadiusPosition);
       double dRatioSlopes = -1.*( 2.6098e-4+ 6.31e-5*RadiusSlopes  -0.000156778*RadiusSlopes*RadiusSlopes + 0.000134126*RadiusSlopes*RadiusSlopes*RadiusSlopes);
       if(m_useCorrPos){
@@ -1806,6 +1883,11 @@ bool PrHybridSeeding::fitXProjection(PrSeedTrack2& track, unsigned int iCase ){
   // double m_maxX0Offset = 80.;
   // double m_Cut = 200.;
   // if( std::fabs(x0) > 300. && iCase >0) return false;
+
+
+  // You can just:
+  // return (maxChi2 < m_maxChi2HitsX[iCase]);
+
   if(maxChi2 < m_maxChi2HitsX[iCase]) return true;
   // if( track.hits().size() == 6  && maxChi2 < 8. ) return true;
   // if( maxChi2 < 1.5 && track.hits().size() < 6. ) return true;
@@ -2019,10 +2101,14 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
     
     PrHits::iterator itL = std::lower_bound(lHits.begin(), lHits.end(), minXl, lowerBoundX());
     PrHits::iterator itLEnd = std::upper_bound(lHits.begin(), lHits.end(), maxXl, upperBoundX());
+
+    // should be a little faster with itL instead of lHits.begin() (itLEnd is obvisously after itL)
+    // PrHits::iterator itLEnd = std::upper_bound(itL, lHits.end(), maxXl, upperBoundX());
+
     PrHit* lHit;
     for (; itLEnd != itL; ++itL) {
       lHit = *itL;
-      if(nullptr == lHit){
+      if(nullptr == lHit){ // should never happen
         if (msgLevel(MSG::DEBUG)) debug()<<"Not Picking Hits in Last layer in the good search Window"<<endmsg;
         break;
       }
@@ -2199,7 +2285,7 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
           if(msgLevel(MSG::DEBUG) )debug()<<"Will Loop over xZones Hits"<<endmsg;
           for(; xZone->hits().end() != itH; ++itH){
             mHit = *itH;
-            if( mHit == nullptr) break;
+            if( mHit == nullptr) break; // should never happen
             if( mHit->x() > xMax ) break;
             // we can try to avoid this test
             if( mHit->isUsed() && m_removeFlagged) continue; //Not re use Hits in the middle
@@ -2359,6 +2445,9 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
                               // double rhsx0 =0 ;
                               // lhsx0 = x0new;
                               // rhsx0 = x0new;
+                              
+                              // Wrapping the condition in a functor with an explicit name could be a good idea (just for clarity)
+                              // At least an explanation of what this means
                               return std::fabs( lhs->x() - ( x0new + lhs->z()*tx_pickedcombination)) < std::fabs( rhs->x() - (x0new + rhs->z()*tx_pickedcombination));} );
         }
         if (msgLevel(MSG::DEBUG)) debug()<<"The Lambda Function Sorting end"<<endmsg;
@@ -2369,6 +2458,8 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
         // if( parabolaSeedHits.size()>m_maxParabolaSeedHits){
         //   maxParabolaSeedHits = parabolaSeedHits.size();
         // }
+
+        // int loop (unsigned int loop must be avoided)
         for (unsigned int i = 0; i<maxParabolaSeedHits;++i) //build a parabola for each 3 hit combination
         {
           //if (maxParabolaSeedHits==0) break; //maybe a repetition
@@ -2489,7 +2580,7 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
             //std::fabs(tx_pickedcombination)-0.5;
             PrHit* bestProj = nullptr;
             double  bestDist = 10.0; //2.0 mm at the moment (Larger)? tighter? (see offline Seeding)
-            if (xMinAtZ > xMaxAtZ){
+            if (xMinAtZ > xMaxAtZ){ // should never happen
               if (msgLevel(MSG::DEBUG)) debug()<<"Bad Settings!!!!!!"<<endmsg;
             }
             PrHits::iterator itH = std::lower_bound(xZone->hits().begin() ,xZone->hits().end(),xMinAtZ,lowerBoundX());
@@ -2539,6 +2630,8 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
           //if( xHits.size() <=  m_minXPlanes)  continue; //Require at least m_minXPlanes ! no for first Fit
           //std::stable_sort(xHits.begin(), xHits.end(), compX());
           //is it really needed?
+
+          // stable_sort?
           std::sort(xHits.begin(), xHits.end(), compLHCbID());
           bool isEqual = false;
           // Remove xHits in the xHitsLists which are basically the same
@@ -2561,6 +2654,9 @@ void PrHybridSeeding::findXProjections(unsigned int part, unsigned int iCase)
         if(xHitsLists.size() == 0){
           continue;
         }
+
+        // Why removing duplicates only if we have found more than 2 HitsList?
+        // the 2 HitsList found could be the same, or couldn't they?
         if(xHitsLists.size() > 2){
           //---Remove Duplicates in the HitsList
           std::stable_sort( xHitsLists.begin(), xHitsLists.end());
